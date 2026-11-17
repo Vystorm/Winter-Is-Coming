@@ -1,0 +1,374 @@
+status: '<aqua>Winter</aqua> {date} | {phase} {strength}% | {holiday} | {mode} | Tracked positions: {blocks}'
+preview: '<aqua>Preview</aqua> {date}: {phase} {strength}% | {holiday}'
+denied: '<red>You need winter.admin.</red>'
+player-only: '<red>This command requires a player with winter.claim.</red>'
+faulted: '<red>Winter is paused after a storage failure. Check the server log before restarting.</red>'
+invalid: '<red>Invalid setting: {reason}</red>'
+changed: '<green>Winter mode updated. Loaded areas adjust gradually.</green>'
+reloaded: '<green>Winter configuration reloaded.</green>'
+countdown: '<gold>New Year in {seconds} seconds!</gold>'
+new-year: '<gold>Happy New Year! Your New Year gift is available with /winter claim.</gold>'
+no-gift: '<yellow>No holiday gift is available here. Gifts use the real calendar only.</yellow>'
+full: '<yellow>Free one inventory slot before claiming.</yellow>'
+claimed: '<yellow>This gift has already been claimed or reserved. Contact an admin if delivery was interrupted.</yellow>'
+gift: '<green>Your seasonal gift has arrived. Enjoy the holidays!</green>'
+claims: 'Pending gifts in your Core reward pouch: {pending}.'
+claims-console: 'Reward records: plugins/WinterIsComing/rewards/winter/. Review interrupted deliveries with Core.'
+gift-busy: '<yellow>Claim after leaving your temporary world or inventory, while alive and online.</yellow>'
+gift-recovery: '<red>Core preserved an interrupted gift delivery. Ask an admin to review it; do not delete the reward ledger.</red>'
+invalid-date: '<red>{input} is not a valid date. Use YYYY-MM-DD, for example 2026-12-24.</red>'
+next-season: '<gray>Next winter starts on {date} (in {days} days).</gray>'
+milestone-peak: '<gray>Winter peaks on {date} (in {days} days).</gray>'
+milestone-thaw: '<gray>The thaw begins on {date} (in {days} days).</gray>'
+milestone-end: '<gray>Winter ends on {date} (in {days} days).</gray>'
+cold-warning: '<aqua>You are getting cold! Warm up at a campfire, go indoors, wear leather or hold a lantern.</aqua>'
+cold-warming: '<gold>The fire warms you up.</gold>'
+cold-status: '<aqua>Your cold: {percent}%</aqua>'
+cold-food: '<gold>The hot meal warms you up.</gold>'
+calendar-menu: 'Advent calendar'
+calendar-menu-desc: 'One small gift behind every door from December 1 to 24'
+calendar-title: 'Advent calendar {year}'
+calendar-disabled: '<yellow>The Advent calendar is switched off on this server.</yellow>'
+calendar-denied: '<red>You need winter.calendar.</red>'
+calendar-world: '<yellow>Doors can only be opened in a winter world.</yellow>'
+calendar-door-locked: '<gray>Door {day}</gray>'
+calendar-door-locked-click: '<yellow>Door {day} is still locked. It opens on {date}.</yellow>'
+admin-speed: '<yellow>Snow speed</yellow>'
+admin-speed-lore: '<gray>Changes per second: {value}. Click to adjust</gray>'
+admin-speed-label: 'Changes per second'
+admin-speed-text: 'How many snow and ice changes per second. Higher is faster; very high values cost more server time.'
+admin-speed-apply: 'Apply'
+admin-speed-set: '<green>Snow speed set to {value} changes per second.</green>'
+admin-back: 'Back'
+admin-next: '<yellow>Next season</yellow>'
+admin-next-lore: '<gray>Jump to the first day of the following season</gray>'
+season-now: '<green>It is now {season}.</green>'
+season-name-spring: 'spring'
+season-name-summer: 'summer'
+season-name-autumn: 'autumn'
+season-name-winter: 'winter'
+admin-title: 'Winter admin'
+admin-status: '<aqua>Today: {date}</aqua>'
+admin-status-lore: '<gray>{phase}, {strength}% snow strength, mode {mode}</gray>'
+admin-auto: '<yellow>Follow the real calendar</yellow>'
+admin-auto-lore: '<gray>Back to the real date</gray>'
+admin-winter: '<yellow>Winter now</yellow>'
+admin-winter-lore: '<gray>Jump to the winter peak; also lets you test the Advent calendar</gray>'
+admin-date: '<yellow>Choose a date</yellow>'
+admin-date-lore: '<gray>Run winter as if it were that day</gray>'
+admin-thaw: '<yellow>Thaw everything</yellow>'
+admin-thaw-lore: '<gray>All winter snow and ice melts</gray>'
+admin-settings: '<yellow>All settings</yellow>'
+admin-settings-lore: '<gray>Snow height, cold, calendar and more</gray>'
+admin-lamp: '<yellow>Lamp: look at glass</yellow>'
+admin-lamp-lore: '<gray>Marks or removes the glass block you are looking at</gray>'
+admin-date-question: 'Date as YYYY-MM-DD'
+lamp-disabled: '<yellow>Christmas lights are switched off in config.yml.</yellow>'
+lamp-not-glass: '<yellow>Look at a glass block first.</yellow>'
+lamp-full: '<yellow>Limit reached: at most {max} lamps.</yellow>'
+lamp-added: '<green>Lamp added ({count} in total). It changes colour while it is winter.</green>'
+lamp-removed: '<gray>Lamp removed ({count} left).</gray>'
+calendar-test-note: '<gold>Test mode: the calendar uses {date}. Doors give nothing and do not count.</gold>'
+calendar-test-opened: '<gold>Test: door {day} would give {amount}x {item}.</gold>'
+thaw-hint: '<gray>Snow melts until you bring winter back with <white>/winter resume</white> or <white>/winter setdate YYYY-MM-DD</white>.</gray>'
+resume-off-season: '<yellow>Back on the real date, which is outside winter, so there is no snow. Winter starts on {date} (in {days} days). To test now: <white>/winter setdate YYYY-12-24</white>.</yellow>'
+calendar-door-locked-lore: '<dark_gray>Opens on {date}</dark_gray>'
+calendar-door-ready: '<gold><bold>Door {day}</bold></gold>'
+calendar-door-ready-lore: '<yellow>Click to open!</yellow>'
+calendar-door-opened: '<green>Door {day}</green>'
+calendar-door-opened-lore: '<gray>Opened: {amount}x {item}</gray>'
+calendar-door-missed: '<dark_gray>Door {day}</dark_gray>'
+calendar-door-missed-lore: '<dark_gray>Missed</dark_gray>'
+calendar-info: '<aqua>Today: {date}</aqua>'
+calendar-info-lore: '<gray>Opened {opened}/{doors} doors, {waiting} waiting</gray>'
+calendar-gifts: '<gold>Pending gifts: {pending}</gold>'
+calendar-gifts-lore: '<gray>Click to collect gifts kept in your reward pouch</gray>'
+calendar-opened: '<green>Door {day} opened. A pending gift from your reward pouch has been delivered.</green>'
+calendar-kept: '<yellow>Door {day} opened. Your gift waits in your reward pouch: free a slot and use /winter claim.</yellow>'
+calendar-reminder: '<gold>Advent calendar: {count} door(s) waiting for you.</gold>'
+calendar-open-button: '<green>[Open]</green>'
+calendar-open-hover: 'Open the Advent calendar'
+snowball-disabled: '<yellow>Snowball fights are switched off on this server.</yellow>'
+snowball-denied: '<red>You need winter.snowball.</red>'
+snowball-offline: '<yellow>That player is not online.</yellow>'
+snowball-hit: '<aqua>Hit! {hits} snowball hits this winter</aqua>'
+snowball-stats: '<aqua>Your snowball fight this winter: {hits} hits, {wins} duel wins, rank {rank}</aqua>'
+snowball-top-header: '<gold>Best snowball throwers of winter {season}:</gold>'
+snowball-top-line: '<gray>{rank}. <white>{name}</white> {hits} hits, {wins} wins</gray>'
+snowball-top-empty: '<gray>Nobody has hit anyone with a snowball this winter yet.</gray>'
+snowball-duel-world: '<yellow>Snowball duels only work while you and {player} are in a winter world.</yellow>'
+snowball-duel-self: '<yellow>You cannot duel yourself.</yellow>'
+snowball-duel-busy: '<yellow>One of you is already in a snowball duel.</yellow>'
+snowball-duel-pending: '<yellow>You already challenged {player}. Wait for an answer.</yellow>'
+snowball-duel-sent: '<aqua>Snowball duel challenge sent to {player}. It expires in {seconds} seconds.</aqua>'
+snowball-duel-invite: '<aqua>{player} challenges you to a snowball duel (first to {hits} hits)!</aqua>'
+snowball-accept-button: '<green>[Accept]</green>'
+snowball-accept-hover: 'Start the snowball duel'
+snowball-accept-command: '<gray>/winter duel {player}</gray>'
+snowball-duel-start: '<gold>Snowball duel against {player}! First to {hits} hits wins, {seconds} seconds.</gold>'
+snowball-duel-score: '<aqua>You {you} : {them} {player}</aqua>'
+snowball-duel-running: '<gray>Running duel against {player}: {you}:{them}, {seconds} seconds left.</gray>'
+snowball-duel-won: '<green>You won the snowball duel against {player} ({score})!</green>'
+snowball-duel-lost: '<yellow>{player} won the snowball duel ({score}). Rematch?</yellow>'
+snowball-duel-draw: '<yellow>Snowball duel against {player} ended in a draw ({score}).</yellow>'
+snowball-duel-forfeit: '<yellow>The snowball duel against {player} ended because a player left.</yellow>'
+snowball-menu: '<aqua>Snowball duel with {player}</aqua>'
+snowball-menu-accept: '<green>Accept snowball duel from {player}</green>'
+snowball-menu-lore: "<gray>{player}: {hits} hits, {wins} duel wins this winter</gray>\n<gray>First to {goal} hits wins</gray>"
+
+# /winter through Vystorm Core: description, help and tab completion per player. "aliases" under commands.winter are
+# extra root commands (server-wide, the admin chooses the languages: Core config commands.localized-aliases); "name" and
+# "aliases" of a subcommand are accepted in every language, English always works.
+snowball-surrender-won: '<green>{player} gave up the snowball duel. You win!</green>'
+snowball-surrender-lost: '<yellow>You gave up the snowball duel. {player} wins.</yellow>'
+snowball-no-duel: '<yellow>You are not in a snowball duel.</yellow>'
+commands:
+  winter:
+    description: "Winter season: status, gifts, advent calendar, snowball fights and season administration"
+    aliases: []
+    sub:
+      missions:
+        name: "missions"
+        aliases: []
+        description: "Shared winter goals and rewards"
+      status:
+        name: status
+        aliases: []
+        description: "Date, season phase, snow strength, holiday and your cold"
+      warmth:
+        name: warmth
+        aliases: []
+        description: "Your cold, stored warmth and equipment protection"
+      preview:
+        name: preview
+        aliases: []
+        description: "Show the season phase of a date without changing anything"
+        args:
+          date: YYYY-MM-DD
+      setdate:
+        name: setdate
+        aliases: []
+        description: "Run the winter as if it were this date"
+        args:
+          date: YYYY-MM-DD
+      resume:
+        name: resume
+        aliases: []
+        description: "Follow the real calendar again"
+      thaw:
+        name: thaw
+        aliases: []
+        description: "Thaw all winter snow and ice now"
+      admin:
+        name: admin
+        aliases: []
+        description: "Open the winter admin menu"
+      lamp:
+        name: lamp
+        aliases: []
+        description: "Turn the glass block you look at into a Christmas light"
+      reload:
+        name: reload
+        aliases: []
+        description: "Reload the configuration"
+      claim:
+        name: claim
+        aliases: []
+        description: "Claim today's holiday gift and pending gifts"
+      claims:
+        name: claims
+        aliases: []
+        description: "How many gifts are waiting for you"
+      calendar:
+        name: calendar
+        aliases: []
+        description: "Open the advent calendar"
+      snowball:
+        name: snowball
+        aliases: []
+        description: "Your snowball hits, duel wins, rank and the top 5"
+      storm:
+        name: storm
+        aliases: []
+        description: "The next snowstorm or blizzard in your world"
+        sub:
+          snowstorm:
+            name: snowstorm
+            aliases: []
+            description: "Admin: start a snowstorm now"
+          blizzard:
+            name: blizzard
+            aliases: []
+            description: "Admin: start a blizzard now"
+          stop:
+            name: stop
+            aliases: []
+            description: "Admin: end the storm"
+      build:
+        name: build
+        aliases: []
+        description: 'Build without the plugin''s snow around you'
+      snowfall:
+        name: snowfall
+        aliases: []
+        description: 'Turn the falling snow around you on or off'
+      spot:
+        name: spot
+        aliases: []
+        description: 'Season spots: areas where snow falls'
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: 'All season spots'
+          add:
+            name: add
+            aliases: []
+            description: 'Add a season spot here'
+            args:
+              spot: 'SPOT'
+              radius: 'RADIUS'
+          remove:
+            name: remove
+            aliases: []
+            description: 'Remove a season spot'
+            args:
+              spot: 'SPOT'
+      sled:
+        name: sled
+        aliases: []
+        description: "Sled runs and best times"
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: "All sled runs"
+          top:
+            name: top
+            aliases: []
+            description: "Best times of a run"
+            args:
+              run: "RUN"
+          create:
+            name: create
+            aliases: []
+            description: "Set the start of a run here"
+            args:
+              run: "RUN"
+          finish:
+            name: finish
+            aliases: []
+            description: "Set the finish of a run here"
+            args:
+              run: "RUN"
+          delete:
+            name: delete
+            aliases: []
+            description: "Delete a run"
+            args:
+              run: "RUN"
+      surrender:
+        name: surrender
+        aliases: []
+        description: "Give up your snowball duel; your opponent wins"
+      duel:
+        name: duel
+        aliases: []
+        description: "Challenge a player to a snowball duel"
+        args:
+          player: PLAYER
+warmth-ready: '<gold>Warmth stored! You have {seconds} seconds of protection from winter cold.</gold>'
+warmth-empty: '<gray>Your stored warmth has run out.</gray>'
+warmth-status: '<gold>Stored warmth: {seconds} seconds</gold>'
+
+warmth-overview: "Cold: {cold}% · Stored warmth: {seconds}s · Equipment protection: {protection}%"
+warmth-tip: "Warm up near a lit heat source or under shelter. Leather and hand warmers reduce ambient cold; this does not protect against vanilla powder snow."
+warmth-disabled: "Winter cold is disabled."
+
+# Free feature release: missions
+missions-title: "Community winter missions — season {season}"
+missions-row: "{mission}: {objective} — {progress}/{goal}"
+missions-complete: "Community goal completed: {mission}! Collect your reward with /winter claim."
+missions-denied: "You cannot join winter missions."
+missions-disabled: "Community missions are disabled."
+missions-paused: "Progress counts only during a real active winter in an enabled world."
+missions-claim: "Completed goals reward every eligible player once per season. Use /winter claim."
+missions-objective-snowball_hit: "Snowball hits"
+missions-objective-hot_meal: "Hot meals eaten"
+missions-objective-advent_door: "Advent doors opened"
+storm:
+  warning: "<aqua>❄ A {kind} is coming in {minutes} min – get under a roof or near a fire!"
+  started: "<white>❄ The {kind} has begun ({minutes} min). Stay sheltered or warm."
+  ended: "<gray>❄ The {kind} is over."
+  shelter: "<white>❄ {kind}! Find shelter: a roof or a fire."
+  status-active: "<white>❄ {kind} right now, ends in {minutes} min."
+  status-next: "<aqua>❄ The next storm comes in about {minutes} min."
+  status-none: "<gray>❄ No storm is planned here."
+  not-here: "<red>Storms only happen in winter worlds while storms are enabled."
+  admin-started: "<green>{kind} started."
+  admin-stopped: "<green>Storm ended."
+  none-active: "<gray>No storm is running here."
+  kind:
+    snowstorm: "Snowstorm"
+    blizzard: "Blizzard"
+sled:
+  started: "<aqua>🛷 Run {run} – go!"
+  finished: "<aqua>🛷 {run}: {time} (rank {rank})."
+  finished-best: "<gold>🛷 {run}: {time} – personal best! Rank {rank}."
+  cancelled: "<gray>🛷 Run cancelled – you left the sled."
+  timeout: "<gray>🛷 Run {run} took too long and was cancelled."
+  none: "<gray>There are no sled runs yet. Admins: /winter sled create NAME"
+  list: "<aqua>Sled runs: <white>{runs}</white> <gray>– /winter sled top RUN"
+  unknown: "<red>There is no sled run {run}."
+  top-empty: "<gray>No times on {run} yet – be the first!"
+  top-header: "<aqua>🛷 Best times on {run}:"
+  top-line: "<gray>{rank}. <white>{player}</white> – {time}"
+  start-set: "<green>Start of {run} set here. Now go to the finish and use /winter sled finish {run}."
+  finish-set: "<green>Finish of {run} set here. The run is ready."
+  finish-first: "<red>Create {run} in this world first: /winter sled create {run}"
+  limit: "<red>There are already 64 sled runs."
+  deleted: "<green>Sled run {run} deleted."
+  bad-name: "<red>Use 1-24 letters, digits, - or _."
+  no-permission: "<red>Only admins can change sled runs."
+  players-only: "<red>Stand where the point should be – players only."
+  unavailable: "<red>Sled runs are not available right now."
+  usage: "<gray>/winter sled [list|top RUN|create RUN|finish RUN|delete RUN]"
+panel-unavailable: 'This action is no longer available. Reopen the menu.'
+panel-days: 'Doors {first}–{last}'
+panel-door-locked: 'Locked'
+panel-door-ready: 'Ready to open'
+panel-door-opened: 'Opened'
+panel-door-missed: 'Missed'
+panel-season: 'Season'
+panel-phase: 'Winter phase'
+panel-mode: 'Date mode'
+panel-strength: 'Snow strength: {value}%'
+panel-phase-off: 'Outside winter'
+panel-phase-frost: 'First frost'
+panel-phase-winter: 'Winter'
+panel-phase-thaw: 'Thaw'
+panel-mode-faulted: 'Storage error'
+panel-mode-thaw: 'Forced thaw'
+panel-mode-calendar: 'Real calendar'
+panel-mode-manual: 'Manual date'
+build-on: '<aqua>🧱 Build mode on: no plugin snow within {radius} blocks of you. /winter build turns it off.'
+build-off: '<gray>Build mode off: snow returns around you.'
+build-active: '<dark_aqua>🧱 Build mode is on (/winter build)'
+build-disabled: '<yellow>Build mode is switched off in config.yml.'
+spot-added: '<green>Season spot {name} added: snow falls within {radius} blocks of here.'
+spot-removed: '<gray>Season spot {name} removed.'
+spot-missing: '<red>No season spot called {name}.'
+spot-none: '<gray>No season spots: snow falls everywhere in the winter worlds. /winter spot add NAME RADIUS'
+spot-list: '<aqua>Season spots: <white>{spots}'
+status-spots: '<gray>Season spots: snow only falls inside {count} spot(s). /winter spot list shows them.'
+snowfall-on: '<aqua>❄ Falling snow is on around you. /winter snowfall turns it off.'
+snowfall-off: '<gray>Falling snow is off for you. /winter snowfall brings it back.'
+snowfall-disabled: '<yellow>Falling snow is switched off on this server (snowfall.enabled in config.yml).'
+status-snowfall-on: '<gray>Snowfall: on ({amount} flakes per second, radius {radius})'
+status-snowfall-off: '<gray>Snowfall: off'
+admin-snowfall: '<yellow>Snowfall</yellow>'
+admin-snowfall-label: 'Snowfall amount (0 = off)'
+admin-snowfall-text: 'Flakes per second that fall around every player, whatever the weather. 0 switches the effect off. This is separate from the snow speed, which only changes how fast snow grows on the ground.'
+admin-snowfall-set: '<green>Snowfall set to {value} flakes per second.</green>'
+admin-snowfall-unset: '<green>Snowfall switched off.</green>'
+spot-invalid: '<red>Use 1–32 lowercase letters, digits, underscores or hyphens for the name.'

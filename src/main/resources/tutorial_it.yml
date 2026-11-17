@@ -1,0 +1,11 @@
+title: 'Winter Is Coming'
+pages:
+  - title: 'L’inverno sul server'
+    text: |
+      L’inverno segue il calendario: la neve cresce, l’acqua gela e fa freddo. /winter status mostra data e freddo.
+  - title: 'Restare al caldo'
+    text: |
+      Fuoco, lava e falò ti scaldano; i tetti ti riparano. Ogni pezzo di cuoio blocca un quarto del freddo.
+  - title: 'Regali e battaglie di palle di neve'
+    text: |
+      /winter calendar apre il calendario dell’Avvento a dicembre. Colpisci con palle di neve o sfida con /winter duel PLAYER.

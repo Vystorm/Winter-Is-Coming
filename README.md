@@ -1,0 +1,211 @@
+# Winter Is Coming
+
+
+## Visible snowfall (1.22.0)
+
+White dust particles fall around every player, independent of the real weather and the biome, and only that player sees them. Off by default:
+
+```yaml
+snowfall:
+  enabled: true
+  amount: 200         # flakes per player per second (1..400)
+  radius: 10          # half width of the snow box in blocks (4..24)
+  height: 8           # height above the player (3..16)
+  flake-size: 1.5     # 0.5..2.0
+  only-under-sky: true   # no flakes under a roof
+  only-in-winter: true   # only while the plugin's winter is active in that world
+```
+
+`/winter reload` applies changes. Players switch it for themselves with `/winter snowfall` (permission `winter.snowfall`, default true; stored through Core's player preferences). With season spots, flakes fall only inside the spots. `/winter status` shows the state and the winter admin panel has a "Snowfall amount" slider (0 = off). The "snow speed" slider is about snow on the ground, not about falling snow.
+
+## Sledding (1.18.0)
+
+Boats glide faster on snow and downhill. Admins set up timed sled runs (`/winter sled create` / `finish`); players race for the ten best times (`/winter sled top <run>`).
+
+## Community winter missions (1.14.0)
+
+`/winter missions` shows the whole server's progress toward seasonal snowball, hot-meal and Advent-calendar goals. Real accepted snowball hits, consumed stews and newly opened Advent doors contribute in enabled winter worlds. Cancelled events, Creative/Spectator play and administrator date overrides do not contribute.
+
+Configure up to 16 goals under `community-missions.goals`, each with `objective` (`SNOWBALL_HIT`, `HOT_MEAL` or `ADVENT_DOOR`), `goal`, reward `Material` and `amount`. Defaults are 100 snowball hits, 50 hot meals and 24 Advent doors. The first contribution freezes that season's objective, target and reward, so editing a live goal cannot change its earned reward. Give a new goal a different ID when you intentionally want another mission.
+
+Progress is saved atomically in `community-missions.json` before completion is announced. Every player with `winter.missions` (default true) receives each completed goal once per season through the existing Core RewardPouch; eligible players who join later can collect it too. `/winter claim` retrieves pending rewards, one entry per use. The permanent season/goal receipt prevents duplicate rewards after reloads, reconnects and restarts. Disabling missions pauses progress and new credits; existing pouch entries remain claimable. All new text is included in English, German, Simplified Chinese, French, Brazilian Portuguese, Italian and Russian.
+
+[Download on Spigot](https://www.spigotmc.org/resources/140367/)
+
+Free seasonal winter Java plugin for Paper/Purpur and Spigot/CraftBukkit, powered by **Vystorm Core 0.64.0+**. Plugin bytecode requires Java 21 or newer; use the Java version required by your server (Java 25 for current 26.x servers). Real-server acceptance results and tested versions are recorded separately in `release/VALIDATION.md`.
+
+Snow gradually accumulates between configurable calendar dates, including tree canopies. Owned snow can stack beyond one block (eight layers per block); the default maximum total depth is 12 layers and the configurable range is 1–64. Surface water freezes outward from natural-looking shores, within a configurable ocean/inland distance budget. February thaw gradually restores plugin-owned snow/ice. Only loaded chunks are processed, with bounded column, mutation and shoreline-search budgets. A durable write-ahead journal records original block data before edits. Periodic writes run on one background worker; at most one intent is in flight. The main thread applies it only after durable completion and rechecks the block, chunk, protection and reload generation.
+
+## Install
+
+Install Vystorm Core and this JAR in `plugins/`. Start once, set the explicit `worlds` allowlist and dates in `plugins/WinterIsComing/config.yml`, then `/winter reload`. Defaults: November 15 start, December 24 peak, February 1 thaw, March 1 end, Europe/Vienna timezone. Nether and End are excluded. Core regions are protected by default; a region's `winter: true` flag opts it in. Other protection plugins may cancel proposed `BlockFormEvent`s; explicit Core regions are recommended.
+
+`/winter status`, `/winter preview YYYY-MM-DD` (read only), `/winter setdate YYYY-MM-DD`, `/winter resume`, `/winter thaw`, `/winter reload`, `/winter claim`, `/winter claims`, `/winter calendar`, `/winter snowball`, `/winter duel <player>`. Administrative actions require `winter.admin`; gifts require `winter.claim` (default true), which also lets players list their pending gifts with `/winter claims`. `setdate` changes the world gradually and persists until `resume`; it cannot mint gifts. `thaw` continues across restarts until `resume`. Date arguments tab-complete today and the current or upcoming season boundaries; outside the season, `/winter status` also shows when the next winter starts. New messages (`invalid-date`, `next-season`) fall back to the bundled texts, so existing language files need no changes.
+
+## Snow depth and upgrading
+
+`/winter warmth` (German: `/winter wärme`) shows your current cold percentage, remaining stored warmth in seconds and equipment protection against ambient cold. It also explains how to warm up. Available to all players; reads existing cold state and equipment without scanning blocks or changing gameplay. The displayed equipment protection does not cover vanilla powder-snow damage.
+
+```yaml
+snow:
+  max-layers: 12
+  cover-leaves: true
+```
+
+`max-layers` is total column depth, not a per-block limit: 8 is one block,
+12 is one and a half, and 64 is eight blocks. Actual depth varies with the
+season and local variation. Stacks grow from the bottom and melt from the top;
+clearing a lower owned snow block also clears its owned upper stack. Leaf
+cover can be disabled independently. Flowers, crops and tall plants are not replaced; optional small-plant coverage is described below.
+
+Existing configs retain their previous depth (often 3). Set `max-layers: 12`
+and run `/winter reload` for the thicker default; a missing `cover-leaves`
+setting defaults to true. Keep the existing world and plugin journals when
+updating from 1.0.x. No journal schema migration is needed.
+
+## Integration and holidays
+
+Core owns scheduling, localization, regions, versioned settings state and a dedicated world-event domain. Optional SpawnDirector consumes Core skeleton/spider/creeper weight multipliers while retaining spawn caps, protection and anti-farm rules. WorldDirector can observe the shared winter/holiday event catalog. Neither director is required. No separate spawning engine or replacement of the global Core event provider is installed.
+
+Advent gifts are available once per Advent week, Christmas gifts once per calendar year and New Year gifts once per New Year. Christmas dates are configurable. A real-time New Year countdown and harmless particle fireworks run at loaded world spawn locations. Missed midnight celebrations are not replayed. The release does not include custom bosses, structures or a quest engine.
+
+## Operational limits
+
+- With `weather.packet-snow: true`, Core sends a client-only snowy-biome view to players in controlled worlds. This uses vanilla snowy-plains visuals, leaves stored/server biome data unchanged, and observes `snow.excluded-biomes`. Players on unsupported runtimes use snow particles when `weather.warm-biome-particles` is enabled; set `weather.packet-snow: false` to use particles everywhere. The packet view is restored on thaw, reload, world changes and plugin disable.
+- Frost searches stop at unloaded chunks or their search budget. At most one shoreline search runs per terrain cycle. A deep natural-material shoreline is required; artificial islands made from those same materials cannot be reliably distinguished from generated land.
+- Original natural snow/ice is never adopted. Artificial ice/snow cannot be harvested for drops. Clearing it relinquishes that position permanently. Player block placements also relinquish tracked positions. Restore compares block data and leaves mismatches alone. External editors that silently replace a block with identical data cannot be distinguished; exclude their regions first.
+- Keep `blocks.jsonl` and `state.json` with world backups. Journal corruption fails closed. Storage failure stops winter work. Do not delete the journal to reset a season: this loses restoration information. Journal positions are capped; reaching the cap stops expansion, while existing restoration continues. Removing the JAR does not remove existing snow/ice: run `/winter thaw` and load affected chunks first.
+- Gifts use Core 0.33.0 RewardPouch with stable seasonal credit IDs, inventory receipts and recovery. Full inventories retain gifts in the pouch; `/winter claim` can collect pending gifts after the holiday. Temporary managed visits block delivery. Conflicting interrupted deliveries require administrator review; never delete the reward ledger or player receipts. Keep player data, `rewards/winter/`, journal and state in consistent backups.
+- No automatic live-server deployment or external command rewards.
+
+## Build
+
+`JAVA_HOME=/path/to/jdk-25 ./gradlew build --offline --max-workers=2 --no-daemon --project-cache-dir build/gradle-cache -PvystormCoreJar=/path/to/Vystorm_Core.jar` (without `-PvystormCoreJar`, the build uses `libs/Vystorm_Core.jar`)
+
+`check` includes `compat1206` (all main sources compiled with release 21 against Paper 1.20.6) and `compat1206Test` (compatibility tests using the release classes with the old API). The offline libraries default to `<home>/source/tools/smoke-1206/libraries`; override with `-Ppaper1206Libraries=/path/to/1.20.6/libraries`. Build with JDK 25; every source set emits Java 21 bytecode. All current features use APIs available on 1.20.6, so no separate modern adapter module is necessary.
+
+On 1.20.6, Core does not support client biome packet snow: `weather.warm-biome-particles: true` provides the existing cosmetic particle fallback, with one console notice per plugin instance. Terrain snow/ice, cold, warmth reserves, the chest calendar, gifts and snowball duels remain available. Custom material settings must name materials present on that server; invalid settings retain their existing validation errors. Winter 1.13 uses Core's shared compatibility package and requires Core 0.64.0 or newer on every supported server.
+
+`./gradlew integrationJar` builds the test-only acceptance plugin. Never install the acceptance plugin on a live server: it constructs an isolated fixture, changes dates and stops its test server.
+
+No license activation or paid feature gate.
+
+### Winter landscape details (1.1.0)
+
+`snow.drift-strength: 0.45` creates smooth patches of different snow depths.
+The range is 0–1; 0 gives uniform depth. `snow.max-layers` remains the total
+ceiling (12 layers by default). This is a deterministic terrain pattern,
+not a wind or physical snow transport simulation.
+
+`snow.transition-blocks: 4` tapers snow on the permitted side of Core protection
+and excluded-biome boundaries. Set 0 to disable (maximum 12). No protected
+blocks are touched and no neighboring chunk is force-loaded. Newly loaded
+chunks catch up gradually through the normal budgeted terrain queue.
+
+`snow.cover-small-plants: true` temporarily covers SHORT_GRASS and FERN once
+at least four layers are intended. The durable journal keeps their exact
+original block data, including across restarts; thaw or disabling coverage
+restores them. Player replacements take precedence. Flowers, tall plants,
+crops and containers are not replaced. Clearing artificial snow creates no
+free snow drops. The feature uses the existing block-form protection events.
+
+### Native snowfall through Core (1.2.0)
+
+`weather.packet-snow: true` (also the default for existing configs) uses Core 0.33.0 to send snowy biome data to each player. Precipitation is vanilla client-rendered snow; no resource pack, ProtocolLib or client mod is required. Snow/ice placement remains a separate seasonal feature. The packet view changes client biome colours and potentially biome sounds, but never the saved biome or server spawning rules.
+
+The view is per player across the controlled world, with the existing biome exclusions. Core regions still protect terrain edits; they do not mask this cosmetic weather view. Newly delivered chunks receive the overlay through a bounded queue, so a brief original-biome appearance is possible. Changes from other biome-packet plugins are repaired every ten seconds. Set `weather.packet-snow: false` and reload to disable it.
+
+### Cold and warmth (1.3.0)
+
+While a world is in winter (not during thaw), survival and adventure players standing outside slowly get cold: the vanilla frost overlay creeps in, they walk a little slower and their breath becomes visible. At full winter during the day it takes about three minutes to get fully cold; nights (x1.5), snowfall (x1.3) and swimming (x2) are colder, and the season strength scales it.
+
+- **Warm up**: fire, soul fire, lava, magma blocks and lit campfires, furnaces, smokers and blast furnaces within `warm-radius` (4 blocks) warm players quickly.
+- **Shelter**: with a roof overhead or underground (sky light at head height below 12) players recover slowly.
+- **Hot meals** (1.4.0): eating mushroom stew, rabbit stew, beetroot soup or suspicious stew removes `warm-food` (0.5 = half of full cold) at once; 0 disables it.
+- **Clothing**: each leather armour piece blocks 25% of the cold; full leather makes players immune, just like vanilla powder snow.
+- **Hand warmers**: a lantern or soul lantern in the main or off hand blocks as much cold as one leather piece (`cold.hand-warmers`, `[]` turns it off).
+- **No damage by default**: `max-frost: 0.4` caps the effect at a light overlay (about 20% slower walking) and players are never fully frozen. `damage: true` lets the cold reach vanilla freeze damage.
+- Action bar hints appear once when getting cold and while warming up at a fire. `/winter status` shows your current cold level. Excluded biomes, creative/spectator mode and dead players are never affected; inside powder snow vanilla takes over.
+
+```yaml
+cold:
+  enabled: true
+  max-frost: 0.4
+  damage: false
+  warm-radius: 4
+  minutes-to-freeze: 3
+  breath: true
+  warnings: true
+  warm-food: 0.5
+```
+
+Tested with unit tests (rates, leather, heat sources, freeze cap) and a server start on Purpur 26.2 with Core 0.39.1. Not yet tested in-game with a real client.
+
+### Advent calendar (1.5.0)
+
+A daily Advent calendar in a chest menu: 24 doors, scattered like on a real calendar, one small gift behind each from December 1 to 24. Players open it with `/winter calendar`, from the Core main menu (`/menu`, category World, shown in November and December) or with the clickable **[Open]** hint they get on join while a door is waiting.
+
+- Today's door glows; click it to get the gift. Future doors show their date, opened doors show what was inside.
+- Missed a day? With `catch-up: true` (default) missed doors can still be opened until December 31; with `false` each door only opens on its own day.
+- Gifts go through the Core reward pouch with a stable ID per door and year, so a door can never pay out twice, not even after a crash. With a full inventory the gift waits in the pouch: the menu's gift button or `/winter claim` delivers it later.
+- Only the real date counts (`/winter setdate` never opens doors), and doors open only in the configured winter worlds.
+- Rewards are plain vanilla items, one `MATERIAL amount` entry per door (shorter lists repeat). The default list goes from cookies and candles via stews and leather armour to a diamond on December 24.
+
+```yaml
+advent-calendar:
+  enabled: true
+  catch-up: true
+  join-reminder: true
+  rewards: [COOKIE 6, SWEET_BERRIES 12, ..., DIAMOND 1]   # 24 entries in the bundled config
+```
+
+Permission `winter.calendar` (default: everyone). Opened doors are stored in `calendar.json` (current December only); the reward ledger stays in `rewards/winter/`.
+
+### Snowball fights (1.5.0)
+
+In winter worlds while the season runs (not during thaw), every snowball that hits another player counts: the thrower sees **Hit! 12 snowball hits this winter** in the action bar and climbs the seasonal leaderboard. Each hit also chills the target a little (`chill`, reduced by leather armour), so a snowball fight makes you want a campfire.
+
+- `/winter snowball` shows your hits, duel wins and rank, plus the top 5 of the winter. The board starts fresh each season.
+- **Duels**: `/winter duel <player>` or, on Core 0.43.0+, sneak and right-click a player and pick **Snowball duel** in the player menu. The other player gets a clickable **[Accept]** (or picks the same entry). First to `duel-hits` hits wins (default 10); after `duel-seconds` (120) the leader wins, or it is a draw. Both duelists are topped up to `duel-snowballs` snowballs at the start. Leaving the server forfeits.
+- Hits are counted at most once per second per thrower and target. Hits cancelled by PvP or region protection do not count, creative and spectator players are ignored, and nothing is rewarded except glory, so there is nothing to farm.
+
+```yaml
+snowball-fight:
+  enabled: true
+  chill: 0.05
+  duel-hits: 10
+  duel-seconds: 120
+  duel-snowballs: 16
+```
+
+Permission `winter.snowball` (default: everyone). Scores are kept in `snowball.json` and written every 30 seconds and on shutdown.
+
+Both features work with existing configs: missing keys use the defaults above, and new texts fall back to the bundled language files.
+
+### Give up a snowball duel (1.8.0)
+
+`/winter surrender` ends your running snowball duel immediately and awards your opponent one win, even if you were leading. Both players receive the result. German: `/winter aufgeben`; Simplified Chinese: `/winter 认输`. Requires `winter.snowball` (default: everyone), with no new configuration. Pending invitations stay unchanged. If time has already run out, the normal timed result applies. You can also surrender after leaving a winter world or after snowball fights have been disabled.
+
+### Placeholder fix (1.3.0)
+
+Messages up to 1.2.2 showed `<date>`, `<phase>` and similar instead of the values. 1.3.0 fixes the bundled language files and rewrites these placeholders in existing `plugins/WinterIsComing/lang/*.yml` once on start (backups end in `.bak-1.2`). Custom texts and colour tags stay untouched.
+### Stored warmth (1.9.0)
+
+Prepare for a winter journey at an existing heat source: once your cold reaches zero, another 20 seconds nearby fills a 60-second warmth reserve. It blocks additional ambient winter cold while you travel. Partial charges work too. Away from heat the reserve counts down, including under shelter or in leather armour; normal recovery still works. Snowball chill and vanilla powder snow are unaffected.
+
+Action bar hints announce a full or exhausted reserve (controlled by `cold.warnings`). `/winter status` shows the remaining seconds whenever a reserve is present. No new command or permission is needed.
+
+| Configuration key | Default | Meaning |
+| --- | --- | --- |
+| `cold.reserve.enabled` | `true` | Enable stored warmth |
+| `cold.reserve.charge-seconds` | `20` | Time at heat after fully warming up to fill the reserve (1–600) |
+| `cold.reserve.duration-seconds` | `60` | Maximum protection time away from heat (1–600) |
+
+Existing configs use these defaults for missing keys, following the existing config upgrade behaviour; custom values remain unchanged. No new terrain scans or tasks are added. Reserves are temporary: leaving the server, death, becoming ineligible for winter cold (including entering powder snow), reload, administrative date/mode changes and shutdown clear them. Heat sources and eligibility follow the existing cold settings.
+
+## License
+
+Copyright (c) 2026 Esoren
+
+Versions after 1.22.1 are licensed under the GNU General Public License v3.0 (GPL-3.0), see [LICENSE](LICENSE).
+Version 1.22.1 and earlier were released under the MIT License ([LICENSE-MIT-until-1.22.1.txt](LICENSE-MIT-until-1.22.1.txt)) and stay available under those terms.

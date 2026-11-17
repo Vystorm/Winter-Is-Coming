@@ -1,0 +1,374 @@
+status: '<aqua>Winter</aqua> {date} | {phase} {strength}% | {holiday} | {mode} | Erfasste Positionen: {blocks}'
+preview: '<aqua>Vorschau</aqua> {date}: {phase} {strength}% | {holiday}'
+denied: '<red>Du brauchst winter.admin.</red>'
+player-only: '<red>Dieser Befehl benötigt einen Spieler mit winter.claim.</red>'
+faulted: '<red>Winter wurde nach einem Speicherfehler angehalten. Vor dem Neustart das Serverlog prüfen.</red>'
+invalid: '<red>Ungültige Einstellung: {reason}</red>'
+changed: '<green>Wintermodus geändert. Geladene Gebiete passen sich schrittweise an.</green>'
+reloaded: '<green>Winterkonfiguration neu geladen.</green>'
+countdown: '<gold>Neujahr in {seconds} Sekunden!</gold>'
+new-year: '<gold>Frohes neues Jahr! Dein Neujahrsgeschenk gibt es mit /winter claim.</gold>'
+no-gift: '<yellow>Hier ist gerade kein Feiertagsgeschenk verfügbar. Geschenke folgen nur dem echten Kalender.</yellow>'
+full: '<yellow>Mache vor dem Abholen einen Inventarplatz frei.</yellow>'
+claimed: '<yellow>Dieses Geschenk wurde bereits abgeholt oder reserviert. Bei unterbrochener Zustellung einen Admin kontaktieren.</yellow>'
+gift: '<green>Dein Feiertagsgeschenk ist angekommen. Schöne Feiertage!</green>'
+claims: 'Offene Geschenke in deinem Core-Belohnungsbeutel: {pending}.'
+claims-console: 'Belohnungsdaten: plugins/WinterIsComing/rewards/winter/. Unterbrochene Zustellungen über Core prüfen.'
+gift-busy: '<yellow>Hole das Geschenk nach deinem temporären Weltbesuch ab, während du online und am Leben bist.</yellow>'
+gift-recovery: '<red>Core hat eine unterbrochene Zustellung gesichert. Bitte einen Admin um Prüfung; Belohnungsdaten nicht löschen.</red>'
+invalid-date: '<red>{input} ist kein gültiges Datum. Format JJJJ-MM-TT, zum Beispiel 2026-12-24.</red>'
+next-season: '<gray>Der nächste Winter beginnt am {date} (in {days} Tagen).</gray>'
+milestone-peak: '<gray>Höhepunkt des Winters am {date} (in {days} Tagen).</gray>'
+milestone-thaw: '<gray>Tauwetter beginnt am {date} (in {days} Tagen).</gray>'
+milestone-end: '<gray>Der Winter endet am {date} (in {days} Tagen).</gray>'
+cold-warning: '<aqua>Dir wird kalt! Wärm dich an einem Lagerfeuer auf, geh nach drinnen, zieh Leder an oder nimm eine Laterne in die Hand.</aqua>'
+cold-warming: '<gold>Das Feuer wärmt dich auf.</gold>'
+cold-status: '<aqua>Deine Kälte: {percent}%</aqua>'
+cold-food: '<gold>Die heiße Mahlzeit wärmt dich auf.</gold>'
+calendar-menu: 'Adventskalender'
+calendar-menu-desc: 'Hinter jedem Türchen vom 1. bis 24. Dezember ein kleines Geschenk'
+calendar-title: 'Adventskalender {year}'
+calendar-disabled: '<yellow>Der Adventskalender ist auf diesem Server ausgeschaltet.</yellow>'
+calendar-denied: '<red>Du brauchst winter.calendar.</red>'
+calendar-world: '<yellow>Türchen lassen sich nur in einer Winterwelt öffnen.</yellow>'
+calendar-door-locked: '<gray>Türchen {day}</gray>'
+calendar-door-locked-click: '<yellow>Türchen {day} ist noch verschlossen. Es öffnet am {date}.</yellow>'
+admin-speed: '<yellow>Schnee-Tempo</yellow>'
+admin-speed-lore: '<gray>Änderungen pro Sekunde: {value}. Klicken zum Einstellen</gray>'
+admin-speed-label: 'Änderungen pro Sekunde'
+admin-speed-text: 'Wie viele Schnee- und Eisänderungen pro Sekunde. Höher ist schneller; sehr hohe Werte kosten mehr Serverzeit.'
+admin-speed-apply: 'Übernehmen'
+admin-speed-set: '<green>Schnee-Tempo auf {value} Änderungen pro Sekunde gesetzt.</green>'
+admin-back: 'Zurück'
+admin-next: '<yellow>Nächste Jahreszeit</yellow>'
+admin-next-lore: '<gray>Springt zum ersten Tag der nächsten Jahreszeit</gray>'
+season-now: '<green>Jetzt ist {season}.</green>'
+season-name-spring: 'Frühling'
+season-name-summer: 'Sommer'
+season-name-autumn: 'Herbst'
+season-name-winter: 'Winter'
+admin-title: 'Winter-Verwaltung'
+admin-status: '<aqua>Heute: {date}</aqua>'
+admin-status-lore: '<gray>{phase}, {strength}% Schneestärke, Modus {mode}</gray>'
+admin-auto: '<yellow>Echtem Kalender folgen</yellow>'
+admin-auto-lore: '<gray>Zurück zum echten Datum</gray>'
+admin-winter: '<yellow>Jetzt Winter</yellow>'
+admin-winter-lore: '<gray>Springt zum Höhepunkt; so lässt sich auch der Adventskalender testen</gray>'
+admin-date: '<yellow>Datum wählen</yellow>'
+admin-date-lore: '<gray>Winter läuft, als wäre dieser Tag</gray>'
+admin-thaw: '<yellow>Alles tauen</yellow>'
+admin-thaw-lore: '<gray>Winterschnee und -eis schmelzen</gray>'
+admin-settings: '<yellow>Alle Einstellungen</yellow>'
+admin-settings-lore: '<gray>Schneehöhe, Kälte, Kalender und mehr</gray>'
+admin-lamp: '<yellow>Lampe: Glas anschauen</yellow>'
+admin-lamp-lore: '<gray>Markiert den angeschauten Glasblock oder entfernt ihn</gray>'
+admin-date-question: 'Datum als JJJJ-MM-TT'
+lamp-disabled: '<yellow>Die Weihnachtslichter sind in der config.yml ausgeschaltet.</yellow>'
+lamp-not-glass: '<yellow>Schau zuerst einen Glasblock an.</yellow>'
+lamp-full: '<yellow>Grenze erreicht: höchstens {max} Lampen.</yellow>'
+lamp-added: '<green>Lampe hinzugefügt ({count} insgesamt). Sie wechselt im Winter die Farbe.</green>'
+lamp-removed: '<gray>Lampe entfernt (noch {count}).</gray>'
+calendar-test-note: '<gold>Testmodus: Der Kalender nutzt {date}. Türchen geben nichts und zählen nicht.</gold>'
+calendar-test-opened: '<gold>Test: Türchen {day} gäbe {amount}x {item}.</gold>'
+thaw-hint: '<gray>Der Schnee taut, bis du den Winter mit <white>/winter resume</white> oder <white>/winter setdate JJJJ-MM-TT</white> zurückholst.</gray>'
+resume-off-season: '<yellow>Zurück beim echten Datum, das liegt außerhalb des Winters, also gibt es keinen Schnee. Der Winter beginnt am {date} (in {days} Tagen). Zum Testen: <white>/winter setdate JJJJ-12-24</white>.</yellow>'
+calendar-door-locked-lore: '<dark_gray>Öffnet am {date}</dark_gray>'
+calendar-door-ready: '<gold><bold>Türchen {day}</bold></gold>'
+calendar-door-ready-lore: '<yellow>Klicken zum Öffnen!</yellow>'
+calendar-door-opened: '<green>Türchen {day}</green>'
+calendar-door-opened-lore: '<gray>Geöffnet: {amount}x {item}</gray>'
+calendar-door-missed: '<dark_gray>Türchen {day}</dark_gray>'
+calendar-door-missed-lore: '<dark_gray>Verpasst</dark_gray>'
+calendar-info: '<aqua>Heute: {date}</aqua>'
+calendar-info-lore: '<gray>{opened}/{doors} Türchen geöffnet, {waiting} warten</gray>'
+calendar-gifts: '<gold>Offene Geschenke: {pending}</gold>'
+calendar-gifts-lore: '<gray>Klicken, um Geschenke aus deinem Belohnungsbeutel abzuholen</gray>'
+calendar-opened: '<green>Türchen {day} geöffnet. Ein wartendes Geschenk aus deinem Belohnungsbeutel wurde zugestellt.</green>'
+calendar-kept: '<yellow>Türchen {day} geöffnet. Dein Geschenk wartet im Belohnungsbeutel: Platz freimachen und /winter claim nutzen.</yellow>'
+calendar-reminder: '<gold>Adventskalender: {count} Türchen warten auf dich.</gold>'
+calendar-open-button: '<green>[Öffnen]</green>'
+calendar-open-hover: 'Adventskalender öffnen'
+snowball-disabled: '<yellow>Schneeballschlachten sind auf diesem Server ausgeschaltet.</yellow>'
+snowball-denied: '<red>Du brauchst winter.snowball.</red>'
+snowball-offline: '<yellow>Dieser Spieler ist nicht online.</yellow>'
+snowball-hit: '<aqua>Treffer! {hits} Schneeballtreffer in diesem Winter</aqua>'
+snowball-stats: '<aqua>Deine Schneeballschlacht in diesem Winter: {hits} Treffer, {wins} Duellsiege, Platz {rank}</aqua>'
+snowball-top-header: '<gold>Beste Schneeballwerfer im Winter {season}:</gold>'
+snowball-top-line: '<gray>{rank}. <white>{name}</white> {hits} Treffer, {wins} Siege</gray>'
+snowball-top-empty: '<gray>In diesem Winter hat noch niemand jemanden mit einem Schneeball getroffen.</gray>'
+snowball-duel-world: '<yellow>Schneeballduelle gehen nur, solange du und {player} in einer Winterwelt seid.</yellow>'
+snowball-duel-self: '<yellow>Du kannst dich nicht selbst herausfordern.</yellow>'
+snowball-duel-busy: '<yellow>Einer von euch steckt schon in einem Schneeballduell.</yellow>'
+snowball-duel-pending: '<yellow>Du hast {player} schon herausgefordert. Warte auf eine Antwort.</yellow>'
+snowball-duel-sent: '<aqua>Herausforderung zum Schneeballduell an {player} gesendet. Sie verfällt in {seconds} Sekunden.</aqua>'
+snowball-duel-invite: '<aqua>{player} fordert dich zu einem Schneeballduell heraus (wer zuerst {hits} Treffer hat, gewinnt)!</aqua>'
+snowball-accept-button: '<green>[Annehmen]</green>'
+snowball-accept-hover: 'Schneeballduell starten'
+snowball-accept-command: '<gray>/winter duel {player}</gray>'
+snowball-duel-start: '<gold>Schneeballduell gegen {player}! Wer zuerst {hits} Treffer hat, gewinnt. {seconds} Sekunden.</gold>'
+snowball-duel-score: '<aqua>Du {you} : {them} {player}</aqua>'
+snowball-duel-running: '<gray>Laufendes Duell gegen {player}: {you}:{them}, noch {seconds} Sekunden.</gray>'
+snowball-duel-won: '<green>Du hast das Schneeballduell gegen {player} gewonnen ({score})!</green>'
+snowball-duel-lost: '<yellow>{player} hat das Schneeballduell gewonnen ({score}). Revanche?</yellow>'
+snowball-duel-draw: '<yellow>Das Schneeballduell gegen {player} endet unentschieden ({score}).</yellow>'
+snowball-duel-forfeit: '<yellow>Das Schneeballduell gegen {player} ist beendet, weil ein Spieler gegangen ist.</yellow>'
+snowball-menu: '<aqua>Schneeballduell mit {player}</aqua>'
+snowball-menu-accept: '<green>Schneeballduell von {player} annehmen</green>'
+snowball-menu-lore: "<gray>{player}: {hits} Treffer, {wins} Duellsiege in diesem Winter</gray>\n<gray>Wer zuerst {goal} Treffer hat, gewinnt</gray>"
+
+# /winter über Vystorm Core: Beschreibung, Hilfe und Tab-Vervollständigung je Spieler. "aliases" unter commands.winter
+# sind zusätzliche Hauptbefehle (serverweit, der Admin wählt die Sprachen: Core-Konfig commands.localized-aliases);
+# "name" und "aliases" eines Unterbefehls werden in jeder Sprache verstanden, Englisch geht immer.
+snowball-surrender-won: '<green>{player} hat das Schneeballduell aufgegeben. Du gewinnst!</green>'
+snowball-surrender-lost: '<yellow>Du hast das Schneeballduell aufgegeben. {player} gewinnt.</yellow>'
+snowball-no-duel: '<yellow>Du bist in keinem Schneeballduell.</yellow>'
+commands:
+  winter:
+    description: "Wintersaison: Status, Geschenke, Adventskalender, Schneeballschlachten und Saisonverwaltung"
+    aliases: [winterzeit]
+    sub:
+      missions:
+        name: "missionen"
+        aliases: []
+        description: "Gemeinsame Winterziele und Belohnungen"
+      status:
+        name: status
+        aliases: []
+        description: "Datum, Saisonphase, Schneestärke, Feiertag und deine Kälte"
+      warmth:
+        name: wärme
+        aliases: []
+        description: "Deine Kälte, Wärmereserve und dein Ausrüstungsschutz"
+      preview:
+        name: vorschau
+        aliases: []
+        description: "Saisonphase eines Datums zeigen, ohne etwas zu ändern"
+        args:
+          date: JJJJ-MM-TT
+      setdate:
+        name: datum
+        aliases: [datumsetzen]
+        description: "Den Winter so laufen lassen, als wäre dieses Datum"
+        args:
+          date: JJJJ-MM-TT
+      resume:
+        name: fortsetzen
+        aliases: []
+        description: "Wieder dem echten Kalender folgen"
+      thaw:
+        name: tauwetter
+        aliases: [tauen]
+        description: "Allen Winterschnee und alles Eis jetzt tauen lassen"
+      admin:
+        name: verwaltung
+        aliases: []
+        description: "Winter-Verwaltung öffnen"
+      lamp:
+        name: lampe
+        aliases: []
+        description: "Angeschauten Glasblock zur Weihnachtslampe machen"
+      reload:
+        name: neuladen
+        aliases: []
+        description: "Konfiguration neu laden"
+      claim:
+        name: abholen
+        aliases: []
+        description: "Das heutige Feiertagsgeschenk und offene Geschenke abholen"
+      claims:
+        name: geschenke
+        aliases: []
+        description: "Wie viele Geschenke auf dich warten"
+      calendar:
+        name: kalender
+        aliases: [adventskalender]
+        description: "Den Adventskalender öffnen"
+      snowball:
+        name: schneeball
+        aliases: [schneeballschlacht]
+        description: "Deine Schneeballtreffer, Duellsiege, dein Rang und die Top 5"
+      storm:
+        name: sturm
+        aliases: []
+        description: "Der nächste Schneesturm oder Blizzard in deiner Welt"
+        sub:
+          snowstorm:
+            name: schneesturm
+            aliases: []
+            description: "Admin: jetzt einen Schneesturm starten"
+          blizzard:
+            name: blizzard
+            aliases: []
+            description: "Admin: jetzt einen Blizzard starten"
+          stop:
+            name: stopp
+            aliases: []
+            description: "Admin: den Sturm beenden"
+      build:
+        name: build
+        aliases: []
+        description: 'Ohne Plugin-Schnee um dich herum bauen'
+      snowfall:
+        name: snowfall
+        aliases: []
+        description: 'Fallenden Schnee um dich herum ein- oder ausschalten'
+      spot:
+        name: spot
+        aliases: []
+        description: 'Season-Spots: Bereiche, in denen es schneit'
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: 'Alle Season-Spots'
+          add:
+            name: add
+            aliases: []
+            description: 'Season-Spot hier setzen'
+            args:
+              spot: 'SPOT'
+              radius: 'RADIUS'
+          remove:
+            name: remove
+            aliases: []
+            description: 'Season-Spot entfernen'
+            args:
+              spot: 'SPOT'
+      sled:
+        name: sled
+        aliases: []
+        description: "Rodelbahnen und Bestzeiten"
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: "Alle Rodelbahnen"
+          top:
+            name: top
+            aliases: []
+            description: "Bestzeiten einer Bahn"
+            args:
+              run: "RUN"
+          create:
+            name: create
+            aliases: []
+            description: "Start einer Bahn hier setzen"
+            args:
+              run: "RUN"
+          finish:
+            name: finish
+            aliases: []
+            description: "Ziel einer Bahn hier setzen"
+            args:
+              run: "RUN"
+          delete:
+            name: delete
+            aliases: []
+            description: "Bahn löschen"
+            args:
+              run: "RUN"
+      surrender:
+        name: aufgeben
+        aliases: []
+        description: "Dein Schneeballduell aufgeben; dein Gegner gewinnt"
+      duel:
+        name: duell
+        aliases: []
+        description: "Einen Spieler zum Schneeballduell herausfordern"
+        args:
+          player: SPIELER
+warmth-ready: '<gold>Wärme gespeichert! Du bist {seconds} Sekunden vor Winterkälte geschützt.</gold>'
+warmth-empty: '<gray>Deine gespeicherte Wärme ist aufgebraucht.</gray>'
+warmth-status: '<gold>Wärmereserve: {seconds} Sekunden</gold>'
+
+warmth-overview: "Kälte: {cold}% · Wärmereserve: {seconds}s · Ausrüstungsschutz: {protection}%"
+warmth-tip: "Wärme dich an einer aktiven Wärmequelle oder im Schutz eines Dachs auf. Leder und Handwärmer verringern Umgebungskälte; das schützt nicht vor Vanilla-Pulverschnee."
+warmth-disabled: "Winterkälte ist deaktiviert."
+
+# Free feature release: missions
+missions-title: "Gemeinsame Wintermissionen — Saison {season}"
+missions-row: "{mission}: {objective} — {progress}/{goal}"
+missions-complete: "Gemeinschaftsziel geschafft: {mission}! Belohnung mit /winter claim abholen."
+missions-denied: "Du darfst nicht an Wintermissionen teilnehmen."
+missions-disabled: "Gemeinschaftsmissionen sind deaktiviert."
+missions-paused: "Fortschritt zählt nur im echten aktiven Winter in einer freigegebenen Welt."
+missions-claim: "Abgeschlossene Ziele belohnen jeden berechtigten Spieler einmal pro Saison. /winter claim"
+missions-objective-snowball_hit: "Schneeballtreffer"
+missions-objective-hot_meal: "Warme Mahlzeiten gegessen"
+missions-objective-advent_door: "Adventstüren geöffnet"
+storm:
+  warning: "<aqua>❄ Ein {kind} kommt in {minutes} min – such dir ein Dach oder ein Feuer!"
+  started: "<white>❄ Der {kind} hat begonnen ({minutes} min). Bleib geschützt oder warm."
+  ended: "<gray>❄ Der {kind} ist vorbei."
+  shelter: "<white>❄ {kind}! Such Schutz: ein Dach oder ein Feuer."
+  status-active: "<white>❄ Gerade {kind}, endet in {minutes} min."
+  status-next: "<aqua>❄ Der nächste Sturm kommt in etwa {minutes} min."
+  status-none: "<gray>❄ Hier ist kein Sturm geplant."
+  not-here: "<red>Stürme gibt es nur in Winterwelten, solange Stürme eingeschaltet sind."
+  admin-started: "<green>{kind} gestartet."
+  admin-stopped: "<green>Sturm beendet."
+  none-active: "<gray>Hier läuft kein Sturm."
+  kind:
+    snowstorm: "Schneesturm"
+    blizzard: "Blizzard"
+sled:
+  started: "<aqua>🛷 Bahn {run} – los!"
+  finished: "<aqua>🛷 {run}: {time} (Platz {rank})."
+  finished-best: "<gold>🛷 {run}: {time} – persönliche Bestzeit! Platz {rank}."
+  cancelled: "<gray>🛷 Lauf abgebrochen – du hast den Schlitten verlassen."
+  timeout: "<gray>🛷 Lauf auf {run} hat zu lange gedauert und wurde abgebrochen."
+  none: "<gray>Es gibt noch keine Rodelbahnen. Admins: /winter sled create NAME"
+  list: "<aqua>Rodelbahnen: <white>{runs}</white> <gray>– /winter sled top RUN"
+  unknown: "<red>Es gibt keine Rodelbahn {run}."
+  top-empty: "<gray>Noch keine Zeiten auf {run} – sei der Erste!"
+  top-header: "<aqua>🛷 Bestzeiten auf {run}:"
+  top-line: "<gray>{rank}. <white>{player}</white> – {time}"
+  start-set: "<green>Start von {run} hier gesetzt. Geh jetzt zum Ziel und nutze /winter sled finish {run}."
+  finish-set: "<green>Ziel von {run} hier gesetzt. Die Bahn ist bereit."
+  finish-first: "<red>Lege {run} zuerst in dieser Welt an: /winter sled create {run}"
+  limit: "<red>Es gibt schon 64 Rodelbahnen."
+  deleted: "<green>Rodelbahn {run} gelöscht."
+  bad-name: "<red>Nutze 1–24 Buchstaben, Ziffern, - oder _."
+  no-permission: "<red>Nur Admins können Rodelbahnen ändern."
+  players-only: "<red>Stell dich an die Stelle des Punkts – nur für Spieler."
+  unavailable: "<red>Rodelbahnen sind gerade nicht verfügbar."
+  usage: "<gray>/winter sled [list|top RUN|create RUN|finish RUN|delete RUN]"
+panel-unavailable: 'Diese Aktion ist nicht mehr verfügbar. Öffne das Menü erneut.'
+panel-days: 'Türchen {first}–{last}'
+panel-door-locked: 'Verschlossen'
+panel-door-ready: 'Bereit zum Öffnen'
+panel-door-opened: 'Geöffnet'
+panel-door-missed: 'Verpasst'
+panel-season: 'Jahreszeit'
+panel-phase: 'Winterphase'
+panel-mode: 'Datumsmodus'
+panel-strength: 'Schneestärke: {value}%'
+panel-phase-off: 'Außerhalb des Winters'
+panel-phase-frost: 'Erster Frost'
+panel-phase-winter: 'Winter'
+panel-phase-thaw: 'Tauwetter'
+panel-mode-faulted: 'Speicherfehler'
+panel-mode-thaw: 'Erzwungenes Tauwetter'
+panel-mode-calendar: 'Echter Kalender'
+panel-mode-manual: 'Manuelles Datum'
+build-on: '<aqua>🧱 Baumodus an: kein Plugin-Schnee im Umkreis von {radius} Blöcken. /winter build schaltet ihn aus.'
+build-off: '<gray>Baumodus aus: Der Schnee kommt zurück.'
+build-active: '<dark_aqua>🧱 Baumodus ist an (/winter build)'
+build-disabled: '<yellow>Der Baumodus ist in der config.yml ausgeschaltet.'
+spot-added: '<green>Season-Spot {name} gesetzt: Schnee fällt im Umkreis von {radius} Blöcken.'
+spot-removed: '<gray>Season-Spot {name} entfernt.'
+spot-missing: '<red>Kein Season-Spot namens {name}.'
+spot-none: '<gray>Keine Season-Spots: Es schneit überall in den Winterwelten. /winter spot add NAME RADIUS'
+spot-list: '<aqua>Season-Spots: <white>{spots}'
+status-spots: '<gray>Season-Spots: Schnee fällt nur innerhalb von {count} Spot(s). /winter spot list zeigt sie.'
+snowfall-on: '<aqua>❄ Fallender Schnee ist um dich herum an. /winter snowfall schaltet ihn aus.'
+snowfall-off: '<gray>Fallender Schnee ist für dich aus. /winter snowfall bringt ihn zurück.'
+snowfall-disabled: '<yellow>Fallender Schnee ist auf diesem Server ausgeschaltet (snowfall.enabled in der config.yml).'
+status-snowfall-on: '<gray>Schneefall: an ({amount} Flocken pro Sekunde, Radius {radius})'
+status-snowfall-off: '<gray>Schneefall: aus'
+admin-snowfall: '<yellow>Schneefall</yellow>'
+admin-snowfall-label: 'Schneefall-Menge (0 = aus)'
+admin-snowfall-text: 'Flocken pro Sekunde, die um jeden Spieler fallen, egal bei welchem Wetter. 0 schaltet den Effekt aus. Das ist unabhängig vom Schnee-Tempo, das nur bestimmt, wie schnell Schnee am Boden wächst.'
+admin-snowfall-set: '<green>Schneefall auf {value} Flocken pro Sekunde gesetzt.</green>'
+admin-snowfall-unset: '<green>Schneefall ausgeschaltet.</green>'
+spot-invalid: '<red>Nutze 1–32 Kleinbuchstaben, Ziffern, Unterstriche oder Bindestriche für den Namen.'

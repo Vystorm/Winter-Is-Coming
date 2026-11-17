@@ -1,0 +1,374 @@
+# Русский — UTF-8. Keep keys, placeholders and formatting tokens unchanged.
+status: '<aqua>Зима</aqua> {date} | {phase} {strength}% | {holiday} | {mode} | Отслеженные позиции: {blocks}'
+preview: '<aqua>Предпросмотр</aqua> {date}: {phase} {strength}% | {holiday}'
+denied: <red>Вам нужно winter.admin.</red>
+player-only: <red>Для этой команды требуется игрок с winter.claim.</red>
+faulted: <red>Зима приостанавливается после отказа хранилища. Проверьте журнал сервера перед перезагрузкой.</red>
+invalid: '<red>Недействительная настройка: {reason}</red>'
+changed: <green>Обновлен зимний режим. Загруженные участки адаптируются постепенно.</green>
+reloaded: <green>Зимняя конфигурация перезагружена.</green>
+countdown: <gold>Новый год за {seconds} секунд!</gold>
+new-year: <gold>С Новым годом! Подарок на Новый год доступен с /winter claim.</gold>
+no-gift: <yellow>Никаких праздничных подарков здесь нет. Подарки используют только реальный календарь.</yellow>
+full: '<yellow>Освободите одну ячейку инвентаря перед получением подарка.</yellow>'
+claimed: <yellow>Этот подарок уже был заявлен или зарезервирован. Обратитесь к администратору, если доставка была прервана.</yellow>
+gift: <green>Сезонный подарок прибыл. Наслаждайтесь праздниками!</green>
+claims: 'В ожидании подарков в вашей основной сумке: {pending}.'
+claims-console: 'Журнал наград: plugins/WinterIsComing/rewards/winter/. Проверьте прерванные выдачи с помощью Core.'
+gift-busy: <yellow>Заявите после того, как покинете свой временный мир или инвентарь, будучи живым и онлайн.</yellow>
+gift-recovery: <red>Ядро сохранило прерванную доставку подарка. Попросите администратора просмотреть его; не удаляйте книгу
+  вознаграждений.</red>
+invalid-date: <red>{input} не является датой. Используйте YYYY-MM-DD, например 2026-12-24.</red>
+next-season: <gray>Следующая зима начинается на {date} (в {days} день).</gray>
+milestone-peak: <gray>Зимние пики на {date} (в {days} день).</gray>
+milestone-thaw: <gray>Оттепель начинается на {date} (в {days} день).</gray>
+milestone-end: <gray>Зима заканчивается на {date} (в {days} день).</gray>
+cold-warning: <aqua>Тебе становится холодно! Разогревайтесь у костра, идите в дом, носите кожу или держите фонарь.</aqua>
+cold-warming: <gold>Огонь согревает вас.</gold>
+cold-status: '<aqua>Ваш холод: {percent}%</aqua>'
+cold-food: <gold>Горячая еда согревает вас.</gold>
+calendar-menu: Календарь событий
+calendar-menu-desc: Один маленький подарок за каждой дверью с декабря 1 до 24
+calendar-title: Календарь Адвента {year}
+calendar-disabled: <yellow>Календарь Advent выключен на этом сервере.</yellow>
+calendar-denied: <red>Вам нужно winter.calendar.</red>
+calendar-world: <yellow>Двери можно открыть только в зимнем мире.</yellow>
+calendar-door-locked: <gray>Дверь {day}</gray>
+calendar-door-locked-click: '<yellow>Дверь {day} пока заперта. Она откроется {date}.</yellow>'
+admin-speed: '<yellow>Скорость снега</yellow>'
+admin-speed-lore: '<gray>Изменений в секунду: {value}. Нажмите для настройки</gray>'
+admin-speed-label: 'Изменений в секунду'
+admin-speed-text: 'Сколько изменений снега и льда в секунду. Больше — быстрее; очень большие значения нагружают сервер.'
+admin-speed-apply: 'Применить'
+admin-speed-set: '<green>Скорость снега: {value} изменений в секунду.</green>'
+admin-back: 'Назад'
+admin-next: '<yellow>Следующий сезон</yellow>'
+admin-next-lore: '<gray>Перейти к первому дню следующего сезона</gray>'
+season-now: '<green>Сейчас: {season}.</green>'
+season-name-spring: 'весна'
+season-name-summer: 'лето'
+season-name-autumn: 'осень'
+season-name-winter: 'зима'
+admin-title: 'Управление зимой'
+admin-status: '<aqua>Сегодня: {date}</aqua>'
+admin-status-lore: '<gray>{phase}, снег {strength}%, режим {mode}</gray>'
+admin-auto: '<yellow>Следовать календарю</yellow>'
+admin-auto-lore: '<gray>Вернуться к реальной дате</gray>'
+admin-winter: '<yellow>Зима сейчас</yellow>'
+admin-winter-lore: '<gray>Перейти к пику зимы; так можно проверить адвент-календарь</gray>'
+admin-date: '<yellow>Выбрать дату</yellow>'
+admin-date-lore: '<gray>Зима идёт как в этот день</gray>'
+admin-thaw: '<yellow>Растопить всё</yellow>'
+admin-thaw-lore: '<gray>Зимний снег и лёд растают</gray>'
+admin-settings: '<yellow>Все настройки</yellow>'
+admin-settings-lore: '<gray>Высота снега, холод, календарь и другое</gray>'
+admin-lamp: '<yellow>Лампа: смотрите на стекло</yellow>'
+admin-lamp-lore: '<gray>Добавляет или убирает блок стекла перед вами</gray>'
+admin-date-question: 'Дата в формате ГГГГ-ММ-ДД'
+lamp-disabled: '<yellow>Гирлянды выключены в config.yml.</yellow>'
+lamp-not-glass: '<yellow>Сначала посмотрите на блок стекла.</yellow>'
+lamp-full: '<yellow>Предел: не более {max} ламп.</yellow>'
+lamp-added: '<green>Лампа добавлена (всего {count}). Зимой она меняет цвет.</green>'
+lamp-removed: '<gray>Лампа убрана (осталось {count}).</gray>'
+calendar-test-note: '<gold>Тестовый режим: календарь использует {date}. Двери ничего не дают и не считаются.</gold>'
+calendar-test-opened: '<gold>Тест: дверь {day} дала бы {amount}x {item}.</gold>'
+thaw-hint: '<gray>Снег тает, пока вы не введёте <white>/winter resume</white> или <white>/winter setdate ГГГГ-ММ-ДД</white>.</gray>'
+resume-off-season: '<yellow>Возврат к реальной дате, сейчас не зима, поэтому снега нет. Зима начнётся {date} (через {days} дн.). Для проверки: <white>/winter setdate ГГГГ-12-24</white>.</yellow>'
+calendar-door-locked-lore: <dark_gray>Открытие на {date}</dark_gray>
+calendar-door-ready: <gold><bold>Дверь {day}</bold></gold>
+calendar-door-ready-lore: <yellow>Нажмите, чтобы открыть!</yellow>
+calendar-door-opened: <green>Дверь {day}</green>
+calendar-door-opened-lore: '<gray>Открыто: {amount}x {item}</gray>'
+calendar-door-missed: <dark_gray>Дверь {day}</dark_gray>
+calendar-door-missed-lore: <dark_gray>Пропавший</dark_gray>
+calendar-info: '<aqua>Сегодня: {date}</aqua>'
+calendar-info-lore: <gray>Открыты двери {opened}/{doors}, ждут {waiting}</gray>
+calendar-gifts: '<gold>В ожидании подарков: {pending}</gold>'
+calendar-gifts-lore: <gray>Нажмите, чтобы собрать подарки, хранящиеся в вашей сумке вознаграждения</gray>
+calendar-opened: '<green>Дверца {day} открыта. Вы получили один из подарков, ожидающих в сумке наград.</green>'
+calendar-kept: '<yellow>Дверца {day} открыта. Подарок ждёт в сумке наград: освободите ячейку и используйте /winter claim.</yellow>'
+calendar-reminder: '<gold>Адвент-календарь: {count} дверей, ожидающих вас.</gold>'
+calendar-open-button: '<green>[Открыть]</green>'
+calendar-open-hover: Откройте календарь Адвента
+snowball-disabled: <yellow>Снежные бои выключены на этом сервере.</yellow>
+snowball-denied: <red>Вам нужно winter.snowball.</red>
+snowball-offline: <yellow>Этот игрок не онлайн.</yellow>
+snowball-hit: <aqua>{hits} снежных комов этой зимой</aqua>
+snowball-stats: '<aqua>Ваш снежный поединок этой зимой: {hits} попаданий, {wins} победа на дуэли, ранг {rank}</aqua>'
+snowball-top-header: <gold>Лучшие снежки зимой {season}:</gold>
+snowball-top-line: <gray>{rank}. <white>{name}</white> {hits} попаданий, {wins} побед</gray>
+snowball-top-empty: <gray>Никто еще не ударил никого снежным комом этой зимой.</gray>
+snowball-duel-world: <yellow>Снежные дуэли работают только тогда, когда вы и {player} находитесь в зимнем мире.</yellow>
+snowball-duel-self: <yellow>Ты не можешь поссориться.</yellow>
+snowball-duel-busy: <yellow>Один из вас уже в снежном поединке.</yellow>
+snowball-duel-pending: <yellow>Вы уже бросили вызов {player}. Жди ответа.</yellow>
+snowball-duel-sent: <aqua>Снежный поединок отправили на {player}. Срок действия составляет {seconds} секунд.</aqua>
+snowball-duel-invite: <aqua>{player} вызовов на снежный поединок (сначала {hits} попаданий)</aqua>
+snowball-accept-button: '<green>[Принять]</green>'
+snowball-accept-hover: Начинаем снежный поединок
+snowball-accept-command: <gray>/winter duel {player}</gray>
+snowball-duel-start: <gold>Снежный поединок против {player}! Сначала {hits} побед, {seconds} секунда.</gold>
+snowball-duel-score: '<aqua>Вы {you} : {them} {player}</aqua>'
+snowball-duel-running: '<gray>Бегущий поединок против {player}: {you}:{them}, {seconds} секунд осталось.</gray>'
+snowball-duel-won: <green>Вы выиграли снежок против {player} ({score})!</green>
+snowball-duel-lost: <yellow>{player} выиграли снежный поединок ({score}). Реванш?</yellow>
+snowball-duel-draw: <yellow>Снежный поединок против {player} завершился вничью ({score}).</yellow>
+snowball-duel-forfeit: <yellow>Снежный поединок против {player} закончился из-за ухода игрока.</yellow>
+snowball-menu: <aqua>Снежный поединок с {player}</aqua>
+snowball-menu-accept: <green>Принять снежный поединок от {player}</green>
+snowball-menu-lore: |-
+  <gray>{player}: {hits} попаданий, {wins} побед дуэли этой зимой</gray>
+  <gray>Первые {goal} побед</gray>
+snowball-surrender-won: <green>{player} отказались от снежной дуэли. Ты победил!</green>
+snowball-surrender-lost: <yellow>Ты отказался от снежного поединка. {player} побед.</yellow>
+snowball-no-duel: <yellow>Ты не участвуешь в снежной дуэли.</yellow>
+commands:
+  winter:
+    description: 'Зимний сезон: статус, подарки, календарь приключений, снежки и сезонная администрация'
+    aliases: []
+    sub:
+      missions:
+        name: "missions"
+        aliases: []
+        description: "Общие зимние цели и награды"
+      status:
+        name: status
+        aliases: []
+        description: Дата, фаза сезона, сила снега, праздник и холод
+      warmth:
+        name: warmth
+        aliases: []
+        description: Ваш холод, сохраненное тепло и защита оборудования
+      preview:
+        name: preview
+        aliases: []
+        description: Показать сезонную фазу даты, ничего не меняя
+        args:
+          date: YYYY-MM-DD
+      setdate:
+        name: setdate
+        aliases: []
+        description: Зима, как если бы это была дата
+        args:
+          date: YYYY-MM-DD
+      resume:
+        name: resume
+        aliases: []
+        description: Следите за реальным календарем снова
+      thaw:
+        name: thaw
+        aliases: []
+        description: Оттепель весь зимний снег и лед сейчас
+      admin:
+        name: admin
+        aliases: []
+        description: "Открыть управление зимой"
+      lamp:
+        name: lamp
+        aliases: []
+        description: "Сделать блок стекла гирляндой"
+      reload:
+        name: reload
+        aliases: []
+        description: Перезагрузить конфигурацию
+      claim:
+        name: claim
+        aliases: []
+        description: Заявить на сегодняшний праздничный подарок и ожидающие подарки
+      claims:
+        name: claims
+        aliases: []
+        description: Сколько подарков ждет вас
+      calendar:
+        name: calendar
+        aliases: []
+        description: Откройте календарь приключений
+      snowball:
+        name: snowball
+        aliases: []
+        description: Ваши снежки, победы на дуэли, звание и топ 5
+      storm:
+        name: storm
+        aliases: []
+        description: "Следующая метель или буран в вашем мире"
+        sub:
+          snowstorm:
+            name: snowstorm
+            aliases: []
+            description: "Админ: начать метель сейчас"
+          blizzard:
+            name: blizzard
+            aliases: []
+            description: "Админ: начать буран сейчас"
+          stop:
+            name: stop
+            aliases: []
+            description: "Админ: закончить бурю"
+      build:
+        name: build
+        aliases: []
+        description: 'Строить без снега плагина вокруг себя'
+      snowfall:
+        name: snowfall
+        aliases: []
+        description: 'Включить или выключить падающий снег вокруг себя'
+      spot:
+        name: spot
+        aliases: []
+        description: 'Сезонные зоны: где идёт снег'
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: 'Все сезонные зоны'
+          add:
+            name: add
+            aliases: []
+            description: 'Добавить сезонную зону здесь'
+            args:
+              spot: 'ЗОНА'
+              radius: 'РАДИУС'
+          remove:
+            name: remove
+            aliases: []
+            description: 'Удалить сезонную зону'
+            args:
+              spot: 'ЗОНА'
+      sled:
+        name: sled
+        aliases: []
+        description: "Санные трассы и лучшие результаты"
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: "Все трассы"
+          top:
+            name: top
+            aliases: []
+            description: "Лучшие результаты трассы"
+            args:
+              run: "RUN"
+          create:
+            name: create
+            aliases: []
+            description: "Установить старт трассы здесь"
+            args:
+              run: "RUN"
+          finish:
+            name: finish
+            aliases: []
+            description: "Установить финиш трассы здесь"
+            args:
+              run: "RUN"
+          delete:
+            name: delete
+            aliases: []
+            description: "Удалить трассу"
+            args:
+              run: "RUN"
+      surrender:
+        name: surrender
+        aliases: []
+        description: Откажитесь от снежковой дуэли, ваш противник победит
+      duel:
+        name: duel
+        aliases: []
+        description: Вызов игрока на снежный поединок
+        args:
+          player: PLAYER
+warmth-ready: <gold>Тепло сохраняется! У вас есть {seconds} секунд защиты от зимних холодов.</gold>
+warmth-empty: <gray>Ваше накопленное тепло закончилось.</gray>
+warmth-status: '<gold>Тепло: {seconds} секунд</gold>'
+warmth-overview: 'Холод: {cold}% · Сохраненное тепло: {seconds}s · Защита оборудования: {protection}%'
+warmth-tip: Разогревать вблизи освещенного источника тепла или под укрытием. Кожаные и ручные подогреватели уменьшают температуру
+  окружающей среды; это не защищает от ванильного порошкового снега.
+warmth-disabled: Зимние холода отключены.
+
+# Free feature release: missions
+missions-title: "Общие зимние задания — сезон {season}"
+missions-row: "{mission}: {objective} — {progress}/{goal}"
+missions-complete: "Общая цель выполнена: {mission}! Награда: /winter claim."
+missions-denied: "У вас нет доступа к зимним заданиям."
+missions-disabled: "Общие задания отключены."
+missions-paused: "Прогресс засчитывается только в настоящий активный зимний сезон в разрешённом мире."
+missions-claim: "За каждую выполненную цель каждый допущенный игрок получает награду раз за сезон: /winter claim."
+missions-objective-snowball_hit: "Попадания снежками"
+missions-objective-hot_meal: "Съеденные горячие блюда"
+missions-objective-advent_door: "Открытые ячейки календаря"
+storm:
+  warning: "<aqua>❄ Через {minutes} мин начнётся {kind} – найдите крышу или огонь!"
+  started: "<white>❄ Начался {kind} ({minutes} мин). Оставайтесь в укрытии или в тепле."
+  ended: "<gray>❄ {kind} закончился."
+  shelter: "<white>❄ {kind}! Найдите укрытие: крышу или огонь."
+  status-active: "<white>❄ Сейчас {kind}, закончится через {minutes} мин."
+  status-next: "<aqua>❄ Следующая буря примерно через {minutes} мин."
+  status-none: "<gray>❄ Здесь бури не запланированы."
+  not-here: "<red>Бури бывают только в зимних мирах, если они включены."
+  admin-started: "<green>{kind}: начато."
+  admin-stopped: "<green>Буря закончена."
+  none-active: "<gray>Здесь сейчас нет бури."
+  kind:
+    snowstorm: "метель"
+    blizzard: "буран"
+sled:
+  started: "<aqua>🛷 Трасса {run} – старт!"
+  finished: "<aqua>🛷 {run}: {time} (место {rank})."
+  finished-best: "<gold>🛷 {run}: {time} – личный рекорд! Место {rank}."
+  cancelled: "<gray>🛷 Заезд отменён – вы покинули сани."
+  timeout: "<gray>🛷 Заезд по трассе {run} длился слишком долго и отменён."
+  none: "<gray>Санных трасс пока нет. Админам: /winter sled create NAME"
+  list: "<aqua>Санные трассы: <white>{runs}</white> <gray>– /winter sled top RUN"
+  unknown: "<red>Трассы {run} нет."
+  top-empty: "<gray>На {run} пока нет результатов – будьте первым!"
+  top-header: "<aqua>🛷 Лучшие результаты на {run}:"
+  top-line: "<gray>{rank}. <white>{player}</white> – {time}"
+  start-set: "<green>Старт {run} установлен. Дойдите до финиша и введите /winter sled finish {run}."
+  finish-set: "<green>Финиш {run} установлен. Трасса готова."
+  finish-first: "<red>Сначала создайте {run} в этом мире: /winter sled create {run}"
+  limit: "<red>Уже есть 64 трассы."
+  deleted: "<green>Трасса {run} удалена."
+  bad-name: "<red>Используйте 1-24 буквы, цифры, - или _."
+  no-permission: "<red>Изменять трассы могут только админы."
+  players-only: "<red>Встаньте в нужную точку – только для игроков."
+  unavailable: "<red>Санные трассы сейчас недоступны."
+  usage: "<gray>/winter sled [list|top RUN|create RUN|finish RUN|delete RUN]"
+panel-unavailable: 'Это действие больше недоступно. Откройте меню заново.'
+panel-days: 'Окошки {first}–{last}'
+panel-door-locked: 'Закрыто'
+panel-door-ready: 'Можно открыть'
+panel-door-opened: 'Открыто'
+panel-door-missed: 'Пропущено'
+panel-season: 'Время года'
+panel-phase: 'Фаза зимы'
+panel-mode: 'Режим даты'
+panel-strength: 'Интенсивность снега: {value}%'
+panel-phase-off: 'Вне зимы'
+panel-phase-frost: 'Первые заморозки'
+panel-phase-winter: 'Зима'
+panel-phase-thaw: 'Оттепель'
+panel-mode-faulted: 'Ошибка хранилища'
+panel-mode-thaw: 'Принудительное таяние'
+panel-mode-calendar: 'Реальный календарь'
+panel-mode-manual: 'Дата вручную'
+build-on: '<aqua>🧱 Режим строительства включён: снега плагина нет в радиусе {radius} блоков. /winter build выключает.'
+build-off: '<gray>Режим строительства выключен: снег возвращается.'
+build-active: '<dark_aqua>🧱 Режим строительства включён (/winter build)'
+build-disabled: '<yellow>Режим строительства выключен в config.yml.'
+spot-added: '<green>Сезонная зона {name} добавлена: снег идёт в радиусе {radius} блоков отсюда.'
+spot-removed: '<gray>Сезонная зона {name} удалена.'
+spot-missing: '<red>Нет сезонной зоны {name}.'
+spot-none: '<gray>Сезонных зон нет: снег идёт везде в зимних мирах. /winter spot add ИМЯ РАДИУС'
+spot-list: '<aqua>Сезонные зоны: <white>{spots}'
+status-spots: '<gray>Сезонные зоны: снег идёт только внутри зон ({count}). /winter spot list показывает их.'
+snowfall-on: '<aqua>❄ Вокруг тебя идёт снег. /winter snowfall выключает его.'
+snowfall-off: '<gray>Падающий снег для тебя выключен. /winter snowfall включает его снова.'
+snowfall-disabled: '<yellow>Падающий снег на этом сервере выключен (snowfall.enabled в config.yml).'
+status-snowfall-on: '<gray>Снегопад: включён ({amount} снежинок в секунду, радиус {radius})'
+status-snowfall-off: '<gray>Снегопад: выключен'
+admin-snowfall: '<yellow>Снегопад</yellow>'
+admin-snowfall-label: 'Количество снега (0 = выключен)'
+admin-snowfall-text: 'Снежинок в секунду вокруг каждого игрока при любой погоде. 0 выключает эффект. Это не то же самое, что скорость снега: она лишь определяет, как быстро снег нарастает на земле.'
+admin-snowfall-set: '<green>Снегопад: {value} снежинок в секунду.</green>'
+admin-snowfall-unset: '<green>Снегопад выключен.</green>'
+spot-invalid: '<red>Используй 1–32 строчные латинские буквы, цифры, подчёркивания или дефисы.'

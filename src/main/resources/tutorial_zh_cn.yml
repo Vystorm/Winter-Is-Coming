@@ -1,0 +1,11 @@
+title: 'Winter Is Coming'
+pages:
+  - title: '服务器上的冬天'
+    text: |
+      冬季跟随日历：积雪增长、水面结冰、天气变冷。/winter status 显示日期、阶段和你的寒冷程度。
+  - title: '保持温暖'
+    text: |
+      火、岩浆和点燃的营火能取暖，屋顶可以遮蔽。每件皮革盔甲抵挡四分之一的寒冷，汤和炖菜也有帮助。
+  - title: '礼物与雪球大战'
+    text: |
+      /winter calendar 会在十二月打开降临节日历。用雪球击中玩家冲榜，或用 /winter duel PLAYER 发起决斗。

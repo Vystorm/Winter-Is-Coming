@@ -1,0 +1,11 @@
+title: 'Winter Is Coming'
+pages:
+  - title: 'Winter on the server'
+    text: |
+      Winter follows the calendar: snow grows, water freezes and it gets cold. /winter status shows the date, phase and your cold.
+  - title: 'Stay warm'
+    text: |
+      Fire, lava and lit campfires warm you up; roofs shelter you. Each leather armour piece blocks a quarter of the cold, and soups and stews help too.
+  - title: 'Gifts and snowball fights'
+    text: |
+      /winter calendar opens the Advent calendar in December. Hit players with snowballs for the leaderboard or challenge them with /winter duel PLAYER.

@@ -1,0 +1,375 @@
+# Português (Brasil) — UTF-8. Keep keys, placeholders and formatting tokens unchanged.
+status: <aqua>Inverno</aqua> {date} {phase} {strength}% {holiday} {mode} posições rastreadas {blocks}
+preview: '<aqua>Prévia</aqua> {date}: {phase} {strength}% | {holiday}'
+denied: <red>Você precisa de winter.admin.</red>
+player-only: <red>Este comando requer um jogador com winter.claim.</red>
+faulted: <red>O inverno está parado após uma falha no armazenamento. Verifique o registro do servidor antes de reiniciar.</red>
+invalid: '<red>Definição inválida: {reason}</red>'
+changed: <green>Modo inverno atualizado. Áreas carregadas se ajustam gradualmente.</green>
+reloaded: <green>Configuração de inverno recarregada.</green>
+countdown: <gold>Ano Novo em {seconds} segundos!</gold>
+new-year: <gold>Feliz Ano Novo! Seu presente de Ano Novo está disponível com /winter claim.</gold>
+no-gift: <yellow>Nenhum presente de Natal está disponível aqui. Presentes usam apenas o calendário real.</yellow>
+full: '<yellow>Libere um espaço no inventário antes de receber um presente.</yellow>'
+claimed: <yellow>Este presente já foi reivindicado ou reservado. Contate um administrador se a entrega foi interrompida.</yellow>
+gift: <green>Seu presente sazonal chegou. Aproveitem as férias!</green>
+claims: 'Presentes pendentes em sua bolsa de recompensa: {pending}.'
+claims-console: 'Registro de recompensas: plugins/WinterIsComing/rewards/winter/. Verifique entregas interrompidas com o Core.'
+gift-busy: <yellow>Reclame depois de deixar seu mundo temporário ou inventário, enquanto vivo e online.</yellow>
+gift-recovery: <red>O núcleo preservou uma entrega de presente interrompida. Peça a um administrador para revê-lo, não apague
+  o livro de recompensa.</red>
+invalid-date: <red>{input} não é uma data válida. Use YYYY-MM-DD, por exemplo, 2026-12-24.</red>
+next-season: <gray>O próximo inverno começa em {date} (em {days} dias).</gray>
+milestone-peak: <gray>O inverno atinge {date} (em {days} dias).</gray>
+milestone-thaw: <gray>O degelo começa em {date} (em {days} dias).</gray>
+milestone-end: <gray>O inverno termina em {date} (em {days} dias).</gray>
+cold-warning: <aqua>Você está ficando com frio! Aqueça em uma fogueira, vá para dentro, use couro ou segure uma lanterna.</aqua>
+cold-warming: <gold>O fogo te aquece.</gold>
+cold-status: '<aqua>Seu resfriado: {percent}%</aqua>'
+cold-food: <gold>A refeição quente te aquece.</gold>
+calendar-menu: Calendário de Advento
+calendar-menu-desc: Um pequeno presente atrás de cada porta de dezembro 1 a 24
+calendar-title: Calendário de Advento {year}
+calendar-disabled: <yellow>O calendário do Advento está desligado neste servidor.</yellow>
+calendar-denied: <red>Você precisa de winter.calendar.</red>
+calendar-world: <yellow>As portas só podem ser abertas em um mundo de inverno.</yellow>
+calendar-door-locked: <gray>Porta {day}</gray>
+calendar-door-locked-click: '<yellow>A porta {day} ainda está trancada. Ela abre em {date}.</yellow>'
+admin-speed: '<yellow>Velocidade da neve</yellow>'
+admin-speed-lore: '<gray>Mudanças por segundo: {value}. Clique para ajustar</gray>'
+admin-speed-label: 'Mudanças por segundo'
+admin-speed-text: 'Quantas mudanças de neve e gelo por segundo. Mais alto é mais rápido; valores muito altos custam mais ao servidor.'
+admin-speed-apply: 'Aplicar'
+admin-speed-set: '<green>Velocidade da neve definida para {value} mudanças por segundo.</green>'
+admin-back: 'Voltar'
+admin-next: '<yellow>Próxima estação</yellow>'
+admin-next-lore: '<gray>Ir para o primeiro dia da próxima estação</gray>'
+season-now: '<green>Agora é: {season}.</green>'
+season-name-spring: 'primavera'
+season-name-summer: 'verão'
+season-name-autumn: 'outono'
+season-name-winter: 'inverno'
+admin-title: 'Gerenciar inverno'
+admin-status: '<aqua>Hoje: {date}</aqua>'
+admin-status-lore: '<gray>{phase}, neve {strength}%, modo {mode}</gray>'
+admin-auto: '<yellow>Seguir o calendário real</yellow>'
+admin-auto-lore: '<gray>Voltar à data real</gray>'
+admin-winter: '<yellow>Inverno agora</yellow>'
+admin-winter-lore: '<gray>Vai ao auge; também permite testar o calendário do Advento</gray>'
+admin-date: '<yellow>Escolher data</yellow>'
+admin-date-lore: '<gray>O inverno age como naquele dia</gray>'
+admin-thaw: '<yellow>Derreter tudo</yellow>'
+admin-thaw-lore: '<gray>Neve e gelo do inverno derretem</gray>'
+admin-settings: '<yellow>Todas as configurações</yellow>'
+admin-settings-lore: '<gray>Altura da neve, frio, calendário e mais</gray>'
+admin-lamp: '<yellow>Lâmpada: olhe para o vidro</yellow>'
+admin-lamp-lore: '<gray>Marca ou remove o bloco de vidro observado</gray>'
+admin-date-question: 'Data como AAAA-MM-DD'
+lamp-disabled: '<yellow>As luzes de Natal estão desligadas no config.yml.</yellow>'
+lamp-not-glass: '<yellow>Olhe primeiro para um bloco de vidro.</yellow>'
+lamp-full: '<yellow>Limite atingido: no máximo {max} lâmpadas.</yellow>'
+lamp-added: '<green>Lâmpada adicionada ({count} no total). Muda de cor no inverno.</green>'
+lamp-removed: '<gray>Lâmpada removida (restam {count}).</gray>'
+calendar-test-note: '<gold>Modo de teste: o calendário usa {date}. As portas não dão nada e não contam.</gold>'
+calendar-test-opened: '<gold>Teste: a porta {day} daria {amount}x {item}.</gold>'
+thaw-hint: '<gray>A neve derrete até você usar <white>/winter resume</white> ou <white>/winter setdate AAAA-MM-DD</white>.</gray>'
+resume-off-season: '<yellow>De volta à data real, fora do inverno: sem neve. O inverno começa em {date} (em {days} dias). Para testar: <white>/winter setdate AAAA-12-24</white>.</yellow>'
+calendar-door-locked-lore: <dark_gray>Abre em {date}</dark_gray>
+calendar-door-ready: <gold><bold>Porta {day}</bold></gold>
+calendar-door-ready-lore: <yellow>Clique para abrir!</yellow>
+calendar-door-opened: <green>Porta {day}</green>
+calendar-door-opened-lore: '<gray>Aberto: {amount}x {item}</gray>'
+calendar-door-missed: <dark_gray>Porta {day}</dark_gray>
+calendar-door-missed-lore: <dark_gray>Errou</dark_gray>
+calendar-info: '<aqua>Hoje: {date}</aqua>'
+calendar-info-lore: <gray>Abriu {opened}/{doors} portas, {waiting} esperando</gray>
+calendar-gifts: '<gold>Presentes pendentes: {pending}</gold>'
+calendar-gifts-lore: <gray>Clique para coletar presentes guardados em sua bolsa de recompensa</gray>
+calendar-opened: '<green>Porta {day} aberta. Um presente pendente da sua bolsa de recompensas foi entregue.</green>'
+calendar-kept: '<yellow>Porta {day} aberta. Seu presente está na bolsa de recompensas: libere um espaço e use /winter claim.</yellow>'
+calendar-reminder: '<gold>Calendário de Advento: {count} portas esperando por você.</gold>'
+calendar-open-button: '<green>[Abrir]</green>'
+calendar-open-hover: Abra o calendário do Advento
+snowball-disabled: <yellow>Lutas de bola de neve estão desligadas neste servidor.</yellow>
+snowball-denied: <red>Você precisa de winter.snowball.</red>
+snowball-offline: <yellow>Esse jogador não está online.</yellow>
+snowball-hit: <aqua>{hits} bolas de neve neste inverno</aqua>
+snowball-stats: '<aqua>Sua luta de bola de neve neste inverno: {hits} vitórias, {wins} vitórias duelo, classificação {rank}</aqua>'
+snowball-top-header: <gold>Melhores lançadores de bola de neve de inverno {season}:</gold>
+snowball-top-line: <gray>{rank}. <white>{name}</white> {hits} hits, {wins} vitórias</gray>
+snowball-top-empty: <gray>Ninguém bateu em ninguém com uma bola de neve neste inverno ainda.</gray>
+snowball-duel-world: <yellow>Duelos de bola de neve só funcionam enquanto você e {player} estão em um mundo de inverno.</yellow>
+snowball-duel-self: <yellow>Você não pode duelar.</yellow>
+snowball-duel-busy: <yellow>Um de vocês já está em um duelo.</yellow>
+snowball-duel-pending: <yellow>Você já desafiou {player}. Espere por uma resposta.</yellow>
+snowball-duel-sent: <aqua>Desafio de Snowball enviado para {player}. Ele expira em {seconds} segundos.</aqua>
+snowball-duel-invite: <aqua>{player} desafia você para um duelo de bola de neve (primeiro a {hits} hits)!</aqua>
+snowball-accept-button: '<green>[Aceitar]</green>'
+snowball-accept-hover: Comece o duelo de bola de neve
+snowball-accept-command: <gray>/winter duel {player}</gray>
+snowball-duel-start: <gold>Duelo de bola de neve contra {player}! Primeiro a {hits} hits ganha, {seconds} segundos.</gold>
+snowball-duel-score: <aqua>Você {you} {them} {player}</aqua>
+snowball-duel-running: '<gray>Duelo contra {player}: {you}:{them}, {seconds} segundos restantes.</gray>'
+snowball-duel-won: <green>Você ganhou o duelo de bola de neve contra {player} ({score})!</green>
+snowball-duel-lost: <yellow>{player} ganharam o duelo de bola de neve ({score}). Revanche?</yellow>
+snowball-duel-draw: <yellow>Duelo de bola de neve contra {player} terminou em empate ({score}).</yellow>
+snowball-duel-forfeit: <yellow>O duelo de bola de neve contra {player} terminou porque um jogador saiu.</yellow>
+snowball-menu: <aqua>Duelo de bola de neve com {player}</aqua>
+snowball-menu-accept: <green>Aceitar duelo de bola de neve de {player}</green>
+snowball-menu-lore: |-
+  <gray>{player}: {hits} hits, {wins} duelo ganha neste inverno</gray>
+  <gray>Primeiro a {goal} hits ganha</gray>
+snowball-surrender-won: <green>{player} desistiram do duelo. Você ganhou!</green>
+snowball-surrender-lost: <yellow>Você desistiu do duelo de bola de neve. {player} vitórias.</yellow>
+snowball-no-duel: <yellow>Você não está em um duelo de bola de neve.</yellow>
+commands:
+  winter:
+    description: 'Temporada de inverno: status, presentes, calendário de advento, lutas de bola de neve e administração da
+      temporada'
+    aliases: []
+    sub:
+      missions:
+        name: "missions"
+        aliases: []
+        description: "Metas e recompensas de inverno compartilhadas"
+      status:
+        name: status
+        aliases: []
+        description: Data, fase da temporada, força da neve, férias e seu frio
+      warmth:
+        name: warmth
+        aliases: []
+        description: Seu frio, aquecimento armazenado e proteção de equipamentos
+      preview:
+        name: preview
+        aliases: []
+        description: Mostre a fase de temporada de um encontro sem mudar nada
+        args:
+          date: YYYY-MM-DD
+      setdate:
+        name: setdate
+        aliases: []
+        description: Correr o inverno como se fosse esta data
+        args:
+          date: YYYY-MM-DD
+      resume:
+        name: resume
+        aliases: []
+        description: Siga o calendário real novamente
+      thaw:
+        name: thaw
+        aliases: []
+        description: Deite toda neve de inverno e gelo agora
+      admin:
+        name: admin
+        aliases: []
+        description: "Abrir o gerenciamento do inverno"
+      lamp:
+        name: lamp
+        aliases: []
+        description: "Transforma o vidro observado em luz de Natal"
+      reload:
+        name: reload
+        aliases: []
+        description: Recarregar a configuração
+      claim:
+        name: claim
+        aliases: []
+        description: Reclame o presente de hoje e presentes pendentes
+      claims:
+        name: claims
+        aliases: []
+        description: Quantos presentes estão esperando por você?
+      calendar:
+        name: calendar
+        aliases: []
+        description: Abra o calendário do advento
+      snowball:
+        name: snowball
+        aliases: []
+        description: Seus hits bola de neve, duelo ganha, classificação e o top 5
+      storm:
+        name: storm
+        aliases: []
+        description: "A próxima tempestade de neve ou nevasca no seu mundo"
+        sub:
+          snowstorm:
+            name: snowstorm
+            aliases: []
+            description: "Admin: iniciar uma tempestade de neve"
+          blizzard:
+            name: blizzard
+            aliases: []
+            description: "Admin: iniciar uma nevasca"
+          stop:
+            name: stop
+            aliases: []
+            description: "Admin: encerrar a tempestade"
+      build:
+        name: build
+        aliases: []
+        description: 'Construir sem a neve do plugin ao seu redor'
+      snowfall:
+        name: snowfall
+        aliases: []
+        description: 'Liga ou desliga a neve caindo ao seu redor'
+      spot:
+        name: spot
+        aliases: []
+        description: 'Áreas de estação: onde a neve cai'
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: 'Todas as áreas de estação'
+          add:
+            name: add
+            aliases: []
+            description: 'Adicionar uma área de estação aqui'
+            args:
+              spot: 'AREA'
+              radius: 'RAIO'
+          remove:
+            name: remove
+            aliases: []
+            description: 'Remover uma área de estação'
+            args:
+              spot: 'AREA'
+      sled:
+        name: sled
+        aliases: []
+        description: "Pistas de trenó e melhores tempos"
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: "Todas as pistas"
+          top:
+            name: top
+            aliases: []
+            description: "Melhores tempos de uma pista"
+            args:
+              run: "RUN"
+          create:
+            name: create
+            aliases: []
+            description: "Definir aqui a largada"
+            args:
+              run: "RUN"
+          finish:
+            name: finish
+            aliases: []
+            description: "Definir aqui a chegada"
+            args:
+              run: "RUN"
+          delete:
+            name: delete
+            aliases: []
+            description: "Apagar uma pista"
+            args:
+              run: "RUN"
+      surrender:
+        name: surrender
+        aliases: []
+        description: Desista do seu duelo de bola de neve, seu oponente ganha
+      duel:
+        name: duel
+        aliases: []
+        description: Desafie um jogador para um duelo de bola de neve
+        args:
+          player: PLAYER
+warmth-ready: <gold>O calor está guardado! Você tem {seconds} segundos de proteção contra o frio de inverno.</gold>
+warmth-empty: <gray>Seu calor armazenado acabou.</gray>
+warmth-status: '<gold>Calor armazenado: {seconds} segundos</gold>'
+warmth-overview: 'Frio: {cold}% · Calor armazenado: {seconds}s · Proteção de equipamentos: {protection}%'
+warmth-tip: Aqueça perto de uma fonte de calor acesa ou sob abrigo. Aquecedores de couro e mãos reduzem o frio ambiente, isso
+  não protege contra a neve em pó de baunilha.
+warmth-disabled: O frio de inverno está desativado.
+
+# Free feature release: missions
+missions-title: "Missões comunitárias de inverno — temporada {season}"
+missions-row: "{mission}: {objective} — {progress}/{goal}"
+missions-complete: "Meta comunitária concluída: {mission}! Receba com /winter claim."
+missions-denied: "Você não pode participar das missões de inverno."
+missions-disabled: "As missões comunitárias estão desativadas."
+missions-paused: "O progresso conta apenas no inverno real ativo, em um mundo habilitado."
+missions-claim: "Cada meta concluída recompensa cada jogador autorizado uma vez por temporada: /winter claim."
+missions-objective-snowball_hit: "Acertos de bolas de neve"
+missions-objective-hot_meal: "Refeições quentes consumidas"
+missions-objective-advent_door: "Janelas do calendário abertas"
+storm:
+  warning: "<aqua>❄ Uma {kind} chega em {minutes} min – procure um telhado ou uma fogueira!"
+  started: "<white>❄ A {kind} começou ({minutes} min). Fique abrigado ou aquecido."
+  ended: "<gray>❄ A {kind} acabou."
+  shelter: "<white>❄ {kind}! Procure abrigo: um telhado ou fogo."
+  status-active: "<white>❄ {kind} agora, termina em {minutes} min."
+  status-next: "<aqua>❄ A próxima tempestade chega em cerca de {minutes} min."
+  status-none: "<gray>❄ Nenhuma tempestade planejada aqui."
+  not-here: "<red>Tempestades só acontecem em mundos de inverno com tempestades ligadas."
+  admin-started: "<green>{kind} iniciada."
+  admin-stopped: "<green>Tempestade encerrada."
+  none-active: "<gray>Nenhuma tempestade em andamento aqui."
+  kind:
+    snowstorm: "tempestade de neve"
+    blizzard: "nevasca"
+sled:
+  started: "<aqua>🛷 Pista {run} – vai!"
+  finished: "<aqua>🛷 {run}: {time} (posição {rank})."
+  finished-best: "<gold>🛷 {run}: {time} – recorde pessoal! Posição {rank}."
+  cancelled: "<gray>🛷 Descida cancelada – você saiu do trenó."
+  timeout: "<gray>🛷 A descida em {run} demorou demais e foi cancelada."
+  none: "<gray>Ainda não há pistas de trenó. Admins: /winter sled create NAME"
+  list: "<aqua>Pistas de trenó: <white>{runs}</white> <gray>– /winter sled top RUN"
+  unknown: "<red>Não existe a pista {run}."
+  top-empty: "<gray>Ainda sem tempos em {run} – seja o primeiro!"
+  top-header: "<aqua>🛷 Melhores tempos em {run}:"
+  top-line: "<gray>{rank}. <white>{player}</white> – {time}"
+  start-set: "<green>Largada de {run} definida aqui. Vá até a chegada e use /winter sled finish {run}."
+  finish-set: "<green>Chegada de {run} definida aqui. A pista está pronta."
+  finish-first: "<red>Crie {run} neste mundo primeiro: /winter sled create {run}"
+  limit: "<red>Já existem 64 pistas."
+  deleted: "<green>Pista {run} apagada."
+  bad-name: "<red>Use 1-24 letras, dígitos, - ou _."
+  no-permission: "<red>Só admins podem mudar pistas."
+  players-only: "<red>Fique no lugar do ponto – só jogadores."
+  unavailable: "<red>As pistas não estão disponíveis agora."
+  usage: "<gray>/winter sled [list|top RUN|create RUN|finish RUN|delete RUN]"
+panel-unavailable: 'Esta ação não está mais disponível. Abra o menu novamente.'
+panel-days: 'Portinhas {first}–{last}'
+panel-door-locked: 'Trancada'
+panel-door-ready: 'Pronta para abrir'
+panel-door-opened: 'Aberta'
+panel-door-missed: 'Perdida'
+panel-season: 'Estação'
+panel-phase: 'Fase do inverno'
+panel-mode: 'Modo de data'
+panel-strength: 'Intensidade da neve: {value}%'
+panel-phase-off: 'Fora do inverno'
+panel-phase-frost: 'Primeiras geadas'
+panel-phase-winter: 'Inverno'
+panel-phase-thaw: 'Degelo'
+panel-mode-faulted: 'Erro de armazenamento'
+panel-mode-thaw: 'Degelo forçado'
+panel-mode-calendar: 'Calendário real'
+panel-mode-manual: 'Data manual'
+build-on: '<aqua>🧱 Modo construção ligado: sem neve do plugin a {radius} blocos de você. /winter build desliga.'
+build-off: '<gray>Modo construção desligado: a neve volta.'
+build-active: '<dark_aqua>🧱 Modo construção ligado (/winter build)'
+build-disabled: '<yellow>O modo construção está desligado no config.yml.'
+spot-added: '<green>Área de estação {name} adicionada: a neve cai num raio de {radius} blocos daqui.'
+spot-removed: '<gray>Área de estação {name} removida.'
+spot-missing: '<red>Nenhuma área de estação chamada {name}.'
+spot-none: '<gray>Sem áreas de estação: neva em todo lugar nos mundos de inverno. /winter spot add NOME RAIO'
+spot-list: '<aqua>Áreas de estação: <white>{spots}'
+status-spots: '<gray>Áreas de estação: a neve só cai dentro de {count} área(s). /winter spot list mostra todas.'
+snowfall-on: '<aqua>❄ A neve está caindo ao seu redor. /winter snowfall desliga.'
+snowfall-off: '<gray>A neve caindo está desligada para você. /winter snowfall liga de novo.'
+snowfall-disabled: '<yellow>A neve caindo está desligada neste servidor (snowfall.enabled no config.yml).'
+status-snowfall-on: '<gray>Nevasca: ligada ({amount} flocos por segundo, raio {radius})'
+status-snowfall-off: '<gray>Nevasca: desligada'
+admin-snowfall: '<yellow>Nevasca</yellow>'
+admin-snowfall-label: 'Quantidade de neve (0 = desligada)'
+admin-snowfall-text: 'Flocos por segundo ao redor de cada jogador, com qualquer clima. 0 desliga o efeito. É independente da velocidade da neve, que só muda a rapidez com que a neve cresce no chão.'
+admin-snowfall-set: '<green>Nevasca definida para {value} flocos por segundo.</green>'
+admin-snowfall-unset: '<green>Nevasca desligada.</green>'
+spot-invalid: '<red>Use de 1 a 32 letras minúsculas, dígitos, sublinhados ou hífens no nome.'

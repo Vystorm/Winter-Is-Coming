@@ -1,0 +1,465 @@
+{
+  "version": 1,
+  "intro": {
+    "en": "Winter follows the real calendar in the worlds listed in config.yml. Decide how harsh it should be.",
+    "de": "Der Winter folgt dem echten Kalender in den Welten aus der config.yml. Lege fest, wie hart er sein soll.",
+    "fr": "L’hiver suit le vrai calendrier dans les mondes de config.yml. Choisissez sa rigueur.",
+    "it": "L’inverno segue il calendario reale nei mondi di config.yml. Decidi quanto deve essere rigido.",
+    "pt_br": "O inverno segue o calendário real nos mundos do config.yml. Decida o quão rigoroso será.",
+    "ru": "Зима идёт по реальному календарю в мирах из config.yml. Выберите её суровость.",
+    "zh_cn": "冬季按真实日历在 config.yml 所列世界中运行。请决定严酷程度。"
+  },
+  "questions": [
+    {
+      "id": "snow",
+      "text": {
+        "en": "How deep should the snow get?",
+        "de": "Wie hoch soll der Schnee werden?",
+        "fr": "Quelle hauteur de neige ?",
+        "it": "Quanto deve essere alta la neve?",
+        "pt_br": "Qual a altura da neve?",
+        "ru": "Какой глубины снег?",
+        "zh_cn": "积雪应有多深？"
+      },
+      "type": "choice",
+      "recommended": "normal",
+      "options": [
+        {
+          "id": "light",
+          "label": {
+            "en": "Light (one block)",
+            "de": "Leicht (ein Block)",
+            "fr": "Légère (un bloc)",
+            "it": "Leggera (un blocco)",
+            "pt_br": "Leve (um bloco)",
+            "ru": "Лёгкий (один блок)",
+            "zh_cn": "浅（一格）"
+          },
+          "set": {
+            "config.yml:snow.max-layers": 8
+          }
+        },
+        {
+          "id": "normal",
+          "label": {
+            "en": "Normal (1.5 blocks)",
+            "de": "Normal (1,5 Blöcke)",
+            "fr": "Normale (1,5 bloc)",
+            "it": "Normale (1,5 blocchi)",
+            "pt_br": "Normal (1,5 bloco)",
+            "ru": "Обычный (1,5 блока)",
+            "zh_cn": "普通（1.5 格）"
+          },
+          "set": {
+            "config.yml:snow.max-layers": 12
+          }
+        },
+        {
+          "id": "deep",
+          "label": {
+            "en": "Deep (4 blocks)",
+            "de": "Tief (4 Blöcke)",
+            "fr": "Profonde (4 blocs)",
+            "it": "Alta (4 blocchi)",
+            "pt_br": "Profunda (4 blocos)",
+            "ru": "Глубокий (4 блока)",
+            "zh_cn": "深（4 格）"
+          },
+          "set": {
+            "config.yml:snow.max-layers": 32
+          }
+        }
+      ]
+    },
+    {
+      "id": "speed",
+      "text": {
+        "en": "How fast should snow and thaw spread?",
+        "de": "Wie schnell sollen Schnee und Tauwetter vorankommen?",
+        "fr": "À quelle vitesse la neige et le dégel doivent-ils progresser ?",
+        "it": "Quanto velocemente devono avanzare neve e disgelo?",
+        "pt_br": "Com que rapidez a neve e o degelo devem avançar?",
+        "ru": "Как быстро должны распространяться снег и оттепель?",
+        "zh_cn": "积雪和融化扩散得多快？"
+      },
+      "type": "choice",
+      "recommended": "normal",
+      "options": [
+        {
+          "id": "gentle",
+          "label": {
+            "en": "Gently (light servers)",
+            "de": "Gemächlich (schwache Server)",
+            "fr": "Doucement (petits serveurs)",
+            "it": "Lentamente (server leggeri)",
+            "pt_br": "Devagar (servidores fracos)",
+            "ru": "Медленно (слабые серверы)",
+            "zh_cn": "缓慢（低配服务器）"
+          },
+          "set": {
+            "config.yml:performance.changes-per-cycle": 4,
+            "config.yml:performance.columns-per-cycle": 24
+          }
+        },
+        {
+          "id": "normal",
+          "label": {
+            "en": "Normal",
+            "de": "Normal",
+            "fr": "Normal",
+            "it": "Normale",
+            "pt_br": "Normal",
+            "ru": "Обычно",
+            "zh_cn": "普通"
+          },
+          "set": {
+            "config.yml:performance.changes-per-cycle": 16,
+            "config.yml:performance.columns-per-cycle": 96
+          }
+        },
+        {
+          "id": "fast",
+          "label": {
+            "en": "Fast",
+            "de": "Schnell",
+            "fr": "Rapide",
+            "it": "Veloce",
+            "pt_br": "Rápido",
+            "ru": "Быстро",
+            "zh_cn": "快速"
+          },
+          "set": {
+            "config.yml:performance.changes-per-cycle": 32,
+            "config.yml:performance.columns-per-cycle": 256
+          }
+        }
+      ]
+    },
+    {
+      "id": "cold",
+      "text": {
+        "en": "Should players feel the cold?",
+        "de": "Sollen Spieler die Kälte spüren?",
+        "fr": "Les joueurs doivent-ils ressentir le froid ?",
+        "it": "I giocatori devono sentire il freddo?",
+        "pt_br": "Os jogadores devem sentir o frio?",
+        "ru": "Должны ли игроки мёрзнуть?",
+        "zh_cn": "玩家是否会感到寒冷？"
+      },
+      "type": "choice",
+      "recommended": "gentle",
+      "options": [
+        {
+          "id": "off",
+          "label": {
+            "en": "No",
+            "de": "Nein",
+            "fr": "Non",
+            "it": "No",
+            "pt_br": "Não",
+            "ru": "Нет",
+            "zh_cn": "否"
+          },
+          "set": {
+            "config.yml:cold.enabled": false
+          }
+        },
+        {
+          "id": "gentle",
+          "label": {
+            "en": "Yes, without damage",
+            "de": "Ja, ohne Schaden",
+            "fr": "Oui, sans dégâts",
+            "it": "Sì, senza danni",
+            "pt_br": "Sim, sem dano",
+            "ru": "Да, без урона",
+            "zh_cn": "是，无伤害"
+          },
+          "set": {
+            "config.yml:cold.enabled": true,
+            "config.yml:cold.damage": false
+          }
+        },
+        {
+          "id": "harsh",
+          "label": {
+            "en": "Yes, freezing hurts",
+            "de": "Ja, Erfrieren schadet",
+            "fr": "Oui, le gel blesse",
+            "it": "Sì, il congelamento ferisce",
+            "pt_br": "Sim, congelar causa dano",
+            "ru": "Да, мороз ранит",
+            "zh_cn": "是，冻结会受伤"
+          },
+          "set": {
+            "config.yml:cold.enabled": true,
+            "config.yml:cold.damage": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "advent",
+      "text": {
+        "en": "Enable the daily Advent calendar?",
+        "de": "Täglichen Adventskalender aktivieren?",
+        "fr": "Activer le calendrier de l’Avent ?",
+        "it": "Attivare il calendario dell’Avvento?",
+        "pt_br": "Ativar o calendário do Advento?",
+        "ru": "Включить адвент-календарь?",
+        "zh_cn": "启用每日降临节日历？"
+      },
+      "type": "choice",
+      "recommended": "on",
+      "options": [
+        {
+          "id": "on",
+          "label": {
+            "en": "On",
+            "de": "An",
+            "fr": "Activé",
+            "it": "Attivo",
+            "pt_br": "Ligado",
+            "ru": "Вкл.",
+            "zh_cn": "开启"
+          },
+          "set": {
+            "config.yml:advent-calendar.enabled": true
+          }
+        },
+        {
+          "id": "off",
+          "label": {
+            "en": "Off",
+            "de": "Aus",
+            "fr": "Désactivé",
+            "it": "Disattivo",
+            "pt_br": "Desligado",
+            "ru": "Выкл.",
+            "zh_cn": "关闭"
+          },
+          "set": {
+            "config.yml:advent-calendar.enabled": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "snowball",
+      "text": {
+        "en": "Enable snowball fights with a seasonal leaderboard?",
+        "de": "Schneeballschlachten mit Saison-Rangliste aktivieren?",
+        "fr": "Activer les batailles de boules de neige avec classement ?",
+        "it": "Attivare le battaglie di palle di neve con classifica?",
+        "pt_br": "Ativar guerras de bola de neve com ranking?",
+        "ru": "Включить снежные бои с таблицей лидеров?",
+        "zh_cn": "启用带赛季排行榜的雪球大战？"
+      },
+      "type": "choice",
+      "recommended": "on",
+      "options": [
+        {
+          "id": "on",
+          "label": {
+            "en": "On",
+            "de": "An",
+            "fr": "Activé",
+            "it": "Attivo",
+            "pt_br": "Ligado",
+            "ru": "Вкл.",
+            "zh_cn": "开启"
+          },
+          "set": {
+            "config.yml:snowball-fight.enabled": true
+          }
+        },
+        {
+          "id": "off",
+          "label": {
+            "en": "Off",
+            "de": "Aus",
+            "fr": "Désactivé",
+            "it": "Disattivo",
+            "pt_br": "Desligado",
+            "ru": "Выкл.",
+            "zh_cn": "关闭"
+          },
+          "set": {
+            "config.yml:snowball-fight.enabled": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "seasons",
+      "text": {
+        "en": "Should plants change with the seasons too?",
+        "de": "Sollen sich auch die Pflanzen mit den Jahreszeiten ändern?",
+        "fr": "Les plantes doivent-elles aussi changer avec les saisons ?",
+        "it": "Anche le piante devono cambiare con le stagioni?",
+        "pt_br": "As plantas também devem mudar com as estações?",
+        "ru": "Должны ли растения меняться по сезонам?",
+        "zh_cn": "植物也随季节变化吗？"
+      },
+      "type": "choice",
+      "recommended": "off",
+      "options": [
+        {
+          "id": "off",
+          "label": {
+            "en": "No, only winter",
+            "de": "Nein, nur Winter",
+            "fr": "Non, seulement l’hiver",
+            "it": "No, solo inverno",
+            "pt_br": "Não, só inverno",
+            "ru": "Нет, только зима",
+            "zh_cn": "否，仅冬季"
+          },
+          "set": {
+            "config.yml:seasons.enabled": false
+          }
+        },
+        {
+          "id": "real",
+          "label": {
+            "en": "Yes, with the real year",
+            "de": "Ja, nach dem echten Jahr",
+            "fr": "Oui, selon l’année réelle",
+            "it": "Sì, con l’anno reale",
+            "pt_br": "Sim, com o ano real",
+            "ru": "Да, по реальному году",
+            "zh_cn": "是，按真实年份"
+          },
+          "set": {
+            "config.yml:seasons.enabled": true,
+            "config.yml:seasons.mode": "real"
+          }
+        },
+        {
+          "id": "monthly",
+          "label": {
+            "en": "Yes, one season per month",
+            "de": "Ja, eine Jahreszeit pro Monat",
+            "fr": "Oui, une saison par mois",
+            "it": "Sì, una stagione al mese",
+            "pt_br": "Sim, uma estação por mês",
+            "ru": "Да, сезон в месяц",
+            "zh_cn": "是，每月一个季节"
+          },
+          "set": {
+            "config.yml:seasons.enabled": true,
+            "config.yml:seasons.mode": "monthly"
+          }
+        },
+        {
+          "id": "weekly",
+          "label": {
+            "en": "Yes, one season per week",
+            "de": "Ja, eine Jahreszeit pro Woche",
+            "fr": "Oui, une saison par semaine",
+            "it": "Sì, una stagione a settimana",
+            "pt_br": "Sim, uma estação por semana",
+            "ru": "Да, сезон в неделю",
+            "zh_cn": "是，每周一个季节"
+          },
+          "set": {
+            "config.yml:seasons.enabled": true,
+            "config.yml:seasons.mode": "weekly"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sledding",
+      "text": {
+        "en": "Let boats glide faster on snow (sledding)?",
+        "de": "Boote auf Schnee schneller gleiten lassen (Rodeln)?",
+        "fr": "Faire glisser les bateaux plus vite sur la neige (luge) ?",
+        "it": "Far scivolare le barche più veloci sulla neve (slittino)?",
+        "pt_br": "Deixar barcos deslizarem mais rápido na neve (trenó)?",
+        "ru": "Ускорять лодки на снегу (сани)?",
+        "zh_cn": "让船在雪上滑得更快（雪橇）？"
+      },
+      "type": "choice",
+      "recommended": "on",
+      "options": [
+        {
+          "id": "on",
+          "label": {
+            "en": "On",
+            "de": "An",
+            "fr": "Activé",
+            "it": "Attivo",
+            "pt_br": "Ligado",
+            "ru": "Вкл.",
+            "zh_cn": "开启"
+          },
+          "set": {
+            "config.yml:sledding.enabled": true
+          }
+        },
+        {
+          "id": "off",
+          "label": {
+            "en": "Off",
+            "de": "Aus",
+            "fr": "Désactivé",
+            "it": "Disattivo",
+            "pt_br": "Desligado",
+            "ru": "Выкл.",
+            "zh_cn": "关闭"
+          },
+          "set": {
+            "config.yml:sledding.enabled": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "storms",
+      "text": {
+        "en": "Allow winter storms (snowstorms and blizzards with extra cold)?",
+        "de": "Winterstürme erlauben (Schneestürme und Blizzards mit extra Kälte)?",
+        "fr": "Autoriser les tempêtes d’hiver (tempêtes de neige et blizzards plus froids) ?",
+        "it": "Consentire le tempeste invernali (tempeste di neve e bufere più fredde)?",
+        "pt_br": "Permitir tempestades de inverno (tempestades de neve e nevascas mais frias)?",
+        "ru": "Разрешить зимние бури (метели и бураны с сильным холодом)?",
+        "zh_cn": "允许冬季风暴（更寒冷的暴风雪和冰风暴）？"
+      },
+      "type": "choice",
+      "recommended": "on",
+      "options": [
+        {
+          "id": "on",
+          "label": {
+            "en": "On",
+            "de": "An",
+            "fr": "Activé",
+            "it": "Attivo",
+            "pt_br": "Ligado",
+            "ru": "Вкл.",
+            "zh_cn": "开启"
+          },
+          "set": {
+            "config.yml:storms.enabled": true
+          }
+        },
+        {
+          "id": "off",
+          "label": {
+            "en": "Off",
+            "de": "Aus",
+            "fr": "Désactivé",
+            "it": "Disattivo",
+            "pt_br": "Desligado",
+            "ru": "Выкл.",
+            "zh_cn": "关闭"
+          },
+          "set": {
+            "config.yml:storms.enabled": false
+          }
+        }
+      ]
+    }
+  ]
+}

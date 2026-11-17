@@ -1,0 +1,5 @@
+name: WinterVisual
+version: '1'
+main: at.vystorm.winter.acceptance.WinterNaturalVisual
+api-version: '26.2'
+depend: [WinterIsComing, vystorm_core]

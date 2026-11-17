@@ -1,0 +1,238 @@
+# Calendar dates use MM-DD. Only explicitly listed overworlds are changed.
+worlds: [world]
+timezone: Europe/Vienna
+calendar:
+  start: '11-15'
+  peak: '12-24'
+  thaw: '02-01'
+  end: '03-01'
+snow:
+  # Total depth per column: 8 layers = one block; 12 = 1.5 blocks; 64 = 8 blocks.
+  max-layers: 12
+  cover-leaves: true
+  # Single-block grass, ferns and flowers (two-block plants stay visible); original blocks are restored on thaw.
+  cover-small-plants: true
+  # Tall grass, sunflowers and other two-block plants disappear in winter and come back on thaw.
+  remove-tall-plants: true
+  # Snow builds a ramp of up to 6 extra layers towards a one-block step.
+  ramps: true
+  # Snow also settles on top of stairs and bottom slabs. The blocks themselves are never changed.
+  cover-stairs-and-slabs: true
+  # 0 = uniform depth, 1 = strongest drifts; coherent patches, never above max-layers.
+  drift-strength: 0.45
+  # Fade inside protected/excluded biome borders; never edits across a protected boundary.
+  # Unloaded neighbors are ignored (no chunk loads). 0 disables the transition.
+  transition-blocks: 4
+  excluded-biomes: [desert, badlands, eroded_badlands, wooded_badlands]
+  clear-materials: [DIRT_PATH, FARMLAND, RAIL, POWERED_RAIL]
+frost:
+  enabled: true
+  ocean-radius: 40
+  inland-radius: 12
+  search-budget: 8192
+  # Only natural soil/rock at the same level with solid support counts as shore.
+  shore-materials: [GRASS_BLOCK, DIRT, COARSE_DIRT, PODZOL, SAND, RED_SAND, GRAVEL, STONE, ANDESITE, DIORITE, GRANITE, DEEPSLATE, CLAY, MUD]
+protection:
+  # All Core regions protected by default; explicit winter flag true opts a region in.
+  protect-core-regions: true
+  region-flag: winter
+performance:
+  period-ticks: 20
+  # Columns checked per cycle (1..8192); the admin menu sets it to six times the changes.
+  columns-per-cycle: 96
+  # Snow and ice changes per cycle (1..512); with period-ticks 20 that is per second. /winter admin has a slider.
+  changes-per-cycle: 16
+  max-tracked-blocks: 100000
+weather:
+  enabled: true
+  snow-chance-at-peak: 0.7
+  interval-seconds: 180
+  # Uses a client-only snowy biome view where supported; world biome data stays unchanged.
+  packet-snow: true
+  # Particle fallback for unsupported server runtimes; particles are also used when packet-snow is false.
+  warm-biome-particles: true
+spawns:
+  enabled: true
+  skeleton-weight-at-peak: 1.4
+  spider-weight-at-peak: 0.7
+  creeper-weight-at-peak: 0.8
+holidays:
+  advent: true
+  christmas: true
+  new-year: true
+  christmas-start: '12-24'
+  christmas-end: '12-26'
+  # Cosmetic particles at loaded world spawn points, no damaging firework entities.
+  fireworks: true
+  # Claim once per Advent week / Christmas / New Year; no console commands or currency.
+  reward-material: COOKIE
+  reward-amount: 8
+cold:
+  # Players outside in a controlled winter world slowly freeze (vanilla frost overlay and slowdown).
+  # Fire, lava, magma and lit campfires/furnaces within warm-radius warm them up; roofs and caves shelter them.
+  # Each leather armour piece blocks 25% of the cold (full leather = immune, as with powder snow).
+  # Colder at night, in snowfall and in water. Survival and adventure only.
+  enabled: true
+  # Strongest frost effect without damage, 0..1 (0.4 = light overlay, about 20% slower walking).
+  max-frost: 0.4
+  # true: fully frozen players take vanilla freeze damage. Off by default.
+  damage: false
+  warm-radius: 4
+  # Time outside at full winter during the day until fully cold (0.5..60).
+  minutes-to-freeze: 3
+  # Visible breath clouds once players are cold.
+  breath: true
+  # Action bar hints when getting cold and when warming up.
+  warnings: true
+  # Cold removed by eating a stew or soup, 0..1 (0.5 = half of full cold, 0 disables).
+  warm-food: 0.5
+  # Items that warm the hands: held in the main or off hand, one of them blocks as much cold as one leather piece
+  # (25%). [] switches hand warmers off.
+  hand-warmers: [LANTERN, SOUL_LANTERN]
+  # Fully warmed players store fire warmth for their next trip. Missing keys use these defaults.
+  reserve:
+    enabled: true
+    # Seconds at a heat source after cold reaches zero to fill the reserve (1..600).
+    charge-seconds: 20
+    # Seconds of ambient-cold protection; drains away from heat, including indoors (1..600).
+    duration-seconds: 60
+advent-calendar:
+  # Daily Advent calendar: /winter calendar or the Core menu shows 24 doors, one small gift per day from December 1 to 24.
+  # Gifts go through the Core reward pouch (full inventories keep them for /winter claim) and follow the real date only.
+  enabled: true
+  # Missed doors can still be opened later in December; false = each door only on its own day.
+  catch-up: true
+  # Clickable chat hint on join while a door is waiting.
+  join-reminder: true
+  # One entry per door, "MATERIAL amount" (amount up to the stack size). Shorter lists repeat from the start.
+  rewards:
+    - COOKIE 6
+    - SWEET_BERRIES 12
+    - PUMPKIN_PIE 2
+    - CANDLE 3
+    - GLOW_BERRIES 8
+    - SPRUCE_SAPLING 4
+    - HONEY_BOTTLE 2
+    - SNOWBALL 16
+    - RED_CANDLE 2
+    - BAKED_POTATO 6
+    - LANTERN 2
+    - GOLDEN_CARROT 3
+    - CAKE 1
+    - FIREWORK_ROCKET 8
+    - MUSHROOM_STEW 1
+    - GREEN_CANDLE 2
+    - EXPERIENCE_BOTTLE 4
+    - RABBIT_STEW 1
+    - LEATHER_BOOTS 1
+    - GLOW_INK_SAC 4
+    - AMETHYST_SHARD 4
+    - LEATHER_CHESTPLATE 1
+    - GOLDEN_APPLE 1
+    - DIAMOND 1
+snowball-fight:
+  # Snowball hits on other players in winter worlds count for a seasonal leaderboard (/winter snowball).
+  # PvP protection that cancels the hit also cancels the point. No items or currency are rewarded.
+  enabled: true
+  # Cold added to the hit player, 0..1 (0.05 = 5%); leather armour reduces it, 0 disables it.
+  chill: 0.05
+  # Duels (/winter duel <player> or the Core player menu): first to duel-hits hits wins, otherwise the leader after duel-seconds.
+  duel-hits: 10
+  duel-seconds: 120
+  # Both duelists are topped up to this many snowballs at the start (0 = none).
+  duel-snowballs: 16
+
+# Shared goals count real seasonal play only; administrative dates do not count.
+# The first contribution freezes each goal/reward for that season.
+community-missions:
+  enabled: true
+  goals:
+    snowball_festival:
+      objective: SNOWBALL_HIT
+      goal: 100
+      reward: COOKIE
+      amount: 8
+    warm_supper:
+      objective: HOT_MEAL
+      goal: 50
+      reward: GOLDEN_CARROT
+      amount: 4
+    advent_together:
+      objective: ADVENT_DOOR
+      goal: 24
+      reward: EMERALD
+      amount: 2
+# Christmas lights: look at a glass block and use /winter lamp (or /winter admin). They change colour while it is winter.
+# Only nearby players see the colours; the world keeps the real glass.
+lamps:
+  enabled: true
+  # Ticks between colour changes (5..200).
+  period-ticks: 20
+  # Blocks around a player in which lamps are animated (8..128).
+  range: 48
+# Year-round seasons: plants on open grass change with the season (spring grows, summer tall plants, autumn berry bushes).
+# Plants under a roof and on farmland are never touched. Holidays and the Advent calendar always use the real date.
+seasons:
+  enabled: false
+  # real = the actual year, monthly = one season per month, weekly = one season per week
+  mode: real
+  # monthly and weekly count from this date, so a restart never shifts the season.
+  start: '2026-01-05'
+
+storms:
+  # Winter weather events: now and then a winter world gets a snowstorm or a blizzard. Players get a warning a few
+  # minutes before; during the storm players outside get colder faster, see dense snow and (blizzard) pulsing
+  # darkness, and the action bar tells them to find shelter (a roof or a fire). /winter storm shows the next one;
+  # admins use /winter storm snowstorm|blizzard|stop. Weak early or late winter makes storms rarer.
+  enabled: true
+  # Time between storms, drawn between these limits (minutes).
+  min-gap-minutes: 60
+  max-gap-minutes: 150
+  # Warning before a storm (0-30 minutes) and how long it lasts (1-60 minutes).
+  warning-minutes: 2
+  duration-minutes: 6
+  # Share of storms that are blizzards at full winter (0-1).
+  blizzard-chance: 0.35
+  # How much faster players outside get cold (1-5).
+  snowstorm-cold: 1.6
+  blizzard-cold: 2.5
+  # Blizzards darken the view of players outside.
+  darkness: true
+
+sledding:
+  # Boats glide faster on snow (layers, snow blocks, powder snow) and faster still downhill – sleds for winter.
+  # Ice keeps its vanilla speed. Admins can build timed runs: /winter sled create <name> at the start,
+  # /winter sled finish <name> at the finish; players see the best times with /winter sled top <name>.
+  enabled: true
+  # How strongly snow speeds a boat up (1.0 = not at all, up to 4.0).
+  speed-multiplier: 1.6
+  # Top speed on snow in blocks per tick (0.7 = 14 blocks per second).
+  max-speed: 0.7
+
+# Season spots (1.20.0): snow only falls inside these circles once at least one exists, so it does not snow in the
+# whole world. Admins add a spot where they stand: /winter spot add NAME [RADIUS] (8-2000 blocks, default 64);
+# /winter spot remove NAME, /winter spot list. only-inside: false = spots are ignored (snow everywhere as before).
+season-spots:
+  only-inside: true
+
+# Build mode (1.20.0): /winter build lets a player build without the plugin's snow. While it is on, no plugin snow
+# forms within the radius around them and the plugin's existing snow there melts away. Natural snow stays.
+build-mode:
+  enabled: true
+  radius: 24
+
+# Visible falling snow around each player: white dust particles, independent of the real weather and the biome (it also
+# snows where vanilla has no snow).
+snowfall:
+  enabled: false
+  # Flakes per player per second (1..400).
+  amount: 200
+  # Half width of the snow box around the player in blocks (4..24) and its height above the player (3..16).
+  radius: 10
+  height: 8
+  # No flakes where the player has a roof over the head.
+  only-under-sky: true
+  # Only while the plugin's winter is active in that world (after a thaw or outside controlled worlds there is none).
+  only-in-winter: true
+  # Size of the white flakes (0.5..2.0).
+  flake-size: 1.5

@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"winter_capture_test","version":"1.0.0-test","name":"Winter Screenshot Test","environment":"client","entrypoints":{"fabric-client-gametest":["at.vystorm.winter.capture.WinterCaptureTest"]},"depends":{"fabric-api":"*"}}

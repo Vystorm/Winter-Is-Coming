@@ -1,0 +1,374 @@
+status: '<aqua>冬季</aqua> {date} | {phase} {strength}% | {holiday} | {mode} | 已追踪位置：{blocks}'
+preview: '<aqua>预览</aqua> {date}：{phase} {strength}% | {holiday}'
+denied: '<red>你需要 winter.admin 权限。</red>'
+player-only: '<red>此命令需要拥有 winter.claim 权限的玩家执行。</red>'
+faulted: '<red>由于存储故障，冬季已暂停。重启前请检查服务器日志。</red>'
+invalid: '<red>无效设置：{reason}</red>'
+changed: '<green>冬季模式已更新。已加载的区域会逐渐调整。</green>'
+reloaded: '<green>冬季配置已重新加载。</green>'
+countdown: '<gold>距离新年还有 {seconds} 秒！</gold>'
+new-year: '<gold>新年快乐！使用 /winter claim 领取你的新年礼物。</gold>'
+no-gift: '<yellow>这里没有可领取的节日礼物。礼物只按真实日历发放。</yellow>'
+full: '<yellow>领取前请空出一个物品栏格子。</yellow>'
+claimed: '<yellow>这份礼物已被领取或预留。如果发放中断，请联系管理员。</yellow>'
+gift: '<green>你的季节礼物到了。节日快乐！</green>'
+claims: 'Core 奖励袋中待领取的礼物：{pending}。'
+claims-console: '奖励记录：plugins/WinterIsComing/rewards/winter/。请用 Core 检查中断的发放。'
+gift-busy: '<yellow>请在离开临时世界或物品栏、活着且在线时领取。</yellow>'
+gift-recovery: '<red>Core 保存了一次中断的礼物发放。请让管理员检查；不要删除奖励账本。</red>'
+invalid-date: '<red>{input} 不是有效日期。请使用 YYYY-MM-DD，例如 2026-12-24。</red>'
+next-season: '<gray>下一个冬季从 {date} 开始（还有 {days} 天）。</gray>'
+milestone-peak: '<gray>冬季将在 {date} 达到顶峰（还有 {days} 天）。</gray>'
+milestone-thaw: '<gray>解冻从 {date} 开始（还有 {days} 天）。</gray>'
+milestone-end: '<gray>冬季在 {date} 结束（还有 {days} 天）。</gray>'
+cold-warning: '<aqua>你越来越冷了！去营火旁取暖、进入室内、穿上皮革装备或手持灯笼。</aqua>'
+cold-warming: '<gold>火焰让你暖和起来了。</gold>'
+cold-status: '<aqua>你的寒冷值：{percent}%</aqua>'
+cold-food: '<gold>热腾腾的食物让你暖和起来了。</gold>'
+calendar-menu: '降临节日历'
+calendar-menu-desc: '12 月 1 日至 24 日，每扇门后都有一份小礼物'
+calendar-title: '{year} 降临节日历'
+calendar-disabled: '<yellow>本服务器已关闭降临节日历。</yellow>'
+calendar-denied: '<red>你需要 winter.calendar 权限。</red>'
+calendar-world: '<yellow>只能在冬季世界中打开门。</yellow>'
+calendar-door-locked: '<gray>第 {day} 扇门</gray>'
+calendar-door-locked-click: '<yellow>第 {day} 扇门尚未开放，将于 {date} 开启。</yellow>'
+admin-speed: '<yellow>降雪速度</yellow>'
+admin-speed-lore: '<gray>每秒变化：{value}。点击调整</gray>'
+admin-speed-label: '每秒变化次数'
+admin-speed-text: '每秒积雪和结冰的变化次数。数值越高越快，过高会占用更多服务器时间。'
+admin-speed-apply: '应用'
+admin-speed-set: '<green>降雪速度已设为每秒 {value} 次变化。</green>'
+admin-back: '返回'
+admin-next: '<yellow>下一季节</yellow>'
+admin-next-lore: '<gray>跳到下一季节的第一天</gray>'
+season-now: '<green>现在是{season}。</green>'
+season-name-spring: '春季'
+season-name-summer: '夏季'
+season-name-autumn: '秋季'
+season-name-winter: '冬季'
+admin-title: '冬季管理'
+admin-status: '<aqua>今天：{date}</aqua>'
+admin-status-lore: '<gray>{phase}，积雪强度 {strength}%，模式 {mode}</gray>'
+admin-auto: '<yellow>跟随真实日历</yellow>'
+admin-auto-lore: '<gray>恢复真实日期</gray>'
+admin-winter: '<yellow>立即进入冬季</yellow>'
+admin-winter-lore: '<gray>跳到冬季高峰，也可用于测试降临节日历</gray>'
+admin-date: '<yellow>选择日期</yellow>'
+admin-date-lore: '<gray>让冬季按该日期运行</gray>'
+admin-thaw: '<yellow>全部融化</yellow>'
+admin-thaw-lore: '<gray>冬季积雪和冰全部融化</gray>'
+admin-settings: '<yellow>全部设置</yellow>'
+admin-settings-lore: '<gray>积雪高度、寒冷、日历等</gray>'
+admin-lamp: '<yellow>彩灯：看向玻璃</yellow>'
+admin-lamp-lore: '<gray>标记或移除你看向的玻璃方块</gray>'
+admin-date-question: '日期格式 YYYY-MM-DD'
+lamp-disabled: '<yellow>圣诞彩灯已在 config.yml 中关闭。</yellow>'
+lamp-not-glass: '<yellow>请先看向一个玻璃方块。</yellow>'
+lamp-full: '<yellow>已达上限：最多 {max} 盏灯。</yellow>'
+lamp-added: '<green>已添加彩灯（共 {count} 盏），冬季会变换颜色。</green>'
+lamp-removed: '<gray>已移除彩灯（剩余 {count} 盏）。</gray>'
+calendar-test-note: '<gold>测试模式：日历使用 {date}。开门没有奖励，也不计入记录。</gold>'
+calendar-test-opened: '<gold>测试：第 {day} 扇门将给予 {amount}x {item}。</gold>'
+thaw-hint: '<gray>积雪会融化，可使用 <white>/winter resume</white> 或 <white>/winter setdate YYYY-MM-DD</white> 恢复冬季。</gray>'
+resume-off-season: '<yellow>已恢复真实日期，目前不在冬季，因此没有雪。冬季将于 {date} 开始（还有 {days} 天）。测试请用 <white>/winter setdate YYYY-12-24</white>。</yellow>'
+calendar-door-locked-lore: '<dark_gray>{date} 开启</dark_gray>'
+calendar-door-ready: '<gold><bold>第 {day} 扇门</bold></gold>'
+calendar-door-ready-lore: '<yellow>点击打开！</yellow>'
+calendar-door-opened: '<green>第 {day} 扇门</green>'
+calendar-door-opened-lore: '<gray>已打开：{amount}x {item}</gray>'
+calendar-door-missed: '<dark_gray>第 {day} 扇门</dark_gray>'
+calendar-door-missed-lore: '<dark_gray>已错过</dark_gray>'
+calendar-info: '<aqua>今天：{date}</aqua>'
+calendar-info-lore: '<gray>已打开 {opened}/{doors} 扇门，{waiting} 扇待开</gray>'
+calendar-gifts: '<gold>待领取的礼物：{pending}</gold>'
+calendar-gifts-lore: '<gray>点击领取保存在奖励袋中的礼物</gray>'
+calendar-opened: '<green>第 {day} 扇门已打开。奖励袋中的一份待领取礼物已送达。</green>'
+calendar-kept: '<yellow>第 {day} 扇门已打开。你的礼物在奖励袋中等你：空出一个格子并使用 /winter claim。</yellow>'
+calendar-reminder: '<gold>降临节日历：有 {count} 扇门在等你。</gold>'
+calendar-open-button: '<green>[打开]</green>'
+calendar-open-hover: '打开降临节日历'
+snowball-disabled: '<yellow>本服务器已关闭雪球大战。</yellow>'
+snowball-denied: '<red>你需要 winter.snowball 权限。</red>'
+snowball-offline: '<yellow>该玩家不在线。</yellow>'
+snowball-hit: '<aqua>命中！本冬季已命中 {hits} 次雪球</aqua>'
+snowball-stats: '<aqua>你本冬季的雪球大战：命中 {hits} 次，决斗胜利 {wins} 次，排名第 {rank}</aqua>'
+snowball-top-header: '<gold>{season} 冬季最佳雪球投手：</gold>'
+snowball-top-line: '<gray>{rank}. <white>{name}</white> 命中 {hits} 次，胜利 {wins} 次</gray>'
+snowball-top-empty: '<gray>本冬季还没有人用雪球打中过别人。</gray>'
+snowball-duel-world: '<yellow>只有你和 {player} 都在冬季世界中时才能进行雪球决斗。</yellow>'
+snowball-duel-self: '<yellow>你不能和自己决斗。</yellow>'
+snowball-duel-busy: '<yellow>你们中有人已经在雪球决斗中了。</yellow>'
+snowball-duel-pending: '<yellow>你已经向 {player} 发起了挑战。请等待回应。</yellow>'
+snowball-duel-sent: '<aqua>已向 {player} 发送雪球决斗挑战，{seconds} 秒后过期。</aqua>'
+snowball-duel-invite: '<aqua>{player} 向你发起雪球决斗（先命中 {hits} 次者胜）！</aqua>'
+snowball-accept-button: '<green>[接受]</green>'
+snowball-accept-hover: '开始雪球决斗'
+snowball-accept-command: '<gray>/winter duel {player}</gray>'
+snowball-duel-start: '<gold>与 {player} 的雪球决斗开始！先命中 {hits} 次者胜，限时 {seconds} 秒。</gold>'
+snowball-duel-score: '<aqua>你 {you} : {them} {player}</aqua>'
+snowball-duel-running: '<gray>与 {player} 的决斗进行中：{you}:{them}，剩余 {seconds} 秒。</gray>'
+snowball-duel-won: '<green>你赢得了与 {player} 的雪球决斗（{score}）！</green>'
+snowball-duel-lost: '<yellow>{player} 赢得了雪球决斗（{score}）。再来一局？</yellow>'
+snowball-duel-draw: '<yellow>与 {player} 的雪球决斗以平局结束（{score}）。</yellow>'
+snowball-duel-forfeit: '<yellow>与 {player} 的雪球决斗因有玩家离开而结束。</yellow>'
+snowball-menu: '<aqua>与 {player} 雪球决斗</aqua>'
+snowball-menu-accept: '<green>接受 {player} 的雪球决斗</green>'
+snowball-menu-lore: "<gray>{player}：本冬季命中 {hits} 次，决斗胜利 {wins} 次</gray>\n<gray>先命中 {goal} 次者胜</gray>"
+
+# 通过 Vystorm Core 提供的 /winter：每位玩家看到自己语言的说明、帮助和 Tab 补全。commands.winter 下的 "aliases" 是额外的
+# 主命令（全服生效，由管理员在 Core 配置 commands.localized-aliases 中选择语言）；子命令的 "name" 和 "aliases"
+# 在所有语言中都可使用，英文始终有效。
+snowball-surrender-won: '<green>{player} 在雪球决斗中认输了。你获胜！</green>'
+snowball-surrender-lost: '<yellow>你在雪球决斗中认输了。{player} 获胜。</yellow>'
+snowball-no-duel: '<yellow>你当前没有进行雪球决斗。</yellow>'
+commands:
+  winter:
+    description: "冬季：状态、礼物、降临节日历、雪球大战和季节管理"
+    aliases: [凛冬将至]
+    sub:
+      missions:
+        name: "任务"
+        aliases: []
+        description: "共同冬季目标和奖励"
+      status:
+        name: 状态
+        aliases: []
+        description: "日期、季节阶段、积雪强度、节日和你的寒冷程度"
+      warmth:
+        name: 保暖
+        aliases: []
+        description: "查看寒冷、储存热量和装备防护"
+      preview:
+        name: 预览
+        aliases: []
+        description: "显示某个日期的季节阶段，不做任何更改"
+        args:
+          date: YYYY-MM-DD
+      setdate:
+        name: 设定日期
+        aliases: []
+        description: "让冬季按这个日期运行"
+        args:
+          date: YYYY-MM-DD
+      resume:
+        name: 恢复
+        aliases: []
+        description: "重新跟随真实日历"
+      thaw:
+        name: 解冻
+        aliases: []
+        description: "立即融化所有冬季积雪和冰"
+      admin:
+        name: 管理
+        aliases: []
+        description: "打开冬季管理菜单"
+      lamp:
+        name: 彩灯
+        aliases: []
+        description: "将你看向的玻璃方块变成圣诞彩灯"
+      reload:
+        name: 重载
+        aliases: []
+        description: "重新加载配置"
+      claim:
+        name: 领取
+        aliases: []
+        description: "领取今天的节日礼物和待领取的礼物"
+      claims:
+        name: 礼物
+        aliases: []
+        description: "有多少礼物在等你"
+      calendar:
+        name: 日历
+        aliases: [降临节日历]
+        description: "打开降临节日历"
+      snowball:
+        name: 雪球
+        aliases: []
+        description: "你的雪球命中数、决斗胜场、排名和前五名"
+      storm:
+        name: 风暴
+        aliases: []
+        description: "你所在世界的下一场暴风雪或冰风暴"
+        sub:
+          snowstorm:
+            name: 暴风雪
+            aliases: []
+            description: "管理员：立即开始暴风雪"
+          blizzard:
+            name: 冰风暴
+            aliases: []
+            description: "管理员：立即开始冰风暴"
+          stop:
+            name: 停止
+            aliases: []
+            description: "管理员：结束风暴"
+      build:
+        name: 建造
+        aliases: []
+        description: '在你周围建造时不受插件雪影响'
+      snowfall:
+        name: 降雪
+        aliases: []
+        description: '开启或关闭你周围飘落的雪'
+      spot:
+        name: 季节区域
+        aliases: []
+        description: '季节区域：下雪的地方'
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: '所有季节区域'
+          add:
+            name: add
+            aliases: []
+            description: '在此添加季节区域'
+            args:
+              spot: '区域'
+              radius: '半径'
+          remove:
+            name: remove
+            aliases: []
+            description: '移除季节区域'
+            args:
+              spot: '区域'
+      sled:
+        name: sled
+        aliases: []
+        description: "雪橇赛道与最佳成绩"
+        sub:
+          list:
+            name: list
+            aliases: []
+            description: "所有赛道"
+          top:
+            name: top
+            aliases: []
+            description: "某赛道的最佳成绩"
+            args:
+              run: "RUN"
+          create:
+            name: create
+            aliases: []
+            description: "在此设置赛道起点"
+            args:
+              run: "RUN"
+          finish:
+            name: finish
+            aliases: []
+            description: "在此设置赛道终点"
+            args:
+              run: "RUN"
+          delete:
+            name: delete
+            aliases: []
+            description: "删除赛道"
+            args:
+              run: "RUN"
+      surrender:
+        name: 认输
+        aliases: []
+        description: "退出当前雪球决斗，对手获胜"
+      duel:
+        name: 决斗
+        aliases: []
+        description: "向一名玩家发起雪球决斗"
+        args:
+          player: 玩家
+warmth-ready: '<gold>温暖已储存！你将在 {seconds} 秒内免受冬季环境寒冷影响。</gold>'
+warmth-empty: '<gray>你储存的温暖已耗尽。</gray>'
+warmth-status: '<gold>储存的温暖：{seconds} 秒</gold>'
+
+warmth-overview: "寒冷：{cold}% · 储存热量：{seconds}秒 · 装备防护：{protection}%"
+warmth-tip: "在点燃的热源附近或遮蔽处取暖。皮革和手持暖源可减少环境寒冷，但不能抵御原版细雪。"
+warmth-disabled: "冬季寒冷已禁用。"
+
+# Free feature release: missions
+missions-title: "冬季社区任务 — {season}季"
+missions-row: "{mission}：{objective} — {progress}/{goal}"
+missions-complete: "社区目标已完成：{mission}！使用 /winter claim 领取奖励。"
+missions-denied: "你无权参加冬季任务。"
+missions-disabled: "社区任务已关闭。"
+missions-paused: "仅在启用世界的真实冬季活动中记录进度。"
+missions-claim: "完成目标后，每位有权限的玩家每季可领取一次奖励：/winter claim"
+missions-objective-snowball_hit: "雪球命中"
+missions-objective-hot_meal: "食用热餐"
+missions-objective-advent_door: "开启降临节日历"
+storm:
+  warning: "<aqua>❄ {minutes} 分钟后将有{kind} —— 快找屋顶或火堆！"
+  started: "<white>❄ {kind}开始了（{minutes} 分钟）。待在室内或火边。"
+  ended: "<gray>❄ {kind}结束了。"
+  shelter: "<white>❄ {kind}！快找避难处：屋顶或火堆。"
+  status-active: "<white>❄ 正在{kind}，{minutes} 分钟后结束。"
+  status-next: "<aqua>❄ 下一场风暴大约 {minutes} 分钟后到来。"
+  status-none: "<gray>❄ 这里没有计划中的风暴。"
+  not-here: "<red>风暴只在开启风暴的冬季世界出现。"
+  admin-started: "<green>{kind}已开始。"
+  admin-stopped: "<green>风暴已结束。"
+  none-active: "<gray>这里没有进行中的风暴。"
+  kind:
+    snowstorm: "暴风雪"
+    blizzard: "冰风暴"
+sled:
+  started: "<aqua>🛷 赛道 {run}——出发！"
+  finished: "<aqua>🛷 {run}：{time}（第 {rank} 名）。"
+  finished-best: "<gold>🛷 {run}：{time}——个人最佳！第 {rank} 名。"
+  cancelled: "<gray>🛷 已取消——你离开了雪橇。"
+  timeout: "<gray>🛷 在 {run} 上用时过长，已取消。"
+  none: "<gray>还没有雪橇赛道。管理员：/winter sled create NAME"
+  list: "<aqua>雪橇赛道：<white>{runs}</white> <gray>– /winter sled top RUN"
+  unknown: "<red>没有名为 {run} 的赛道。"
+  top-empty: "<gray>{run} 上还没有成绩——来当第一个吧！"
+  top-header: "<aqua>🛷 {run} 的最佳成绩："
+  top-line: "<gray>{rank}. <white>{player}</white> – {time}"
+  start-set: "<green>已在此设置 {run} 的起点。现在前往终点并使用 /winter sled finish {run}。"
+  finish-set: "<green>已在此设置 {run} 的终点。赛道已就绪。"
+  finish-first: "<red>请先在此世界创建 {run}：/winter sled create {run}"
+  limit: "<red>已有 64 条赛道。"
+  deleted: "<green>已删除赛道 {run}。"
+  bad-name: "<red>请使用 1–24 个字母、数字、- 或 _。"
+  no-permission: "<red>只有管理员可以修改赛道。"
+  players-only: "<red>请站到该点的位置——仅限玩家。"
+  unavailable: "<red>雪橇赛道暂不可用。"
+  usage: "<gray>/winter sled [list|top RUN|create RUN|finish RUN|delete RUN]"
+panel-unavailable: '此操作已不可用，请重新打开菜单。'
+panel-days: '第 {first}–{last} 扇门'
+panel-door-locked: '尚未解锁'
+panel-door-ready: '可以开启'
+panel-door-opened: '已开启'
+panel-door-missed: '已错过'
+panel-season: '季节'
+panel-phase: '冬季阶段'
+panel-mode: '日期模式'
+panel-strength: '积雪强度：{value}%'
+panel-phase-off: '非冬季'
+panel-phase-frost: '初霜'
+panel-phase-winter: '冬季'
+panel-phase-thaw: '融雪期'
+panel-mode-faulted: '存储错误'
+panel-mode-thaw: '强制融雪'
+panel-mode-calendar: '真实日历'
+panel-mode-manual: '手动日期'
+build-on: '<aqua>🧱 建造模式已开启：你周围 {radius} 格内不会有插件雪。/winter build 关闭。'
+build-off: '<gray>建造模式已关闭：雪会回来。'
+build-active: '<dark_aqua>🧱 建造模式已开启（/winter build）'
+build-disabled: '<yellow>建造模式已在 config.yml 中关闭。'
+spot-added: '<green>已添加季节区域 {name}：此处 {radius} 格内会下雪。'
+spot-removed: '<gray>已移除季节区域 {name}。'
+spot-missing: '<red>没有名为 {name} 的季节区域。'
+spot-none: '<gray>没有季节区域：冬季世界到处下雪。/winter spot add 名称 半径'
+spot-list: '<aqua>季节区域：<white>{spots}'
+status-spots: '<gray>季节区域：只在 {count} 个区域内下雪。/winter spot list 可查看。'
+snowfall-on: '<aqua>❄ 你周围正在飘雪。/winter 降雪 可关闭。'
+snowfall-off: '<gray>你的飘雪已关闭。/winter 降雪 可重新开启。'
+snowfall-disabled: '<yellow>本服务器已关闭飘雪（config.yml 中的 snowfall.enabled）。'
+status-snowfall-on: '<gray>飘雪：开启（每秒 {amount} 片雪花，半径 {radius}）'
+status-snowfall-off: '<gray>飘雪：关闭'
+admin-snowfall: '<yellow>飘雪</yellow>'
+admin-snowfall-label: '飘雪数量（0 = 关闭）'
+admin-snowfall-text: '无论天气如何，每位玩家周围每秒飘落的雪花数。0 表示关闭。这与降雪速度无关，后者只决定地面积雪增长的快慢。'
+admin-snowfall-set: '<green>飘雪已设为每秒 {value} 片雪花。</green>'
+admin-snowfall-unset: '<green>飘雪已关闭。</green>'
+spot-invalid: '<red>名称请使用 1–32 个小写字母、数字、下划线或连字符。'

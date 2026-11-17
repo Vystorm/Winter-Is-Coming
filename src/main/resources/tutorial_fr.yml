@@ -1,0 +1,11 @@
+title: 'Winter Is Coming'
+pages:
+  - title: 'L’hiver sur le serveur'
+    text: |
+      L’hiver suit le calendrier : la neige monte, l’eau gèle et il fait froid. /winter status montre la date et votre froid.
+  - title: 'Rester au chaud'
+    text: |
+      Le feu, la lave et les feux de camp vous réchauffent ; les toits abritent. Chaque pièce de cuir bloque un quart du froid.
+  - title: 'Cadeaux et batailles de boules de neige'
+    text: |
+      /winter calendar ouvre le calendrier de l’Avent en décembre. Touchez des joueurs avec des boules de neige ou défiez-les avec /winter duel PLAYER.

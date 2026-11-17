@@ -1,0 +1,11 @@
+title: 'Winter Is Coming'
+pages:
+  - title: 'Inverno no servidor'
+    text: |
+      O inverno segue o calendário: a neve cresce, a água congela e esfria. /winter status mostra a data e seu frio.
+  - title: 'Ficar aquecido'
+    text: |
+      Fogo, lava e fogueiras aquecem; telhados protegem. Cada peça de couro bloqueia um quarto do frio.
+  - title: 'Presentes e guerras de bola de neve'
+    text: |
+      /winter calendar abre o calendário do Advento em dezembro. Acerte jogadores com bolas de neve ou desafie com /winter duel PLAYER.

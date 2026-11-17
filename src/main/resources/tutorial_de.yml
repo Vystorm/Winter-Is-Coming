@@ -1,0 +1,11 @@
+title: 'Winter Is Coming'
+pages:
+  - title: 'Winter auf dem Server'
+    text: |
+      Der Winter folgt dem Kalender: Schnee wächst, Wasser friert und es wird kalt. /winter status zeigt Datum, Phase und deine Kälte.
+  - title: 'Warm bleiben'
+    text: |
+      Feuer, Lava und brennende Lagerfeuer wärmen dich; Dächer schützen. Jedes Lederrüstungsteil hält ein Viertel der Kälte ab, Suppen und Eintöpfe helfen auch.
+  - title: 'Geschenke und Schneeballschlachten'
+    text: |
+      /winter calendar öffnet im Dezember den Adventskalender. Triff Spieler mit Schneebällen für die Rangliste oder fordere sie mit /winter duel PLAYER heraus.

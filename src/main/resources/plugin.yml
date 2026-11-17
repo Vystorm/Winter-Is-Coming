@@ -1,0 +1,31 @@
+name: WinterIsComing
+version: '${version}'
+main: at.vystorm.winter.WinterPlugin
+api-version: '1.20.6'
+author: Vystorm
+website: https://vystorm.net
+description: Gradual seasonal snow, coastal frost and calendar celebrations powered by Vystorm Core.
+depend: [vystorm_core]
+softdepend: [SpawnDirector, WorldDirector]
+permissions:
+  winter.snowfall:
+    description: Turn the falling snow around you on or off (/winter snowfall)
+    default: true
+  winter.build:
+    description: Build mode without plugin snow around you (/winter build)
+    default: true
+  winter.sled:
+    description: Sled runs - list and best times (/winter sled)
+    default: true
+  winter.admin:
+    default: op
+  winter.claim:
+    default: true
+  winter.calendar:
+    default: true
+  winter.snowball:
+    default: true
+
+  winter.missions:
+    description: Contribute to and claim shared winter missions
+    default: true

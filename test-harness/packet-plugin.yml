@@ -1,0 +1,5 @@
+name: WinterPacketVisual
+version: '1'
+main: at.vystorm.winter.acceptance.WinterPacketVisual
+api-version: '26.2'
+depend: [WinterIsComing, vystorm_core]

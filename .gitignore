@@ -1,0 +1,8 @@
+.gradle/
+build/
+libs/
+.idea/
+*.iml
+graphify-out/
+__pycache__/
+graphify-out/

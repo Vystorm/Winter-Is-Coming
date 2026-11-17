@@ -1,0 +1,33 @@
+plugins { id 'net.fabricmc.fabric-loom' version '1.18.2' }
+version = '1.0.0-test'
+group = 'at.vystorm.winter.capture'
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.5'
+    implementation 'net.fabricmc.fabric-api:fabric-api:0.161.0+26.2'
+}
+java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'winter_capture_test'
+        enableGameTests = false
+        enableClientGameTests = true
+        clearRunDirectory = false
+        username = 'WinterCamera'
+    }
+}
+loom {
+    runs {
+        clientGameTest {
+            runDir providers.gradleProperty('captureRunDir').getOrElse('build/run/clientGameTest')
+            property 'winter.capture.packets', providers.gradleProperty('capturePackets').getOrElse('false')
+            property 'winter.capture.startIndex', providers.gradleProperty('captureStartIndex').getOrElse('0')
+            property 'winter.capture.server', '127.0.0.1:25716'
+            property 'winter.capture.snapshots', providers.gradleProperty('captureSnapshots').getOrElse('UNSET')
+            property 'winter.capture.stages', providers.gradleProperty('captureStages').getOrElse('before,early,peak,thaw,after')
+            programArgs '--width', '1920', '--height', '1080'
+        }
+    }
+}
