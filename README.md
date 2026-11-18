@@ -1,6 +1,39 @@
 # Winter Is Coming
 
 
+## Feature switches (1.24.0)
+
+Every feature has its own on/off switch in `config.yml`. All switches are listed with a one-line description in `/vadmin features` (Vystorm Core 0.65.0) and apply at once, without a restart. The only exception is `tutorial.enabled`, which needs a restart. New switches are written into an existing `config.yml` on the first start, with their comments (a backup `config.yml.bak-<time>` is made first). A missing key means "on", so a server keeps the behaviour it had.
+
+- Master switch of the snow: `snow.enabled`. Off: no new snow or ice forms, and what lies stays as it is until `/winter thaw` (which still removes it and brings the original blocks back) or until the switch is on again.
+- Snow details: `snow.spring-thaw.enabled`, `snow.drifts.enabled`, `snow.soft-edges.enabled`, `season-spots.enabled`, and the older keys `snow.cover-leaves`, `snow.cover-small-plants`, `snow.remove-tall-plants`, `snow.ramps`, `snow.cover-stairs-and-slabs`, `protection.protect-core-regions`, `frost.enabled`, `build-mode.enabled`, `seasons.enabled`.
+- Weather and cold: `weather.enabled`, `weather.packet-snow`, `weather.warm-biome-particles`, `snowfall.enabled`, `storms.enabled`, `storms.darkness`, `cold.enabled`, `cold.damage`, `cold.breath`, `cold.warnings`, `cold.hot-meals.enabled`, `cold.warm-hands.enabled`, `cold.reserve.enabled`.
+- Holidays and games: `holidays.enabled` (master for gifts, countdown and fireworks), `holidays.countdown.enabled`, `holidays.advent`, `holidays.christmas`, `holidays.new-year`, `holidays.fireworks`, `advent-calendar.enabled`, `advent-calendar.catch-up`, `advent-calendar.join-reminder`, `snowball-fight.enabled`, `snowball-fight.duels.enabled`, `snowball-fight.hit-chill.enabled`, `community-missions.enabled`, `sledding.enabled`, `sledding.runs.enabled`, `lamps.enabled`.
+- Administration: `admin-menu.enabled`, `date-tools.enabled` (`/winter preview`, `setdate`, `resume`), `world-events.enabled`, `spawns.enabled`, `tutorial.enabled`.
+
+The older keys keep their names and still work; they are declared as switches so they show in `/vadmin features`. `season-spots.only-inside` is still read as before. Values that switched a feature off before (`drift-strength: 0`, `transition-blocks: 0`, `warm-food: 0`, `hand-warmers: []`, `chill: 0`) keep that meaning.
+
+A command of a switched-off feature answers "This feature is switched off on this server." Its entry in tab completion and help disappears at once and comes back when the switch is on again. Stored data (scores, sled times, spots, calendar doors, gifts in the pouch) is kept. `/winter status`, `/winter thaw`, `/winter reload`, `/winter claim` and `/winter claims` always work: they show the state, undo the snow, apply the switches and hand out what players already earned.
+
+## Placeholders (1.24.0)
+
+With Vystorm Core 0.65.0 the plugin registers the namespace `winter`. Each value works as `%vystorm_winter_<key>%` (also through PlaceholderAPI) and as `{winter:<key>}` in Vystorm texts. `/vadmin placeholders winter` lists them. A value whose feature is switched off is empty.
+
+| Key | Value |
+| --- | --- |
+| `phase` | Season phase: `OFF`, `FROST`, `WINTER` or `THAW` |
+| `strength` | Snow strength in percent, 0 to 100 |
+| `holiday` | `NONE`, `ADVENT`, `CHRISTMAS` or `NEW_YEAR` |
+| `season_year` | Year in which the current season started |
+| `date` | Winter date, the test date while one is set |
+| `days_to_next_milestone` | Days to the next peak, thaw or end |
+| `active` | `true` or `false`: winter is active in the player's world |
+| `cold`, `warmth_seconds`, `cold_protection` | Cold of the player in percent, seconds of stored warmth, protection in percent |
+| `snowball_hits`, `snowball_wins`, `snowball_rank` | Snowball scores of the current season |
+| `calendar_opened`, `calendar_waiting` | Advent doors opened this year and waiting today |
+
+Examples: `%vystorm_winter_phase%` shows `WINTER`, `{winter:cold}` shows `35`. `phase`, `strength`, `holiday`, `season_year` and `active` also answer off the server thread (scoreboard and tab plugins); the other values answer on the server thread.
+
 ## Visible snowfall (1.22.0)
 
 White dust particles fall around every player, independent of the real weather and the biome, and only that player sees them. Off by default:
@@ -32,7 +65,7 @@ Progress is saved atomically in `community-missions.json` before completion is a
 
 [Download on Spigot](https://www.spigotmc.org/resources/140367/)
 
-Free seasonal winter Java plugin for Paper/Purpur and Spigot/CraftBukkit, powered by **Vystorm Core 0.64.0+**. Plugin bytecode requires Java 21 or newer; use the Java version required by your server (Java 25 for current 26.x servers). Real-server acceptance results and tested versions are recorded separately in `release/VALIDATION.md`.
+Free seasonal winter Java plugin, powered by **Vystorm Core 0.65.0+**. Plugin bytecode requires Java 21 or newer; use the Java version required by your server (Java 25 for current 26.x servers). The build compiles against Paper 26.2 and, in the `compat1206` check, against Paper 1.20.6; Spigot and CraftBukkit 26.3 were last started with Winter 1.13.0 (see `release/VALIDATION.md`, where real-server results and tested versions are recorded).
 
 Snow gradually accumulates between configurable calendar dates, including tree canopies. Owned snow can stack beyond one block (eight layers per block); the default maximum total depth is 12 layers and the configurable range is 1–64. Surface water freezes outward from natural-looking shores, within a configurable ocean/inland distance budget. February thaw gradually restores plugin-owned snow/ice. Only loaded chunks are processed, with bounded column, mutation and shoreline-search budgets. A durable write-ahead journal records original block data before edits. Periodic writes run on one background worker; at most one intent is in flight. The main thread applies it only after durable completion and rechecks the block, chunk, protection and reload generation.
 
@@ -84,7 +117,7 @@ Advent gifts are available once per Advent week, Christmas gifts once per calend
 
 `check` includes `compat1206` (all main sources compiled with release 21 against Paper 1.20.6) and `compat1206Test` (compatibility tests using the release classes with the old API). The offline libraries default to `<home>/source/tools/smoke-1206/libraries`; override with `-Ppaper1206Libraries=/path/to/1.20.6/libraries`. Build with JDK 25; every source set emits Java 21 bytecode. All current features use APIs available on 1.20.6, so no separate modern adapter module is necessary.
 
-On 1.20.6, Core does not support client biome packet snow: `weather.warm-biome-particles: true` provides the existing cosmetic particle fallback, with one console notice per plugin instance. Terrain snow/ice, cold, warmth reserves, the chest calendar, gifts and snowball duels remain available. Custom material settings must name materials present on that server; invalid settings retain their existing validation errors. Winter 1.13 uses Core's shared compatibility package and requires Core 0.64.0 or newer on every supported server.
+On 1.20.6, Core does not support client biome packet snow: `weather.warm-biome-particles: true` provides the existing cosmetic particle fallback, with one console notice per plugin instance. Terrain snow/ice, cold, warmth reserves, the chest calendar, gifts and snowball duels remain available. Custom material settings must name materials present on that server; invalid settings retain their existing validation errors. Winter uses Core's shared compatibility package; Winter 1.24.0 requires Core 0.65.0 or newer on every supported server.
 
 `./gradlew integrationJar` builds the test-only acceptance plugin. Never install the acceptance plugin on a live server: it constructs an isolated fixture, changes dates and stops its test server.
 

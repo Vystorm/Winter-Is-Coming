@@ -13,7 +13,7 @@ final class SnowballMenuEntry {
         var lang=plugin.lang();
         playerMenu.register(plugin,PlayerMenuEntry.builder("snowball-duel")
                 .priority(60)
-                .visibleWhen((viewer,target)->fight.active(viewer)&&fight.active(target))
+                .visibleWhen((viewer,target)->plugin.duelsOn()&&fight.active(viewer)&&fight.active(target))
                 .icon((viewer,target)->{
                     var row=fight.scores().row(target.getUniqueId(),fight.season());
                     boolean invited=fight.duels().waiting(target.getUniqueId(),viewer.getUniqueId(),System.currentTimeMillis());

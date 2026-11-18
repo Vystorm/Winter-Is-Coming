@@ -67,7 +67,7 @@ final class CalendarMenu implements Listener {
 
     void open(Player player) {
         if (!plugin.calendarSettings().enabled()) {
-            plugin.lang().send(player, "calendar-disabled");
+            plugin.lang().send(player, at.vystorm.winter.WinterSwitches.OFF_MESSAGE);
             return;
         }
         if (!player.hasPermission(PERMISSION)) {
@@ -81,7 +81,7 @@ final class CalendarMenu implements Listener {
     void openChest(Player player) {
         var s = plugin.calendarSettings();
         if (!s.enabled()) {
-            plugin.lang().send(player, "calendar-disabled");
+            plugin.lang().send(player, at.vystorm.winter.WinterSwitches.OFF_MESSAGE);
             return;
         }
         if (!player.hasPermission(PERMISSION)) {

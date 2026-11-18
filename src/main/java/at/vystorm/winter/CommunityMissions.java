@@ -83,7 +83,7 @@ public final class CommunityMissions implements Listener {
     }
     void show(Player player) {
         if (!player.hasPermission("winter.missions")) { plugin.lang().send(player,"missions-denied"); return; }
-        if (!settings.enabled()) { plugin.lang().send(player,"missions-disabled"); return; }
+        if (!settings.enabled()) { plugin.lang().send(player,at.vystorm.winter.WinterSwitches.OFF_MESSAGE); return; }
         plugin.lang().send(player,"missions-title","season",plugin.season().seasonYear());
         for (Definition definition : settings.goals()) {
             MissionStore.Progress progress=store.progress(plugin.season().seasonYear(),definition);

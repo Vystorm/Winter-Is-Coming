@@ -1,3 +1,17 @@
+## 1.24.0 — 2026-11-18
+
+- Requires Vystorm Core 0.65.0. Update Core before you update this plugin.
+- Every feature can now be switched on and off. All switches are listed in `/vadmin features` with a one-line description in all seven languages, and a change applies at once (only `tutorial.enabled` needs a restart). On the first start the new switches are written into your existing `config.yml`, with their comments; a backup of the old file is made first. A missing switch counts as on, so nothing changes until you switch something off.
+- New switches for the snow: `snow.enabled` (master switch: off means no new snow or ice, and what lies stays until `/winter thaw`), `snow.spring-thaw.enabled` (off: the snow stays after the season until `/winter thaw` or the next winter), `snow.drifts.enabled`, `snow.soft-edges.enabled`, `season-spots.enabled`.
+- New switches for holidays and cold: `holidays.enabled` (master for gifts, countdown and fireworks), `holidays.countdown.enabled`, `cold.hot-meals.enabled`, `cold.warm-hands.enabled`.
+- New switches for the games: `snowball-fight.duels.enabled`, `snowball-fight.hit-chill.enabled`, `sledding.runs.enabled`.
+- New switches for administration: `admin-menu.enabled`, `date-tools.enabled` (`/winter preview`, `setdate`, `resume`), `world-events.enabled` (winter events for Core's event catalogue), `tutorial.enabled`.
+- Older keys keep their names and now also show in `/vadmin features`: `snow.cover-leaves`, `snow.cover-small-plants`, `snow.remove-tall-plants`, `snow.ramps`, `snow.cover-stairs-and-slabs`, `protection.protect-core-regions`, `weather.packet-snow`, `weather.warm-biome-particles`, `holidays.advent`, `holidays.christmas`, `holidays.new-year`, `holidays.fireworks`, `cold.damage`, `cold.breath`, `cold.warnings`, `advent-calendar.catch-up`, `advent-calendar.join-reminder`, `storms.darkness`. `season-spots.only-inside` is still read.
+- A command of a switched-off feature answers "This feature is switched off on this server." It is also gone from tab completion and help while the switch is off. The player menu entry for duels and the admin panel disappear while their switch is off. Scores, sled times, spots, calendar doors and gifts in the pouch are kept.
+- Placeholders: the plugin registers the namespace `winter` with 15 values (season phase and strength, holiday, date, days to the next milestone, cold and warmth of a player, snowball scores, Advent doors). Examples: `%vystorm_winter_phase%` and `{winter:cold}`. They work in Vystorm texts and, through PlaceholderAPI, in other plugins. A value of a switched-off feature is empty.
+- Tab completion and help follow a switch at once, without registering the command again.
+- Fix: `sledding.enabled: false` now also stops the timed sled runs; before, the clock kept running.
+
 ## 1.23.0 — 2026-11-17
 
 - Requires Vystorm Core 0.64.0 or newer. Update Core before you update this plugin.

@@ -27,7 +27,7 @@ final class WinterPanels {
                 .render(calendarPanel::render).fallback(calendar::openChest).build());
         calendar.panelOpener(p -> open(plugin, panels, p, CalendarPanel.NAME));
         panels.register(WinterAdminPanel.NAME, PanelSpec.builder(plugin.lang().ref("admin-title"))
-                .access(p -> plugin.isEnabled() && !plugin.faulted() && p.hasPermission(WinterAdminMenu.PERMISSION))
+                .access(p -> plugin.isEnabled() && !plugin.faulted() && adminMenuOn(plugin) && p.hasPermission(WinterAdminMenu.PERMISSION))
                 .render(ctx -> WinterAdminPanel.panel(ctx, new WinterAdminPanel.Overview(plugin.date(), plugin.phaseName(), plugin.modeName(),
                         plugin.strengthPercent(), plugin.settings().changes(), plugin.clock().enabled(), plugin.snowfallSlider()), adminActions))
                 .fallback(admin::openChest).build());
@@ -36,6 +36,12 @@ final class WinterPanels {
         plugin.getServer().getPluginManager().registerEvents(new Listener() {
             @EventHandler public void quit(PlayerQuitEvent event) { calendarPanel.forget(event.getPlayer().getUniqueId()); }
         }, plugin);
+    }
+
+    /** admin-menu.enabled (1.24.0); a plugin without switches read yet counts as on. */
+    static boolean adminMenuOn(WinterPlugin plugin) {
+        WinterSwitches switches = plugin.switches();
+        return switches == null || switches.on(WinterSwitches.Feature.ADMIN_MENU);
     }
 
     static boolean open(WinterPlugin plugin, Panels panels, Player player, String name) {
@@ -58,7 +64,7 @@ final class WinterPanels {
             public Result check(Player player) {
                 Result allowed = WinterPanels.check(plugin, player, CalendarMenu.PERMISSION, "calendar-denied");
                 if (!allowed.success()) return allowed;
-                return plugin.calendarSettings().enabled() ? Result.ok() : Result.error(plugin.lang().plain(player, "calendar-disabled"));
+                return plugin.calendarSettings().enabled() ? Result.ok() : Result.error(plugin.lang().plain(player, at.vystorm.winter.WinterSwitches.OFF_MESSAGE));
             }
             public Result openDoor(Player player, int day) {
                 Result allowed = check(player);
@@ -81,7 +87,11 @@ final class WinterPanels {
 
     static WinterAdminPanel.Actions adminActions(WinterPlugin plugin, ConfigEditorInterface config, WinterAdminMenu menu) {
         return new WinterAdminPanel.Actions() {
-            public Result check(Player player) { return WinterPanels.check(plugin, player, WinterAdminMenu.PERMISSION, "denied"); }
+            public Result check(Player player) {
+                Result allowed = WinterPanels.check(plugin, player, WinterAdminMenu.PERMISSION, "denied");
+                if (!allowed.success() || adminMenuOn(plugin)) return allowed;
+                return Result.error(plugin.lang().plain(player, WinterSwitches.OFF_MESSAGE));
+            }
             private Result outcome(Player player) { return plugin.faulted() ? Result.error(plugin.lang().plain(player, "faulted")) : Result.ok(); }
             public Result run(Player player, String action) {
                 Result allowed = check(player);

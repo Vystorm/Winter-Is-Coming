@@ -24,7 +24,11 @@ import org.bukkit.util.Vector;
  */
 public final class Sledding implements Listener {
     /** Settings from {@code sledding.*}. */
-    public record Options(boolean enabled, double multiplier, double maxSpeed) {}
+    public record Options(boolean enabled, double multiplier, double maxSpeed, boolean runs) {
+        public Options(boolean enabled, double multiplier, double maxSpeed) { this(enabled, multiplier, maxSpeed, true); }
+        /** Timed runs need both {@code sledding.enabled} and {@code sledding.runs.enabled} (1.24.0). */
+        public boolean timed() { return enabled && runs; }
+    }
     /** Messages and runs come from the plugin. */
     public interface Host {
         Options sleddingOptions();
@@ -58,7 +62,8 @@ public final class Sledding implements Listener {
             double next = SleddingMath.speed(horizontal, options.multiplier(), event.getTo().getY() < event.getFrom().getY() - 0.01, options.maxSpeed());
             if (next > horizontal + 1e-4) boat.setVelocity(new Vector(v.getX() * next / horizontal, v.getY(), v.getZ() * next / horizontal));
         }
-        timing(rider, event.getTo());
+        if (options == null || options.timed()) timing(rider, event.getTo());
+        else running.remove(rider.getUniqueId());
     }
 
     private static boolean onSnow(Location at) {

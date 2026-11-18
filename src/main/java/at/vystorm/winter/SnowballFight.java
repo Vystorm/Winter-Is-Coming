@@ -115,8 +115,8 @@ final class SnowballFight implements Listener, AutoCloseable {
     void challenge(Player from, Player to) {
         var lang = plugin.lang();
         var s = plugin.snowballSettings();
-        if (!s.enabled()) {
-            lang.send(from, "snowball-disabled");
+        if (!plugin.duelsOn()) {
+            lang.send(from, WinterSwitches.OFF_MESSAGE);
             return;
         }
         if (!from.hasPermission(PERMISSION)) {
@@ -180,7 +180,7 @@ final class SnowballFight implements Listener, AutoCloseable {
     void stats(Player player) {
         var lang = plugin.lang();
         if (!plugin.snowballSettings().enabled()) {
-            lang.send(player, "snowball-disabled");
+            lang.send(player, WinterSwitches.OFF_MESSAGE);
             return;
         }
         if (!player.hasPermission(PERMISSION)) {

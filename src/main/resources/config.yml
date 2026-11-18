@@ -7,6 +7,15 @@ calendar:
   thaw: '02-01'
   end: '03-01'
 snow:
+  # Master switch of the plugin's snow and ice. false: no new snow or ice is laid and the snow that is already there
+  # stays exactly as it is (it neither grows nor melts) until you run /winter thaw, which still removes it and brings
+  # the original blocks back, or until you switch this on again. Weather, cold and the holidays keep working.
+  enabled: true
+  # Automatic spring thaw: from calendar.thaw on the snow melts and the original blocks come back. false: the snow
+  # stays as it was at the end of winter until you run /winter thaw or the next winter begins. Snow in protected
+  # regions, excluded biomes or outside season spots still goes away.
+  spring-thaw:
+    enabled: true
   # Total depth per column: 8 layers = one block; 12 = 1.5 blocks; 64 = 8 blocks.
   max-layers: 12
   cover-leaves: true
@@ -20,9 +29,15 @@ snow:
   cover-stairs-and-slabs: true
   # 0 = uniform depth, 1 = strongest drifts; coherent patches, never above max-layers.
   drift-strength: 0.45
+  # Snow drifts (patches of different depth). false = uniform depth, whatever drift-strength says.
+  drifts:
+    enabled: true
   # Fade inside protected/excluded biome borders; never edits across a protected boundary.
   # Unloaded neighbors are ignored (no chunk loads). 0 disables the transition.
   transition-blocks: 4
+  # Soft edges at protected regions and excluded biomes. false = hard edge, whatever transition-blocks says.
+  soft-edges:
+    enabled: true
   excluded-biomes: [desert, badlands, eroded_badlands, wooded_badlands]
   clear-materials: [DIRT_PATH, FARMLAND, RAIL, POWERED_RAIL]
 frost:
@@ -57,6 +72,13 @@ spawns:
   spider-weight-at-peak: 0.7
   creeper-weight-at-peak: 0.8
 holidays:
+  # Master switch for the holidays: gifts in the Advent weeks, at Christmas and at New Year, the New Year countdown
+  # and the fireworks. false: no holiday is active and no new gift is credited. Gifts that already wait in a player's
+  # pouch stay there and can still be collected with /winter claim.
+  enabled: true
+  # New Year countdown in chat during the last ten seconds of the year. Needs holidays.new-year.
+  countdown:
+    enabled: true
   advent: true
   christmas: true
   new-year: true
@@ -86,9 +108,15 @@ cold:
   warnings: true
   # Cold removed by eating a stew or soup, 0..1 (0.5 = half of full cold, 0 disables).
   warm-food: 0.5
+  # Hot meals remove cold. false = eating does nothing for the cold, whatever warm-food says.
+  hot-meals:
+    enabled: true
   # Items that warm the hands: held in the main or off hand, one of them blocks as much cold as one leather piece
   # (25%). [] switches hand warmers off.
   hand-warmers: [LANTERN, SOUL_LANTERN]
+  # Hand warmers. false = held items never block cold, whatever the list above says.
+  warm-hands:
+    enabled: true
   # Fully warmed players store fire warmth for their next trip. Missing keys use these defaults.
   reserve:
     enabled: true
@@ -136,6 +164,13 @@ snowball-fight:
   enabled: true
   # Cold added to the hit player, 0..1 (0.05 = 5%); leather armour reduces it, 0 disables it.
   chill: 0.05
+  # A hit makes the target a little colder. false = no cold on a hit, whatever chill says. Needs cold.enabled.
+  hit-chill:
+    enabled: true
+  # Snowball duels (/winter duel, /winter surrender, the entry in the Core player menu). false: no new duel starts and
+  # running duels are cancelled without a result. Needs snowball-fight.enabled. Scores are kept.
+  duels:
+    enabled: true
   # Duels (/winter duel <player> or the Core player menu): first to duel-hits hits wins, otherwise the leader after duel-seconds.
   duel-hits: 10
   duel-seconds: 120
@@ -208,11 +243,19 @@ sledding:
   speed-multiplier: 1.6
   # Top speed on snow in blocks per tick (0.7 = 14 blocks per second).
   max-speed: 0.7
+  # Timed sled runs (/winter sled ...). false: no clock starts and the sled commands answer that the feature is off.
+  # Runs and best times are kept. Needs sledding.enabled: with sledding off there are no timed runs either.
+  runs:
+    enabled: true
 
 # Season spots (1.20.0): snow only falls inside these circles once at least one exists, so it does not snow in the
 # whole world. Admins add a spot where they stand: /winter spot add NAME [RADIUS] (8-2000 blocks, default 64);
 # /winter spot remove NAME, /winter spot list. only-inside: false = spots are ignored (snow everywhere as before).
 season-spots:
+  # false: the spots are ignored (snow everywhere as before) and /winter spot answers that the feature is off.
+  # The spots themselves are kept.
+  enabled: true
+  # Older setting, still read: false also ignores the spots, but /winter spot keeps working.
   only-inside: true
 
 # Build mode (1.20.0): /winter build lets a player build without the plugin's snow. While it is on, no plugin snow
@@ -236,3 +279,25 @@ snowfall:
   only-in-winter: true
   # Size of the white flakes (0.5..2.0).
   flake-size: 1.5
+
+# Winter admin menu (/winter admin). false: the command answers that the feature is off; every action in it is still
+# available as a command.
+admin-menu:
+  enabled: true
+
+# Date tools for admins: /winter preview, /winter setdate and /winter resume. false: these commands answer that the
+# feature is off. A test date that is set stays set; /winter thaw, /winter status and /winter reload always work.
+date-tools:
+  enabled: true
+
+# Winter and holiday events in Vystorm Core's event catalogue (read by WorldDirector and other plugins). false: the
+# plugin reports no winter event and no winter state to Core.
+world-events:
+  enabled: true
+
+# Winter tutorial in the Vystorm Core main menu. A change needs a server restart.
+tutorial:
+  enabled: true
+
+# Switched-off commands disappear from tab completion and help at once and answer "This feature is switched off on
+# this server." Every switch applies at once.

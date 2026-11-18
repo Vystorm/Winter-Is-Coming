@@ -24,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class WinterPlugin extends JavaPlugin {
     private WinterSettings settings;
+    private WinterSwitches switches;
     private WinterState state;
     private BlockJournal journal;
     private WinterTerrain terrain;
@@ -58,10 +59,13 @@ public final class WinterPlugin extends JavaPlugin {
     private ZonedDateTime previousClock;
     @Override public void onEnable() {
         try {
-            if (!CoreApi.atLeast("0.64.0")) throw new IllegalStateException("Vystorm Core 0.64.0 or newer is required");
+            if (!CoreApi.atLeast("0.65.0")) throw new IllegalStateException("Vystorm Core 0.65.0 or newer is required");
             core = CoreApi.api().orElseThrow();
             core.admin().updates().spigot(this, 140367);
             saveDefaultConfig();
+            // The file is registered without Core's full merge (a deleted mission goal must stay deleted), so the new
+            // switches are written into an existing config.yml here, with their comments.
+            if (WinterSwitches.addMissing(this) > 0) reloadConfig();
             try {
                 core.settings().config().registerAll(this, () -> commandReload(getServer().getConsoleSender()), false);
             } catch (RuntimeException configMenuUnavailable) {
@@ -72,6 +76,7 @@ public final class WinterPlugin extends JavaPlugin {
             reserve = WarmthReserve.Settings.read(getConfig());
             calendarSettings = AdventCalendar.Settings.read(getConfig());
             snowballSettings = SnowballDuels.Settings.read(getConfig());
+            switches = WinterSwitches.read(getConfig());
             try {
                 int fixed = LangMigration.migrateFolder(core.data().files(), getDataFolder().toPath().resolve("lang"));
                 if (fixed > 0) getLogger().info("Updated placeholders in " + fixed + " language file(s); backups end in .bak-1.2");
@@ -79,8 +84,9 @@ public final class WinterPlugin extends JavaPlugin {
                 getLogger().warning("Could not update language placeholders: " + failure);
             }
             lang = core.lang().register(this);
+            describeSwitches();
             try {
-                core.registerTutorial(this);
+                if (on(WinterSwitches.Feature.TUTORIAL)) core.registerTutorial(this);
             } catch (RuntimeException noTutorial) {
                 getLogger().fine("Tutorial not registered: " + noTutorial);
             }
@@ -144,6 +150,11 @@ public final class WinterPlugin extends JavaPlugin {
                     lang.send(player, key, placeholders);
                 }
             }), this);
+            try {
+                WinterPlaceholders.register(core.placeholders(), this, lang, placeholderSource());
+            } catch (RuntimeException unavailable) {
+                getLogger().warning("Placeholders not registered: " + unavailable);
+            }
             core.command().register(this, lang, commandSpec(this));
             for (World world : getServer().getWorlds()) for (Chunk chunk : world.getLoadedChunks()) terrain.load(chunk);
             tasks = core.tasks().of(this, "WinterIsComing");
@@ -181,13 +192,76 @@ public final class WinterPlugin extends JavaPlugin {
     public WinterSettings settings() {
         return settings;
     }
+    /** The 1.24.0 feature switches as read with the last (re)load; everything on before the first read. */
+    public WinterSwitches switches() {
+        return switches == null ? WinterSwitches.DEFAULTS : switches;
+    }
+    boolean on(WinterSwitches.Feature feature) {
+        return switches().on(feature);
+    }
+    /** Answers a command of a switched-off feature with the one shared message; true when the feature is off. */
+    boolean off(CommandSender sender, boolean on) {
+        if (on) return false;
+        lang.send(sender, WinterSwitches.OFF_MESSAGE);
+        return true;
+    }
+    /**
+     * Gives every switch a one-line description in the admin's language for {@code /vadmin features} and declares the
+     * older booleans with other names as features, so their keys keep working unchanged.
+     */
+    private void describeSwitches() {
+        try {
+            var config = core.settings().config();
+            for (String path : WinterSwitches.allPaths()) {
+                String description = lang.ref(WinterSwitches.descriptionKey(path));
+                if (WinterSwitches.DECLARED.contains(path)) config.feature(this, path, null, description);
+                else config.label(this, path, null, description);
+            }
+            config.activation(this, "tutorial.enabled", Vystorm.vystorm_core._uiMethods.settings.SettingPolicy.Activation.RESTART);
+        } catch (RuntimeException | LinkageError unavailable) {
+            getLogger().fine("Feature switch descriptions unavailable: " + unavailable);
+        }
+    }
+    /** What the {@code winter} placeholders read; every value is looked up at call time. */
+    private WinterPlaceholders.Source placeholderSource() {
+        WinterPlugin p = this;
+        return new WinterPlaceholders.Source() {
+            public SeasonCalendar.State season() { return p.season; }
+            public String holiday() { return p.holiday; }
+            public LocalDate date() { return p.state == null ? null : p.date(); }
+            public Set<UUID> activeWorlds() { return p.activeWorlds; }
+            public Integer daysToMilestone() {
+                if (p.settings == null || p.state == null || p.failed || p.state.data().thaw) return null;
+                LocalDate today = p.date();
+                return p.settings.calendar().nextMilestone(today).map(m -> (int) java.time.temporal.ChronoUnit.DAYS.between(today, m.date())).orElse(null);
+            }
+            public boolean holidaysOn() { return p.on(WinterSwitches.Feature.HOLIDAYS); }
+            public boolean coldOn() { return p.cold.enabled() && p.coldLoop != null; }
+            public boolean reserveOn() { return p.reserve.enabled(); }
+            public double cold(UUID id) { return p.coldLoop.level(id); }
+            public double warmth(UUID id) { return p.coldLoop.reserve(id); }
+            public int protection(Player player) { return p.coldLoop.protection(player); }
+            public boolean snowballOn() { return p.snowballSettings.enabled() && p.snowball != null; }
+            public int[] snowball(UUID id) {
+                int season = p.snowball.season();
+                var row = p.snowball.scores().row(id, season);
+                return new int[]{row.hits(), row.wins(), p.snowball.scores().rank(id, season)};
+            }
+            public boolean calendarOn() { return p.calendarSettings != null && p.calendarSettings.enabled() && p.calendarStore != null; }
+            public int[] calendar(UUID id) {
+                LocalDate today = LocalDate.now(p.settings.zone());   // the calendar follows the real date only
+                var opened = p.calendarStore.opened(id, today.getYear());
+                return new int[]{opened.size(), AdventCalendar.waiting(today, opened, p.calendarSettings.catchUp())};
+            }
+        };
+    }
     private at.vystorm.winter.world.SnowZones zones;
     /** Season spots and build mode: where the plugin may lay snow (1.20.0). */
     public at.vystorm.winter.world.SnowZones zones() {
         return zones;
     }
     void configureZones() {
-        if (zones != null) zones.configure(getConfig().getBoolean("season-spots.only-inside", true), getConfig().getBoolean("build-mode.enabled", true) ? getConfig().getInt("build-mode.radius", 24) : 0);
+        if (zones != null) zones.configure(on(WinterSwitches.Feature.SPOTS) && getConfig().getBoolean("season-spots.only-inside", true), getConfig().getBoolean("build-mode.enabled", true) ? getConfig().getInt("build-mode.radius", 24) : 0);
     }
     private void trackBuilders() {
         if (zones == null) return;
@@ -205,10 +279,7 @@ public final class WinterPlugin extends JavaPlugin {
         zones.updateBuilders(list);
     }
     void commandBuild(Player player) {
-        if (!getConfig().getBoolean("build-mode.enabled", true)) {
-            lang.send(player, "build-disabled");
-            return;
-        }
+        if (off(player, getConfig().getBoolean("build-mode.enabled", true))) return;
         boolean on = zones.toggleBuild(player.getUniqueId());
         lang.send(player, on ? "build-on" : "build-off", "radius", getConfig().getInt("build-mode.radius", 24));
         trackBuilders();
@@ -223,13 +294,11 @@ public final class WinterPlugin extends JavaPlugin {
     }
     /** {@code /winter snowfall}: the player switches the falling snow around himself on or off. */
     void commandSnowfall(Player player) {
-        if (snowfall == null || !snowfall.settings().enabled()) {
-            lang.send(player, "snowfall-disabled");
-            return;
-        }
+        if (off(player, snowfall != null && snowfall.settings().enabled())) return;
         lang.send(player, snowfall.toggle(player) ? "snowfall-on" : "snowfall-off");
     }
     void commandSpot(org.bukkit.command.CommandSender sender, String action, String name, Integer radius) {
+        if (off(sender, on(WinterSwitches.Feature.SPOTS))) return;
         try {
             switch (action) {
                 case "add" -> {
@@ -400,6 +469,10 @@ public final class WinterPlugin extends JavaPlugin {
         if (tasks != null) tasks.cancel();
         if (coldLoop != null) coldLoop.close();
     }
+    /** The chat countdown runs in the last ten seconds of December, unless {@code holidays.countdown.enabled} is false. */
+    static boolean countdownShown(long remaining, int month, boolean switchOn) {
+        return switchOn && remaining >= 0 && remaining <= 10 && month == 12;
+    }
     private void celebration() {
         ZonedDateTime now = ZonedDateTime.now(settings.zone());
         ZonedDateTime previous = previousClock;
@@ -407,7 +480,7 @@ public final class WinterPlugin extends JavaPlugin {
         if (previous == null || state.data().manualDate != null || !settings.newYear()) return;
         ZonedDateTime midnight = LocalDate.of(now.getYear() + (now.getMonthValue() == 12 ? 1 : 0), 1, 1).atStartOfDay(settings.zone());
         long remaining = Duration.between(now, midnight).getSeconds();
-        if (remaining >= 0 && remaining <= 10 && now.getMonthValue() == 12)
+        if (countdownShown(remaining, now.getMonthValue(), on(WinterSwitches.Feature.COUNTDOWN)))
             for (Player player : Bukkit.getOnlinePlayers()) if (settings.includes(player.getWorld())) lang.send(player, "countdown", "seconds", remaining + 1);
         boolean celebrate = false;
         if (HolidayRules.crossedNewYear(previous, now)) {
@@ -438,47 +511,70 @@ public final class WinterPlugin extends JavaPlugin {
      * a mock or {@code null} in tests that only look at names and help.
      */
     static Vystorm.vystorm_core.commands.CommandSpec commandSpec(WinterPlugin p) {
+        // Subcommands of switched-off features are left out of tab completion and help. Core asks the condition at every
+        // completion, so a switch changed with /winter reload applies at once; the command still answers the off message.
         return Vystorm.vystorm_core.commands.CommandSpec.command("winter")
                 .executes(ctx -> p.commandStatus(ctx.sender()))
                 .sub("status", s -> s.executes(ctx -> p.commandStatus(ctx.sender())))
-                .sub("missions", s -> s.permission("winter.missions").playerOnly().executes(ctx -> p.guarded(ctx.sender(), () -> p.missions.show(ctx.player()))))
-                .sub("warmth", s -> s.playerOnly().executes(ctx -> p.commandWarmth(ctx.player())))
-                .sub("preview", s -> s.permission("winter.admin").arg(dateArg(p)).executes(ctx -> p.commandPreview(ctx.sender(), ctx.get("date"))))
-                .sub("setdate", s -> s.permission("winter.admin").arg(dateArg(p)).executes(ctx -> p.commandSetDate(ctx.sender(), ctx.get("date"))))
-                .sub("resume", s -> s.permission("winter.admin").executes(ctx -> p.commandResume(ctx.sender())))
+                .sub("missions", s -> hide(p, s, sw -> sw.on("community-missions.enabled")).permission("winter.missions").playerOnly().executes(ctx -> p.guarded(ctx.sender(), () -> p.missions.show(ctx.player()))))
+                .sub("warmth", s -> hide(p, s, sw -> sw.on("cold.enabled")).playerOnly().executes(ctx -> p.commandWarmth(ctx.player())))
+                .sub("preview", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.DATE_TOOLS)).permission("winter.admin").arg(dateArg(p)).executes(ctx -> p.commandPreview(ctx.sender(), ctx.get("date"))))
+                .sub("setdate", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.DATE_TOOLS)).permission("winter.admin").arg(dateArg(p)).executes(ctx -> p.commandSetDate(ctx.sender(), ctx.get("date"))))
+                .sub("resume", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.DATE_TOOLS)).permission("winter.admin").executes(ctx -> p.commandResume(ctx.sender())))
                 .sub("thaw", s -> s.permission("winter.admin").executes(ctx -> p.commandThaw(ctx.sender())))
-                .sub("admin", s -> s.permission("winter.admin").playerOnly().executes(ctx -> p.guarded(ctx.sender(), () -> p.adminMenu.open(ctx.player()))))
-                .sub("lamp", s -> s.permission("winter.admin").playerOnly().executes(ctx -> p.guarded(ctx.sender(), () -> p.lamps.toggle(ctx.player()))))
+                .sub("admin", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.ADMIN_MENU)).permission("winter.admin").playerOnly().executes(ctx -> p.commandAdmin(ctx.player())))
+                .sub("lamp", s -> hide(p, s, sw -> sw.on("lamps.enabled")).permission("winter.admin").playerOnly().executes(ctx -> p.guarded(ctx.sender(), () -> p.lamps.toggle(ctx.player()))))
                 .sub("reload", s -> s.permission("winter.admin").executes(ctx -> p.commandReload(ctx.sender())))
                 .sub("claim", s -> s.executes(ctx -> p.claim(ctx.sender())))
                 .sub("claims", s -> s.executes(ctx -> p.commandClaims(ctx.sender())))
-                .sub("calendar", s -> s.permission(CalendarMenu.PERMISSION).playerOnly().executes(ctx -> p.commandCalendar(ctx.player())))
-                .sub("snowball", s -> s.permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSnowball(ctx.player())))
-                .sub("duel", s -> s.permission(SnowballFight.PERMISSION).playerOnly()
+                .sub("calendar", s -> hide(p, s, sw -> sw.on("advent-calendar.enabled")).permission(CalendarMenu.PERMISSION).playerOnly().executes(ctx -> p.commandCalendar(ctx.player())))
+                .sub("snowball", s -> hide(p, s, sw -> sw.on("snowball-fight.enabled")).permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSnowball(ctx.player())))
+                .sub("duel", s -> hide(p, s, sw -> sw.on("snowball-fight.enabled") && sw.on(WinterSwitches.Feature.DUELS)).permission(SnowballFight.PERMISSION).playerOnly()
                         .arg(Vystorm.vystorm_core.commands.Arg.word("player").suggests((ctx, prefix) -> {
                             Player player = ctx.player();
                             return Bukkit.getOnlinePlayers().stream().filter(o -> o != player && player.canSee(o)).map(Player::getName).sorted().toList();
                         }))
                         .executes(ctx -> p.commandDuel(ctx.player(), ctx.get("player"))))
-                .sub("surrender", s -> s.permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSurrender(ctx.player())))
-                .sub("storm", s -> s.executes(ctx -> p.commandStorm(ctx.sender(), null))
+                .sub("surrender", s -> hide(p, s, sw -> sw.on("snowball-fight.enabled") && sw.on(WinterSwitches.Feature.DUELS)).permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSurrender(ctx.player())))
+                .sub("storm", s -> hide(p, s, sw -> sw.on("storms.enabled")).executes(ctx -> p.commandStorm(ctx.sender(), null))
                         .sub("snowstorm", l -> l.permission("winter.admin").executes(ctx -> p.commandStorm(ctx.sender(), "snowstorm")))
                         .sub("blizzard", l -> l.permission("winter.admin").executes(ctx -> p.commandStorm(ctx.sender(), "blizzard")))
                         .sub("stop", l -> l.permission("winter.admin").executes(ctx -> p.commandStorm(ctx.sender(), "stop"))))
-                .sub("build", s -> s.permission("winter.build").playerOnly().executes(ctx -> p.commandBuild(ctx.player())))
-                .sub("snowfall", s -> s.permission("winter.snowfall").playerOnly().executes(ctx -> p.commandSnowfall(ctx.player())))
-                .sub("spot", s -> s.permission("winter.admin").executes(ctx -> p.commandSpot(ctx.sender(), "list", null, null))
+                .sub("build", s -> hide(p, s, sw -> sw.on("build-mode.enabled")).permission("winter.build").playerOnly().executes(ctx -> p.commandBuild(ctx.player())))
+                .sub("snowfall", s -> hide(p, s, sw -> sw.on("snowfall.enabled")).permission("winter.snowfall").playerOnly().executes(ctx -> p.commandSnowfall(ctx.player())))
+                .sub("spot", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.SPOTS)).permission("winter.admin").executes(ctx -> p.commandSpot(ctx.sender(), "list", null, null))
                         .sub("list", l -> l.executes(ctx -> p.commandSpot(ctx.sender(), "list", null, null)))
                         .sub("add", l -> l.playerOnly().arg(Vystorm.vystorm_core.commands.Arg.word("spot")).arg(Vystorm.vystorm_core.commands.Arg.integer("radius", 8, 2000).optional())
                                 .executes(ctx -> p.commandSpot(ctx.sender(), "add", ctx.get("spot"), ctx.<Integer>getOr("radius", null))))
                         .sub("remove", l -> l.arg(Vystorm.vystorm_core.commands.Arg.word("spot").suggests((ctx, prefix) -> p.zones == null ? List.of() : List.copyOf(p.zones.spots().keySet()))).executes(ctx -> p.commandSpot(ctx.sender(), "remove", ctx.get("spot"), null))))
-                .sub("sled", s -> s.permission("winter.sled").executes(ctx -> p.commandSled(ctx.sender(), "list", null))
+                .sub("sled", s -> hide(p, s, sw -> sw.on("sledding.enabled") && sw.on(WinterSwitches.Feature.SLED_RUNS)).permission("winter.sled").executes(ctx -> p.commandSled(ctx.sender(), "list", null))
                         .sub("list", l -> l.executes(ctx -> p.commandSled(ctx.sender(), "list", null)))
                         .sub("top", l -> l.arg(sledArg(p)).executes(ctx -> p.commandSled(ctx.sender(), "top", ctx.get("run"))))
                         .sub("create", l -> l.permission("winter.admin").arg(Vystorm.vystorm_core.commands.Arg.word("run")).executes(ctx -> p.commandSled(ctx.sender(), "create", ctx.get("run"))))
                         .sub("finish", l -> l.permission("winter.admin").arg(sledArg(p)).executes(ctx -> p.commandSled(ctx.sender(), "finish", ctx.get("run"))))
                         .sub("delete", l -> l.permission("winter.admin").arg(sledArg(p)).executes(ctx -> p.commandSled(ctx.sender(), "delete", ctx.get("run")))))
                 .build();
+    }
+    /**
+     * Lists a subcommand only while its feature is on, read from the CURRENT switches at every completion (reload
+     * replaces them); it still runs and answers the shared off message. Without a plugin (tests) the node is unchanged.
+     */
+    private static Vystorm.vystorm_core.commands.CommandSpec.Builder hide(WinterPlugin p, Vystorm.vystorm_core.commands.CommandSpec.Builder sub,
+                                                                          java.util.function.Predicate<WinterSwitches> on) {
+        if (p == null) return sub;
+        return sub.visibleWhen(() -> on.test(p.switches() == null ? WinterSwitches.DEFAULTS : p.switches()));
+    }
+    /** After a reload: sends players their command list again when a switch changed (Core 0.65.0). */
+    static void switchesReloaded(Vystorm.vystorm_core.commands.CoreCommandsInterface commands, WinterSwitches before, WinterSwitches after) {
+        if (commands != null && !java.util.Objects.equals(before, after)) commands.refresh();
+    }
+    /** Duels need {@code snowball-fight.enabled} and {@code snowball-fight.duels.enabled}. */
+    boolean duelsOn() {
+        return (snowballSettings == null || snowballSettings.enabled()) && on(WinterSwitches.Feature.DUELS);
+    }
+    void commandAdmin(Player player) {
+        if (off(player, on(WinterSwitches.Feature.ADMIN_MENU))) return;
+        guarded(player, () -> adminMenu.open(player));
     }
     private static Vystorm.vystorm_core.commands.Arg<String> sledArg(WinterPlugin p) {
         return Vystorm.vystorm_core.commands.Arg.word("run").suggests((ctx, prefix) -> p == null || p.sledRuns == null ? List.of() : List.copyOf(p.sledRuns.names()));
@@ -532,10 +628,7 @@ public final class WinterPlugin extends JavaPlugin {
                 lang.send(player, "faulted");
                 return;
             }
-            if (!cold.enabled()) {
-                lang.send(player, "warmth-disabled");
-                return;
-            }
+            if (off(player, cold.enabled())) return;
             lang.send(player, "warmth-overview", "cold", Math.round(coldLoop.level(player.getUniqueId()) * 100),
                     "seconds", (int)Math.ceil(coldLoop.reserve(player.getUniqueId())), "protection", coldLoop.protection(player) * 25);
             lang.send(player, "warmth-tip");
@@ -555,6 +648,7 @@ public final class WinterPlugin extends JavaPlugin {
             lang.send(sender, "faulted");
             return;
         }
+        if (off(sender, storms.options().enabled())) return;
         World world = sender instanceof Player player ? player.getWorld() : getServer().getWorlds().getFirst();
         if (action != null) {
             if (!admin(sender)) return;
@@ -582,10 +676,12 @@ public final class WinterPlugin extends JavaPlugin {
 
     at.vystorm.winter.world.Sledding.Options sleddingOptions() {
         return new at.vystorm.winter.world.Sledding.Options(getConfig().getBoolean("sledding.enabled", true),
-                Math.clamp(getConfig().getDouble("sledding.speed-multiplier", 1.6), 1.0, 4.0), Math.clamp(getConfig().getDouble("sledding.max-speed", 0.7), 0.1, 2.0));
+                Math.clamp(getConfig().getDouble("sledding.speed-multiplier", 1.6), 1.0, 4.0), Math.clamp(getConfig().getDouble("sledding.max-speed", 0.7), 0.1, 2.0),
+                on(WinterSwitches.Feature.SLED_RUNS));
     }
     /** {@code /winter sled [list|top|create|finish|delete] [run]}. */
     void commandSled(CommandSender sender, String action, String rawName) {
+        if (off(sender, switches().on("sledding.enabled") && on(WinterSwitches.Feature.SLED_RUNS))) return;
         if (sledRuns == null) {
             lang.send(sender, "sled.unavailable");
             return;
@@ -646,9 +742,11 @@ public final class WinterPlugin extends JavaPlugin {
         }
     }
     void commandSurrender(Player player) {
+        if (off(player, duelsOn())) return;
         guarded(player, () -> snowball.surrender(player));
     }
     void commandDuel(Player player, String name) {
+        if (off(player, duelsOn())) return;
         guarded(player, () -> {
             Player target = Bukkit.getPlayerExact(name);
             if (target == null || !player.canSee(target)) lang.send(player, "snowball-offline");
@@ -680,7 +778,7 @@ public final class WinterPlugin extends JavaPlugin {
     }
     void commandPreview(CommandSender sender, String input) {
         guarded(sender, () -> {
-            if (!admin(sender)) return;
+            if (!admin(sender) || off(sender, on(WinterSwitches.Feature.DATE_TOOLS))) return;
             LocalDate day = parseDate(input);
             if (day == null) {
                 lang.send(sender, "invalid-date", "input", input);
@@ -692,7 +790,7 @@ public final class WinterPlugin extends JavaPlugin {
     }
     void commandSetDate(CommandSender sender, String input) {
         guarded(sender, () -> {
-            if (!admin(sender)) return;
+            if (!admin(sender) || off(sender, on(WinterSwitches.Feature.DATE_TOOLS))) return;
             LocalDate day = parseDate(input);
             if (day == null) {
                 lang.send(sender, "invalid-date", "input", input);
@@ -704,7 +802,7 @@ public final class WinterPlugin extends JavaPlugin {
     }
     void commandResume(CommandSender sender) {
         guarded(sender, () -> {
-            if (admin(sender)) {
+            if (admin(sender) && !off(sender, on(WinterSwitches.Feature.DATE_TOOLS))) {
                 state.mode(null, false);
                 modeChanged(sender);
                 if (season.phase().equals("OFF")) {
@@ -735,6 +833,7 @@ public final class WinterPlugin extends JavaPlugin {
             AdventCalendar.Settings proposedCalendar = AdventCalendar.Settings.read(getConfig());
             SnowballDuels.Settings proposedSnowball = SnowballDuels.Settings.read(getConfig());
             CommunityMissions.Settings proposedMissions = CommunityMissions.Settings.read(getConfig());
+            WinterSwitches proposedSwitches = WinterSwitches.read(getConfig());
             snowball.save();
             if (failed) {
                 lang.send(sender, "faulted");
@@ -750,6 +849,11 @@ public final class WinterPlugin extends JavaPlugin {
             cold = proposedCold;
             calendarSettings = proposedCalendar;
             snowballSettings = proposedSnowball;
+            WinterSwitches previousSwitches = switches;
+            switches = proposedSwitches;
+            switchesReloaded(core == null ? null : core.command(), previousSwitches, proposedSwitches);
+            if (!duelsOn()) snowball.duels().clear();
+            configureZones();
             refresh();
             events.tick();
             startTasks();

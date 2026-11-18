@@ -23,7 +23,7 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
         return new WinterSettings(Set.copyOf(c.getStringList("worlds")), ZoneId.of(c.getString("timezone", "Europe/Vienna")),
                 new SeasonCalendar(date(c,"calendar.start"),date(c,"calendar.peak"),date(c,"calendar.thaw"),date(c,"calendar.end")),
                 integer(c,"snow.max-layers",1,64),c.getBoolean("snow.cover-leaves",true),c.getBoolean("snow.cover-small-plants",true),
-                optionalNumber(c,"snow.drift-strength",0.45,0,1),optionalInteger(c,"snow.transition-blocks",4,0,12),
+                driftStrength(c),transitionBlocks(c),
                 Set.copyOf(c.getStringList("snow.excluded-biomes")),materials(c,"snow.clear-materials"),
                 c.getBoolean("frost.enabled"),integer(c,"frost.ocean-radius",0,128),integer(c,"frost.inland-radius",0,128),
                 integer(c,"frost.search-budget",1,65536),materials(c,"frost.shore-materials"),c.getBoolean("protection.protect-core-regions"),
@@ -32,8 +32,8 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
                 integer(c,"performance.max-tracked-blocks",1,1000000),c.getBoolean("weather.enabled"),number(c,"weather.snow-chance-at-peak",0,1),
                 integer(c,"weather.interval-seconds",10,86400),c.getBoolean("weather.warm-biome-particles"),c.getBoolean("weather.packet-snow",true),c.getBoolean("spawns.enabled"),
                 number(c,"spawns.skeleton-weight-at-peak",0,3),number(c,"spawns.spider-weight-at-peak",0,3),number(c,"spawns.creeper-weight-at-peak",0,3),
-                c.getBoolean("holidays.advent"),c.getBoolean("holidays.christmas"),c.getBoolean("holidays.new-year"),
-                date(c,"holidays.christmas-start"),date(c,"holidays.christmas-end"),c.getBoolean("holidays.fireworks"),
+                holiday(c,"holidays.advent"),holiday(c,"holidays.christmas"),holiday(c,"holidays.new-year"),
+                date(c,"holidays.christmas-start"),date(c,"holidays.christmas-end"),holiday(c,"holidays.fireworks"),
                 reward,integer(c,"holidays.reward-amount",1,reward.getMaxStackSize()),
                 Terrain.read(c));
     }
@@ -42,6 +42,21 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
         public static Terrain read(FileConfiguration c) {
             return new Terrain(c.getBoolean("snow.ramps", true), c.getBoolean("snow.cover-stairs-and-slabs", true), c.getBoolean("snow.remove-tall-plants", true));
         }
+    }
+    /**
+     * One holiday key under the master switch {@code holidays.enabled} (1.24.0): off = no holiday, no new gift, no
+     * countdown and no fireworks, whatever the single keys say; a missing master key = on.
+     */
+    static boolean holiday(FileConfiguration c, String key) { return c.getBoolean("holidays.enabled", true) && c.getBoolean(key); }
+    /** {@code snow.drift-strength}, 0 while {@code snow.drifts.enabled} is false (the value is still checked). */
+    static double driftStrength(FileConfiguration c) {
+        double value = optionalNumber(c, "snow.drift-strength", 0.45, 0, 1);
+        return c.getBoolean("snow.drifts.enabled", true) ? value : 0;
+    }
+    /** {@code snow.transition-blocks}, 0 while {@code snow.soft-edges.enabled} is false (the value is still checked). */
+    static int transitionBlocks(FileConfiguration c) {
+        int value = optionalInteger(c, "snow.transition-blocks", 4, 0, 12);
+        return c.getBoolean("snow.soft-edges.enabled", true) ? value : 0;
     }
     public boolean includes(World world) { return world.getEnvironment() == World.Environment.NORMAL && worlds.contains(world.getName()); }
     private static MonthDay date(FileConfiguration c,String key) { return MonthDay.parse("--"+c.getString(key)); }

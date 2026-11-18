@@ -40,7 +40,7 @@ public final class WinterLamps implements Listener {
 
     public void toggle(Player player){
         var lang=plugin.lang();
-        if(!plugin.getConfig().getBoolean("lamps.enabled",true)){lang.send(player,"lamp-disabled");return;}
+        if(!plugin.getConfig().getBoolean("lamps.enabled",true)){lang.send(player,at.vystorm.winter.WinterSwitches.OFF_MESSAGE);return;}
         Block block=player.getTargetBlockExact(16);
         if(block==null||!lampMaterial(block.getType())){lang.send(player,"lamp-not-glass");return;}
         try{

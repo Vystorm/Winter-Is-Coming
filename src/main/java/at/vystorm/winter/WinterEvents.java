@@ -35,7 +35,7 @@ public final class WinterEvents implements AutoCloseable {
             public String id(){return "winter-is-coming";}
             public Set<RuntimeContextHub.Channel> channels(){return Set.of(RuntimeContextHub.Channel.WORLD_EVENT);}
             public RuntimeContextHub.Snapshot snapshot(RuntimeContextHub.Channel channel,RuntimeContextHub.Query q){
-                if(!plugin.activeWorldIds().contains(q.worldId()))return null;
+                if(!plugin.switches().on(WinterSwitches.Feature.WORLD_EVENTS)||!plugin.activeWorldIds().contains(q.worldId()))return null;
                 var season=plugin.season();
                 return new RuntimeContextHub.Snapshot(id(),channel,0,plugin.revision(),Set.of("WINTER", "WINTER:"+season.phase(),"HOLIDAY:"+plugin.holiday()),
                         Map.of("winter.phase",season.phase(),"winter.holiday",plugin.holiday()),Map.of("winter.intensity",season.intensity()));
@@ -44,7 +44,8 @@ public final class WinterEvents implements AutoCloseable {
     }
     public void tick(){
         Set<String> desired=new HashSet<>();
-        for(World world:Bukkit.getWorlds())if(plugin.settings().includes(world)){
+        // world-events.enabled (1.24.0) off: every running winter event is stopped and none is started.
+        if(plugin.switches().on(WinterSwitches.Feature.WORLD_EVENTS))for(World world:Bukkit.getWorlds())if(plugin.settings().includes(world)){
             if(plugin.controls(world))desired.add("winter_season/"+world.getUID());
             String holiday=plugin.holiday();if(!holiday.equals("NONE"))desired.add("winter_"+holiday.toLowerCase(Locale.ROOT)+"/"+world.getUID());
         }

@@ -29,9 +29,13 @@ public final class ColdModel {
                     warmers.add(material);
                 }
             } else warmers.addAll(DEFAULT_HAND_WARMERS);
+            // 1.24.0 switches: cold.hot-meals.enabled and cold.warm-hands.enabled turn the two helpers off, whatever the values say.
+            double food=number(c,"cold.warm-food",DEFAULTS.warmFood,0,1);
+            if(!c.getBoolean("cold.hot-meals.enabled",true))food=0;
+            if(!c.getBoolean("cold.warm-hands.enabled",true))warmers.clear();
             return new Settings(c.getBoolean("cold.enabled",DEFAULTS.enabled),maxFrost,c.getBoolean("cold.damage",DEFAULTS.damage),
                     radius,minutes,c.getBoolean("cold.breath",DEFAULTS.breath),c.getBoolean("cold.warnings",DEFAULTS.warnings),
-                    number(c,"cold.warm-food",DEFAULTS.warmFood,0,1),warmers);
+                    food,warmers);
         }
         private static double number(FileConfiguration c,String key,double fallback,double min,double max) {
             double n=c.getDouble(key,fallback);

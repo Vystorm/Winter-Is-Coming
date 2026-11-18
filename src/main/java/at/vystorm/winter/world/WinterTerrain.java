@@ -209,7 +209,11 @@ public final class WinterTerrain implements AutoCloseable {
         int maxColumns = Math.min(8192, s.columns() * boost), maxChanges = Math.min(512, s.changes() * boost);
         allowance = Math.min(allowance + (double)maxChanges / s.period(), Math.max(1, maxChanges));
         int columnsThisTick = Math.max(1, maxColumns / s.period());
-        if (!drainMelt(s)) return;
+        // snow.enabled (1.24.0): off = nothing new forms and the plugin's snow and ice stay as they are; a forced thaw
+        // still clears them. The year-round plants (seasons.enabled) are a feature of their own.
+        boolean thaw = plugin.state().data().thaw;
+        boolean lays = plugin.switches().laysSnow(), touches = plugin.switches().touchesSnow(thaw);
+        if (touches && !drainMelt(s)) return;
         for (int attempt = 0; attempt < columnsThisTick && !chunks.isEmpty() && allowance >= 1 && !frostSearched; attempt++) {
             ChunkKey ref = chunks.removeFirst();
             World world = Bukkit.getWorld(ref.world());
@@ -223,9 +227,10 @@ public final class WinterTerrain implements AutoCloseable {
             // Alternate journal reconciliation with landscape sampling, including covered old blocks.
             List<Key> records = tracked.getOrDefault(ref, List.of());
             if (offset % 2 == 0 && !records.isEmpty()) {
+                if (!touches) continue;
                 Key k = records.get((offset / 2) % records.size());
                 if (reconcile(world.getBlockAt(k.x(), k.y(), k.z()), s)) allowance--;
-            } else if (s.includes(world) && plugin.season().intensity() > 0 && !plugin.state().data().thaw) {
+            } else if (lays && s.includes(world) && plugin.season().intensity() > 0 && !thaw) {
                 int column = (offset / 2) % 256;
                 int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
                 Block top = world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING);
@@ -236,6 +241,9 @@ public final class WinterTerrain implements AutoCloseable {
                 if (grow(world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING), s)) allowance--;
             }
         }
+    }
+    private boolean holdsSeasonMelt() {
+        return plugin.switches().holdsSeasonMelt(plugin.state().data().thaw, plugin.season().phase());
     }
     private boolean reconcile(Block block, WinterSettings s) {
         var entry = journal.get(key(block));
@@ -248,14 +256,17 @@ public final class WinterTerrain implements AutoCloseable {
         if (current.equals(entry.original())) return false;
         if (current.equals("minecraft:air") && SeasonPlants.tallPlantData(entry.original())) {
             boolean winter = s.includes(block.getWorld()) && !plugin.state().data().thaw && plugin.season().intensity() > 0 && s.terrain().removeTallPlants();
-            if (winter) return false;
+            if (winter || holdsSeasonMelt()) return false;
             if (entry.original().contains("half=upper") && !SeasonPlants.tallPlant(block.getRelative(BlockFace.DOWN).getType())) return false;
             return edit(block, entry.original(), false);
         }
         double intensity = s.includes(block.getWorld()) && !plugin.state().data().thaw ? plugin.season().intensity() : 0;
         // Restore our own temporary material even if an area became protected after placement.
-        if (!allowed(block.getLocation()) || s.excludedBiomes().contains(BiomeKeys.key(block.getBiome()))
-                || block.getType() == Material.ICE && !s.frost()) intensity = 0;
+        boolean restricted = !allowed(block.getLocation()) || s.excludedBiomes().contains(BiomeKeys.key(block.getBiome()))
+                || block.getType() == Material.ICE && !s.frost();
+        if (restricted) intensity = 0;
+        // snow.spring-thaw.enabled false (1.24.0): after the peak the season itself melts nothing; restrictions still do.
+        boolean hold = !restricted && holdsSeasonMelt();
         if (block.getType() == Material.SNOW) {
             // Keep the lower full block until its owned upper block has melted away.
             if (block.getY() + 1 < block.getWorld().getMaxHeight()) {
@@ -264,6 +275,7 @@ public final class WinterTerrain implements AutoCloseable {
             }
             // Outside season spots or near a builder: restore in one step instead of one layer per visit (1.20.1).
             if (plugin.zones() != null && !plugin.zones().allows(block.getLocation())) return edit(block, entry.original(), false);
+            if (hold) return false;
             if (!snowSupportedAt(block, s)) intensity = 0;
             Block root = snowRoot(block);
             int offset = root == null ? SnowDepth.MAX_BLOCKS : block.getY() - root.getY();
@@ -276,6 +288,7 @@ public final class WinterTerrain implements AutoCloseable {
                 return edit(block, snow.getAsString(), false);
             }
         } else if (block.getType() == Material.ICE) {
+            if (hold) return false;
             if (intensity == 0) return edit(block, entry.original(), false);
             if (frostSearched) return false;
             int distance = distance(block, s);
@@ -523,7 +536,7 @@ public final class WinterTerrain implements AutoCloseable {
             queueRelease(key);
             return;
         }
-        if (op.form && (!plugin.controls(world) || !allowed(block.getLocation()))) return;
+        if (op.form && (!plugin.controls(world) || !plugin.switches().laysSnow() || !allowed(block.getLocation()))) return;
         boolean snowForm = op.form && after.startsWith("minecraft:snow[");
         if (snowForm && (!snowSupportedAt(block, plugin.settings()) || smallPlant(block.getType()) && !plugin.settings().vegetationSnow())) return;
         // Protection can change while disk IO runs. Re-fire immediately before applying.

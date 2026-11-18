@@ -17,6 +17,7 @@ public final class SnowballDuels {
         public static Settings read(FileConfiguration c) {
             double chill=c.getDouble("snowball-fight.chill",DEFAULTS.chill);
             if(!Double.isFinite(chill)||chill<0||chill>1)throw new IllegalArgumentException("snowball-fight.chill must be 0..1");
+            if(!c.getBoolean("snowball-fight.hit-chill.enabled",true))chill=0; // 1.24.0 switch, the value stays checked
             return new Settings(c.getBoolean("snowball-fight.enabled",DEFAULTS.enabled),chill,
                     range(c,"snowball-fight.duel-hits",DEFAULTS.duelHits,1,100),range(c,"snowball-fight.duel-seconds",DEFAULTS.duelSeconds,15,1800),
                     range(c,"snowball-fight.duel-snowballs",DEFAULTS.duelSnowballs,0,64));
