@@ -2,9 +2,8 @@ package at.vystorm.winter.world;
 
 import at.vystorm.winter.WinterPlugin;
 import at.vystorm.winter.WinterSettings;
-import at.vystorm.winter.storage.BlockJournal;
-import at.vystorm.winter.storage.BlockJournal.Key;
-import java.io.IOException;
+import at.vystorm.winter.storage.TrackedBlocks;
+import at.vystorm.winter.storage.TrackedBlocks.Key;
 import java.util.*;
 import org.bukkit.*;
 import org.bukkit.block.*;
@@ -12,24 +11,31 @@ import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.type.Snow;
 import org.bukkit.event.block.BlockFormEvent;
 
-/** All Bukkit access runs on the server thread; periodic durable intents use one worker. No forced chunk loads. */
+/**
+ * All Bukkit access runs on the server thread. No forced chunk loads. The positions winter changed are kept per chunk
+ * inside the chunk (1.24.2, {@link TrackedBlocks}); a planned change is recorded at the end of one tick and applied to
+ * the world at the start of the next, so a saved chunk always holds the record of every block in it.
+ */
 public final class WinterTerrain implements AutoCloseable {
     private record ChunkKey(UUID world, int x, int z) { }
     private final WinterPlugin plugin;
-    private final BlockJournal journal;
+    private final TrackedBlocks journal;
+    private final ChunkRecordStorage chunkData;
     private final Vystorm.vystorm_core._advancedMethods.areaHandler.AreaInterface area;
     private final ArrayDeque<ChunkKey> chunks = new ArrayDeque<>();
     private final Set<ChunkKey> queued = new HashSet<>();
-    private final Map<ChunkKey, List<Key>> tracked = new HashMap<>();
     private final Map<ChunkKey, Integer> offsets = new HashMap<>();
+    /** The tracking limit that stopped new snow, 0 while below it (1.24.2). */
+    private int limitHit;
     private boolean applying;
-    private boolean frostSearched;
-    private final java.util.concurrent.ExecutorService writer = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
-        Thread thread = new Thread(r, "Winter-journal");
-        thread.setDaemon(true);
-        return thread;
-    });
-    /** A change waiting for its durable journal line; applied to the world only afterwards. */
+    /** Coastal frost walks the chunks with its own cursor and budget (1.24.2), so shore searches never stop the snow. */
+    private final ArrayDeque<ChunkKey> frostChunks = new ArrayDeque<>();
+    private final Set<ChunkKey> frostQueued = new HashSet<>();
+    private final Map<ChunkKey, Integer> frostOffsets = new HashMap<>();
+    private final PassBudget budget = new PassBudget();
+    /** Set when a shore search did not fit into this tick's cell budget; the frost cursor then stays on that column. */
+    private boolean searchDeferred;
+    /** A change waiting for its record; applied to the world only afterwards. */
     private static final class Op {
         final Key key;
         final String before, after;
@@ -48,7 +54,8 @@ public final class WinterTerrain implements AutoCloseable {
     /** Changes collected this tick; written together at the end of the tick. */
     private final List<Op> batch = new ArrayList<>();
     private List<Op> inFlight = List.of();
-    private java.util.concurrent.CompletableFuture<List<BlockJournal.Entry>> flight;
+    /** Records of the ops in {@link #inFlight}, written at the end of the last tick; null when nothing waits. */
+    private List<TrackedBlocks.Entry> recorded;
     private boolean busy(Key key) {
         for (Op op : batch) if (op.key.equals(key)) return true;
         for (Op op : inFlight) if (op.key.equals(key)) return true;
@@ -59,37 +66,70 @@ public final class WinterTerrain implements AutoCloseable {
         for (Op op : inFlight) if (which.test(op.key)) op.cancelled = true;
     }
     private void flush() {
-        if (batch.isEmpty() || flight != null) return;
+        if (batch.isEmpty() || recorded != null) return;
         List<Op> ops = List.copyOf(batch);
         batch.clear();
         inFlight = ops;
-        List<BlockJournal.Request> requests = new ArrayList<>(ops.size());
-        for (Op op : ops) requests.add(new BlockJournal.Request(op.key, op.before, op.after, op.release));
-        flight = java.util.concurrent.CompletableFuture.supplyAsync(() -> {
-            try {
-                return journal.apply(requests);
-            } catch (IOException failure) {
-                throw new java.util.concurrent.CompletionException(failure);
-            }
-        }, writer);
+        List<TrackedBlocks.Request> requests = new ArrayList<>(ops.size());
+        for (Op op : ops) requests.add(new TrackedBlocks.Request(op.key, op.before, op.after, op.release));
+        recorded = journal.apply(requests);
     }
-    /** @param area Core's area manager, {@code api.area()}; the region service is looked up per call as before */
-    public WinterTerrain(WinterPlugin plugin, BlockJournal journal, Vystorm.vystorm_core._advancedMethods.areaHandler.AreaInterface area) {
+    /**
+     * @param journal the chunk records; their storage must be {@code chunkData}
+     * @param area Core's area manager, {@code api.area()}; the region service is looked up per call as before
+     */
+    public WinterTerrain(WinterPlugin plugin, TrackedBlocks journal, ChunkRecordStorage chunkData, Vystorm.vystorm_core._advancedMethods.areaHandler.AreaInterface area) {
         this.plugin = plugin;
         this.area = area;
         this.journal = journal;
-        for (var entry : journal.entries()) track(entry.key());
+        this.chunkData = chunkData;
     }
-    private static ChunkKey chunk(Key key) {
-        return new ChunkKey(key.world(), key.x()>>4, key.z()>>4);
+    /** The storage that keeps the records in the chunks' persistent data, for {@link TrackedBlocks}. */
+    public static ChunkRecordStorage chunkStorage(org.bukkit.plugin.Plugin plugin) {
+        return new ChunkRecordStorage(new NamespacedKey(plugin, "tracked"));
     }
-    private void track(Key key) {
-        var list = tracked.computeIfAbsent(chunk(key), unused -> new ArrayList<>());
-        if (!list.contains(key)) list.add(key);
+    private static TrackedBlocks.ChunkId id(ChunkKey key) {
+        return new TrackedBlocks.ChunkId(key.world(), key.x(), key.z());
+    }
+    private static TrackedBlocks.ChunkId id(Chunk c) {
+        return new TrackedBlocks.ChunkId(c.getWorld().getUID(), c.getX(), c.getZ());
     }
     public void load(Chunk c) {
         ChunkKey key = new ChunkKey(c.getWorld().getUID(), c.getX(), c.getZ());
+        World world = c.getWorld();
+        chunkData.current(c);
+        try {
+            journal.load(id(c), (x, y, z) -> world.getBlockAt(x, y, z).getBlockData().getAsString());
+        } finally {
+            chunkData.current(null);
+        }
         if (queued.add(key)) chunks.add(key);
+        if (frostQueued.add(key)) frostChunks.add(key);
+    }
+    /** The chunk's record is already stored in it; the chunk leaves the memory. */
+    public void unload(Chunk c) {
+        chunkData.current(c);
+        try {
+            journal.unload(id(c));
+        } finally {
+            chunkData.current(null);
+        }
+    }
+    public void unloadWorld(World world) {
+        journal.unloadWorld(world.getUID());
+    }
+    /** Positions held in memory may not exceed the setting, or 256 per layer block and two more per loaded chunk. */
+    public long limit() {
+        var s = plugin.settings();
+        long perChunk = 256L * ((s.layers() + 7) / 8 + 2);
+        return Math.max(s.maxTracked(), perChunk * journal.loadedChunks());
+    }
+    /** The limit that stopped new snow and ice, 0 while winter is below it. */
+    public int limitHit() {
+        return limitHit;
+    }
+    public TrackedBlocks journal() {
+        return journal;
     }
     public boolean applying() {
         return applying;
@@ -113,9 +153,9 @@ public final class WinterTerrain implements AutoCloseable {
         cancel(released::equals);
         try {
             journal.release(key(b));
-        } catch (IOException failure) {
+        } catch (RuntimeException failure) {
             plugin.storageFailure(failure);
-            throw new IllegalStateException(failure);
+            throw failure;
         }
     }
     public void clear(Block b) {
@@ -147,19 +187,32 @@ public final class WinterTerrain implements AutoCloseable {
                 release(b);
             }
             return true;
-        } catch (IOException failure) {
+        } catch (RuntimeException failure) {
             plugin.storageFailure(failure);
             return false;
         }
     }
-    /** Changes earned so far. Runs every tick; all changes of a tick share one journal write. */
-    private double allowance;
+    /** Runs every tick; all changes of a tick share one write of the changed chunk records. */
     public void cycle() {
-        if (!drain()) return;
+        if (limitHit > 0 && journal.held() < limit()) limitHit = 0;
         try {
-            cycleBody();
+            if (!drain()) return;
+            try {
+                cycleBody();
+            } finally {
+                try {
+                    flush();
+                } catch (RuntimeException failure) {
+                    plugin.storageFailure(failure);
+                }
+            }
         } finally {
-            flush();
+            // Removals of restored positions from drain(): stored in the same tick as the restored blocks.
+            try {
+                journal.commit();
+            } catch (RuntimeException failure) {
+                plugin.storageFailure(failure);
+            }
         }
     }
     /** Season of the current terrain pass, computed once per pass instead of once per block (1.19.1). */
@@ -170,7 +223,8 @@ public final class WinterTerrain implements AutoCloseable {
     /** Queues the tracked chunks within {@code radius} blocks of x/z (radius < 0 = the whole world) to melt first. */
     public void prioritize(UUID world, double x, double z, int radius) {
         int cx = (int)Math.floor(x)>>4, cz = (int)Math.floor(z)>>4, r = radius < 0 ? Integer.MAX_VALUE : (radius>>4) + 1;
-        for (ChunkKey key : tracked.keySet()) {
+        for (TrackedBlocks.ChunkId id : journal.chunksWithRecords()) {
+            ChunkKey key = new ChunkKey(id.world(), id.x(), id.z());
             if (!key.world().equals(world) || Math.abs(key.x() - cx) > r || Math.abs(key.z() - cz) > r || meltCursor.containsKey(key)) continue;
             melt.addLast(key);
             meltCursor.put(key, 0);
@@ -179,42 +233,83 @@ public final class WinterTerrain implements AutoCloseable {
     /** Works through the melt queue within the change allowance; returns false when the allowance ran out. */
     private boolean drainMelt(WinterSettings s) {
         int checks = 0;
-        while (!melt.isEmpty() && allowance >= 1 && checks < 256) {
+        while (!melt.isEmpty() && budget.mayChange() && checks < 256) {
             ChunkKey ref = melt.peekFirst();
             World world = Bukkit.getWorld(ref.world());
-            List<Key> records = tracked.getOrDefault(ref, List.of());
+            int records = journal.count(id(ref));
             int at = meltCursor.getOrDefault(ref, 0);
-            if (world == null || !world.isChunkLoaded(ref.x(), ref.z()) || at >= records.size()) {
+            if (world == null || !world.isChunkLoaded(ref.x(), ref.z()) || at >= records) {
                 melt.removeFirst();
                 meltCursor.remove(ref);
                 continue;
             }
             meltCursor.put(ref, at + 1);
             checks++;
-            Key k = records.get(at);
+            Key k = journal.keyAt(id(ref), at);
             Block block = world.getBlockAt(k.x(), k.y(), k.z());
-            if (!allowed(block.getLocation()) && reconcile(block, s)) allowance--;
+            if (!allowed(block.getLocation()) && reconcile(block, s, false)) budget.changed();
         }
-        return allowance >= 1;
+        return budget.mayChange();
     }
     private void cycleBody() {
         var s = plugin.settings();
-        frostSearched = false;
-        // Stop after spending the shoreline-search budget. Advancing other water columns
-        // without evaluating them can phase-lock the round-robin cursor across chunks,
-        // permanently skipping near-shore cells while repeatedly searching farther water.
         var clock = plugin.clock();
         cycleNow = null;
         int boost = !clock.enabled() ? 1 : clock.mode() == at.vystorm.winter.season.SeasonClock.Mode.WEEKLY ? 8 : clock.mode() == at.vystorm.winter.season.SeasonClock.Mode.MONTHLY ? 4 : 1;
         int maxColumns = Math.min(8192, s.columns() * boost), maxChanges = Math.min(512, s.changes() * boost);
-        allowance = Math.min(allowance + (double)maxChanges / s.period(), Math.max(1, maxChanges));
-        int columnsThisTick = Math.max(1, maxColumns / s.period());
+        budget.tick(maxChanges, s.period(), Math.max(1, maxColumns / s.period()), s.searchBudget());
         // snow.enabled (1.24.0): off = nothing new forms and the plugin's snow and ice stay as they are; a forced thaw
         // still clears them. The year-round plants (seasons.enabled) are a feature of their own.
         boolean thaw = plugin.state().data().thaw;
         boolean lays = plugin.switches().laysSnow(), touches = plugin.switches().touchesSnow(thaw);
         if (touches && !drainMelt(s)) return;
-        for (int attempt = 0; attempt < columnsThisTick && !chunks.isEmpty() && allowance >= 1 && !frostSearched; attempt++) {
+        // Frost first within its reserved share, then the snow, then the frost again with what the snow left (1.24.2).
+        boolean frost = s.frost() && touches;
+        if (frost) frostPass(s, true, lays, thaw);
+        snowPass(s, lays, touches, thaw, clock);
+        if (frost) frostPass(s, false, lays, thaw);
+    }
+    /**
+     * Coastal frost: forms ice on still water near a shore and melts ice whose shore is now too far. Its own chunk
+     * cursor, column limit and search cell budget; a search that does not fit this tick waits on the same column, so
+     * no water column is skipped without being evaluated (a skipped column could phase-lock the round-robin cursor).
+     */
+    private void frostPass(WinterSettings s, boolean reservedOnly, boolean lays, boolean thaw) {
+        while (!frostChunks.isEmpty() && budget.frostMayChange(reservedOnly) && budget.frostColumn()) {
+            ChunkKey ref = frostChunks.removeFirst();
+            World world = Bukkit.getWorld(ref.world());
+            if (world == null || !world.isChunkLoaded(ref.x(), ref.z())) {
+                frostQueued.remove(ref);
+                frostOffsets.remove(ref);
+                continue;
+            }
+            frostChunks.addLast(ref);
+            int offset = frostOffsets.merge(ref, 1, Integer::sum) - 1;
+            int records = journal.count(id(ref));
+            searchDeferred = false;
+            boolean changed = false;
+            if (offset % 2 == 0 && records > 0) {
+                Key k = journal.keyAt(id(ref), (offset / 2) % records);
+                Block block = world.getBlockAt(k.x(), k.y(), k.z());
+                if (block.getType() == Material.ICE) changed = reconcile(block, s, true);
+            } else if (lays && s.includes(world) && plugin.season().intensity() > 0 && !thaw) {
+                int column = SnowDepth.column(ref.x(), ref.z(), offset / 2);
+                int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
+                changed = freeze(world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING), s);
+            }
+            if (searchDeferred) {
+                // Back to this very column next tick.
+                frostOffsets.merge(ref, -1, Integer::sum);
+                frostChunks.removeLast();
+                frostChunks.addFirst(ref);
+                budget.frostColumnBack();
+                return;
+            }
+            if (changed) budget.frostChanged();
+        }
+    }
+    private void snowPass(WinterSettings s, boolean lays, boolean touches, boolean thaw, at.vystorm.winter.season.SeasonClock clock) {
+        while (!chunks.isEmpty() && budget.mayChange() && budget.snowColumn()) {
             ChunkKey ref = chunks.removeFirst();
             World world = Bukkit.getWorld(ref.world());
             if (world == null || !world.isChunkLoaded(ref.x(), ref.z())) {
@@ -225,27 +320,33 @@ public final class WinterTerrain implements AutoCloseable {
             chunks.addLast(ref);
             int offset = offsets.merge(ref, 1, Integer::sum) - 1;
             // Alternate journal reconciliation with landscape sampling, including covered old blocks.
-            List<Key> records = tracked.getOrDefault(ref, List.of());
-            if (offset % 2 == 0 && !records.isEmpty()) {
+            int records = journal.count(id(ref));
+            if (offset % 2 == 0 && records > 0) {
                 if (!touches) continue;
-                Key k = records.get((offset / 2) % records.size());
-                if (reconcile(world.getBlockAt(k.x(), k.y(), k.z()), s)) allowance--;
+                Key k = journal.keyAt(id(ref), (offset / 2) % records);
+                if (reconcile(world.getBlockAt(k.x(), k.y(), k.z()), s, false)) budget.changed();
             } else if (lays && s.includes(world) && plugin.season().intensity() > 0 && !thaw) {
                 int column = SnowDepth.column(ref.x(), ref.z(), offset / 2);
                 int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
                 Block top = world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING);
-                if (sample(top, s)) allowance--;
+                // Still water is the frost pass's work: a coast does not use up the snow's columns (1.24.2).
+                if (s.frost() && top.getType() == Material.WATER && ((Levelled)top.getBlockData()).getLevel() == 0) {
+                    budget.waterSkip();
+                    continue;
+                }
+                if (sample(top, s)) budget.changed();
             } else if (s.includes(world) && clock.enabled() && plugin.season().intensity() <= 0 && !plugin.state().data().thaw) {
                 int column = SnowDepth.column(ref.x(), ref.z(), offset / 2);
                 int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
-                if (grow(world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING), s)) allowance--;
+                if (grow(world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING), s)) budget.changed();
             }
         }
     }
     private boolean holdsSeasonMelt() {
         return plugin.switches().holdsSeasonMelt(plugin.state().data().thaw, plugin.season().phase());
     }
-    private boolean reconcile(Block block, WinterSettings s) {
+    /** @param searchIce only the frost pass may search the shore of plugin ice; the snow pass leaves that ice to it */
+    private boolean reconcile(Block block, WinterSettings s, boolean searchIce) {
         var entry = journal.get(key(block));
         if (entry == null || entry.released()) return false;
         String current = block.getBlockData().getAsString();
@@ -253,7 +354,11 @@ public final class WinterTerrain implements AutoCloseable {
             queueRelease(key(block));
             return false;
         }
-        if (current.equals(entry.original())) return false;
+        if (current.equals(entry.original())) {
+            // Nothing left to restore here (1.24.2): the position leaves the record and the count.
+            if (!busy(entry.key())) journal.forget(entry.key());
+            return false;
+        }
         if (current.equals("minecraft:air") && SeasonPlants.tallPlantData(entry.original())) {
             boolean winter = s.includes(block.getWorld()) && !plugin.state().data().thaw && plugin.season().intensity() > 0 && s.terrain().removeTallPlants();
             if (winter || holdsSeasonMelt()) return false;
@@ -290,10 +395,17 @@ public final class WinterTerrain implements AutoCloseable {
         } else if (block.getType() == Material.ICE) {
             if (hold) return false;
             if (intensity == 0) return edit(block, entry.original(), false);
-            if (frostSearched) return false;
-            int distance = distance(block, s);
+            if (!searchIce) return false;
+            int radius = radius(block, s, intensity), max = maxRadius(block, s);
+            // Ice inside its radius (the usual case) is settled by the short search; only ice outside it pays the full one.
+            if (!budget.maySearch(FrostBudget.bound(radius, s.searchBudget()))) {
+                searchDeferred = true;
+                return false;
+            }
+            var found = FrostBudget.meltDistance(block.getX(), block.getZ(), radius, max, s.searchBudget(), shore(block, s));
+            budget.searched(found.visited());
             // Missing/temporarily unloaded shore is not evidence to melt existing ice.
-            if (distance > radius(block, s, intensity)) return edit(block, entry.original(), false);
+            if (found.distance() > radius) return edit(block, entry.original(), false);
         }
         return false;
     }
@@ -376,13 +488,8 @@ public final class WinterTerrain implements AutoCloseable {
     private boolean sample(Block top, WinterSettings s) {
         if (!allowed(top.getLocation()) || s.excludedBiomes().contains(BiomeKeys.key(top.getBiome()))) return false;
         double intensity = plugin.season().intensity();
-        if (top.getType() == Material.WATER && s.frost() && ((Levelled)top.getBlockData()).getLevel() == 0) {
-            int radius = radius(top, s, intensity);
-            if (radius < 1 || frostSearched) return false;
-            int distance = distance(top, s);
-            if (distance > 0 && distance <= radius) return edit(top, Material.ICE.createBlockData().getAsString(), true);
-            return false;
-        }
+        // Still water belongs to the frost pass (1.24.2).
+        if (top.getType() == Material.WATER && s.frost() && ((Levelled)top.getBlockData()).getLevel() == 0) return false;
         if (top.getType() == Material.ICE || top.getY() + 1 >= top.getWorld().getMaxHeight()) return false;
         Block first = top.getType() == Material.SNOW || smallPlant(top.getType()) ? top : top.getRelative(BlockFace.UP);
         if (first.getType() == Material.SNOW && !owned(first)) return false;
@@ -456,24 +563,45 @@ public final class WinterTerrain implements AutoCloseable {
         double uneven = 0.85 + Math.floorMod(Objects.hash(b.getX() / 3, b.getZ() / 3), 100) / 100.0 * 0.15;
         return (int)Math.floor(max * intensity * uneven);
     }
-    private int distance(Block start, WinterSettings s) {
-        frostSearched = true;
-        int max = BiomeKeys.key(start.getBiome()).contains("ocean") ? s.oceanRadius() : s.inlandRadius();
+    private static int maxRadius(Block b, WinterSettings s) {
+        return BiomeKeys.key(b.getBiome()).contains("ocean") ? s.oceanRadius() : s.inlandRadius();
+    }
+    /** Ice on still water whose shore lies within the current radius; the search stops at that radius (1.24.2). */
+    private boolean freeze(Block top, WinterSettings s) {
+        if (top.getType() != Material.WATER || ((Levelled)top.getBlockData()).getLevel() != 0) return false;
+        if (!allowed(top.getLocation()) || s.excludedBiomes().contains(BiomeKeys.key(top.getBiome()))) return false;
+        int radius = radius(top, s, plugin.season().intensity());
+        if (radius < 1) return false;
+        if (!budget.maySearch(FrostBudget.bound(radius, s.searchBudget()))) {
+            searchDeferred = true;
+            return false;
+        }
+        var found = FrostBudget.freezes(top.getX(), top.getZ(), radius, s.searchBudget(), shore(top, s));
+        budget.searched(found.visited());
+        if (found.distance() > 0 && found.distance() <= radius) return edit(top, Material.ICE.createBlockData().getAsString(), true);
+        return false;
+    }
+    private FrostBudget.Surface shore(Block start, WinterSettings s) {
         World world = start.getWorld();
         int y = start.getY();
-        return FrostBudget.distance(start.getX(), start.getZ(), max, s.searchBudget(), (x, z) -> {
+        return (x, z) -> {
             if (!world.isChunkLoaded(x>>4, z>>4)) return FrostBudget.Cell.UNKNOWN;
             Block b = world.getBlockAt(x, y, z);
             if (b.getType() == Material.WATER && ((Levelled)b.getBlockData()).getLevel() == 0 || b.getType() == Material.ICE && owned(b)) return FrostBudget.Cell.WATER;
             if (s.shores().contains(b.getType()) && y - 2 >= world.getMinHeight()
                     && s.shores().contains(world.getBlockAt(x, y - 1, z).getType()) && s.shores().contains(world.getBlockAt(x, y - 2, z).getType())) return FrostBudget.Cell.SHORE;
             return FrostBudget.Cell.BLOCKED;
-        });
+        };
     }
     private boolean edit(Block b, String next, boolean formEvent) {
         var key = key(b);
         var previous = journal.get(key);
-        if (previous == null && journal.size() >= plugin.settings().maxTracked()) return false;
+        if (previous == null && journal.held() >= limit()) {
+            // Never silent (1.24.2): the admin hears it once in the console and sees it in /winter status.
+            if (limitHit == 0) plugin.trackingLimitReached(limit());
+            limitHit = (int)Math.min(Integer.MAX_VALUE, limit());
+            return false;
+        }
         String current = b.getBlockData().getAsString();
         if (current.equals(next)) return false;
         if (previous != null && !previous.accepts(current)) return false;
@@ -497,21 +625,13 @@ public final class WinterTerrain implements AutoCloseable {
         if (busy(key)) return;
         batch.add(new Op(key, null, null, plugin.generation(), false, true));
     }
-    /** Apply only completed, durable intents; recheck chunks, epoch, protection and block data for each. */
+    /** Apply only recorded intents (recorded last tick); recheck chunks, epoch, protection and block data for each. */
     private boolean drain() {
-        if (flight == null) return true;
-        if (!flight.isDone()) return false;
-        var completed = flight;
+        if (recorded == null) return true;
         List<Op> ops = inFlight;
-        flight = null;
+        List<TrackedBlocks.Entry> entries = recorded;
+        recorded = null;
         inFlight = List.of();
-        List<BlockJournal.Entry> entries;
-        try {
-            entries = completed.join();
-        } catch (Exception failure) {
-            plugin.storageFailure(failure);
-            return false;
-        }
         try {
             for (int i = 0; i < ops.size(); i++) apply(ops.get(i), entries.get(i));
         } catch (Exception failure) {
@@ -520,11 +640,10 @@ public final class WinterTerrain implements AutoCloseable {
         }
         return true;
     }
-    private void apply(Op op, BlockJournal.Entry entry) {
+    private void apply(Op op, TrackedBlocks.Entry entry) {
         if (entry == null || op.release) return;
         Key key = op.key;
         String before = op.before, after = op.after;
-        track(key);
         World world = Bukkit.getWorld(key.world());
         if (op.cancelled) {
             queueRelease(key);
@@ -539,7 +658,7 @@ public final class WinterTerrain implements AutoCloseable {
         if (op.form && (!plugin.controls(world) || !plugin.switches().laysSnow() || !allowed(block.getLocation()))) return;
         boolean snowForm = op.form && after.startsWith("minecraft:snow[");
         if (snowForm && (!snowSupportedAt(block, plugin.settings()) || smallPlant(block.getType()) && !plugin.settings().vegetationSnow())) return;
-        // Protection can change while disk IO runs. Re-fire immediately before applying.
+        // Protection can change in between. Re-fire immediately before applying.
         if (op.form) {
             BlockState state = block.getState();
             state.setBlockData(Bukkit.createBlockData(after));
@@ -555,15 +674,11 @@ public final class WinterTerrain implements AutoCloseable {
         }
         if (snowForm && (!snowSupportedAt(block, plugin.settings()) || smallPlant(block.getType()) && !plugin.settings().vegetationSnow())) return;
         block.setBlockData(Bukkit.createBlockData(after), false);
+        // The original block is back: nothing is left to restore at this position (1.24.2).
+        if (after.equals(entry.original())) journal.forget(key);
     }
     @Override public void close() {
-        writer.shutdown();
-        try {
-            if (!writer.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)) writer.shutdownNow();
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-            writer.shutdownNow();
-        }
-        // An un-applied durable intent remains in the journal for reconciliation on restart.
+        // An un-applied intent remains in its chunk's record for reconciliation on restart.
+        journal.commit();
     }
 }

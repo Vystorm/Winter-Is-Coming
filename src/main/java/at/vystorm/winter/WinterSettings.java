@@ -29,7 +29,7 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
                 integer(c,"frost.search-budget",1,65536),materials(c,"frost.shore-materials"),c.getBoolean("protection.protect-core-regions"),
                 c.getString("protection.region-flag","winter"),integer(c,"performance.period-ticks",1,1200),
                 integer(c,"performance.columns-per-cycle",1,8192),integer(c,"performance.changes-per-cycle",1,512),
-                integer(c,"performance.max-tracked-blocks",1,1000000),c.getBoolean("weather.enabled"),number(c,"weather.snow-chance-at-peak",0,1),
+                integer(c,"performance.max-tracked-blocks",1,100000000),c.getBoolean("weather.enabled"),number(c,"weather.snow-chance-at-peak",0,1),
                 integer(c,"weather.interval-seconds",10,86400),c.getBoolean("weather.warm-biome-particles"),c.getBoolean("weather.packet-snow",true),c.getBoolean("spawns.enabled"),
                 number(c,"spawns.skeleton-weight-at-peak",0,3),number(c,"spawns.spider-weight-at-peak",0,3),number(c,"spawns.creeper-weight-at-peak",0,3),
                 holiday(c,"holidays.advent"),holiday(c,"holidays.christmas"),holiday(c,"holidays.new-year"),

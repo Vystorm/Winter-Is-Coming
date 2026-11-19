@@ -57,7 +57,11 @@ performance:
   columns-per-cycle: 96
   # Snow and ice changes per cycle (1..512); with period-ticks 20 that is per second. /winter admin has a slider.
   changes-per-cycle: 16
-  max-tracked-blocks: 100000
+  # Safety limit for the positions with plugin snow or ice held in memory (only loaded chunks are held; the record of
+  # each chunk is saved inside the chunk). The limit in use is this value or 256 per block of max-layers plus 512 per
+  # loaded chunk, whichever is larger, so it grows with the loaded world. If it is ever reached, the console and
+  # /winter status say so. 1..100000000.
+  max-tracked-blocks: 2000000
 weather:
   enabled: true
   snow-chance-at-peak: 0.7

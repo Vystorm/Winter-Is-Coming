@@ -18,6 +18,9 @@ public final class WinterListeners implements Listener {
     private final WinterTerrain terrain;
     public WinterListeners(WinterPlugin plugin,WinterTerrain terrain){this.plugin=plugin;this.terrain=terrain;}
     @EventHandler public void load(ChunkLoadEvent event){terrain.load(event.getChunk());}
+    /** The chunk record is stored in the chunk already (1.24.2); the chunk leaves the memory. */
+    @EventHandler(priority=EventPriority.MONITOR) public void unload(ChunkUnloadEvent event){terrain.unload(event.getChunk());}
+    @EventHandler(priority=EventPriority.MONITOR,ignoreCancelled=true) public void unloadWorld(WorldUnloadEvent event){terrain.unloadWorld(event.getWorld());}
     @EventHandler public void join(PlayerJoinEvent event){plugin.gifts().reconnected(event.getPlayer());}
     @EventHandler public void quit(PlayerQuitEvent event){if(plugin.coldLoop()!=null)plugin.coldLoop().release(event.getPlayer());}
     @EventHandler(priority=EventPriority.MONITOR,ignoreCancelled=true) public void eat(PlayerItemConsumeEvent event){

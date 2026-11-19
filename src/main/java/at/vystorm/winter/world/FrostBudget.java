@@ -17,6 +17,43 @@ public final class FrostBudget {
      * Returns {@code -1} if no shore is reachable within the supplied bounds.
      */
     public static int distance(int x, int z, int maxDistance, int maxVisited, Surface surface) {
+        return search(x, z, maxDistance, maxVisited, surface).distance();
+    }
+
+    /** Result of one search: the distance ({@code -1} = none) and how many cells it looked at. */
+    public record Found(int distance, int visited) { }
+
+    /** Cells a search up to {@code maxDistance} can look at at most: every cell within that many steps. */
+    public static int bound(int maxDistance, int maxVisited) {
+        long reach = Math.max(0, maxDistance);
+        return (int)Math.min(maxVisited, 2 * reach * (reach + 1) + 1);
+    }
+
+    /**
+     * Ice may form on this water cell when the result is a distance (a shore at most {@code radius} water steps away).
+     * The search stops at the radius; breadth-first order makes this the same answer as a search to the full
+     * radius setting followed by {@code 0 < d <= radius} (1.24.2), only with far fewer cells at low frost.
+     */
+    public static Found freezes(int x, int z, int radius, int maxVisited, Surface surface) {
+        if (radius < 1) return new Found(-1, 0);
+        return search(x, z, radius, maxVisited, surface);
+    }
+
+    /**
+     * Distance that decides whether this ice melts ({@code d > radius} melts, {@code -1} keeps it, as before). Checks
+     * the radius first; only ice outside it pays the full search to {@code maxDistance} (1.24.2). The result counts the
+     * cells of both steps.
+     */
+    public static Found meltDistance(int x, int z, int radius, int maxDistance, int maxVisited, Surface surface) {
+        int near = Math.min(Math.max(radius, 0), maxDistance);
+        Found first = search(x, z, near, maxVisited, surface);
+        if (first.distance() != -1) return first;
+        Found full = search(x, z, maxDistance, maxVisited, surface);
+        return new Found(full.distance(), first.visited() + full.visited());
+    }
+
+    /** {@link #distance} with the number of cells looked at. */
+    public static Found search(int x, int z, int maxDistance, int maxVisited, Surface surface) {
         if (maxDistance < 0 || maxDistance > MAX_ALLOWED_DISTANCE) {
             throw new IllegalArgumentException("maxDistance must be between 0 and 128");
         }
@@ -30,7 +67,7 @@ public final class FrostBudget {
         seen.add(key(x, z));
         Cell origin = Objects.requireNonNull(surface.at(x, z), "surface cell");
         if (origin != Cell.WATER) {
-            return -1;
+            return new Found(-1, 1);
         }
         queue.addLast(new Node(x, z, 0));
         int visited = 1;
@@ -48,20 +85,20 @@ public final class FrostBudget {
                     continue;
                 }
                 if (visited >= maxVisited) {
-                    return -1;
+                    return new Found(-1, visited);
                 }
                 seen.add(key);
                 visited++;
                 Cell cell = Objects.requireNonNull(surface.at(nextX, nextZ), "surface cell");
                 if (cell == Cell.SHORE) {
-                    return current.distance + 1;
+                    return new Found(current.distance + 1, visited);
                 }
                 if (cell == Cell.WATER) {
                     queue.addLast(new Node(nextX, nextZ, current.distance + 1));
                 }
             }
         }
-        return -1;
+        return new Found(-1, visited);
     }
 
     private static long key(int x, int z) {

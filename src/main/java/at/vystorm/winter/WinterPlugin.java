@@ -26,7 +26,9 @@ public final class WinterPlugin extends JavaPlugin {
     private WinterSettings settings;
     private WinterSwitches switches;
     private WinterState state;
-    private BlockJournal journal;
+    private TrackedBlocks journal;
+    /** The journal of 1.24.1 and older while its positions move into the chunks (1.24.2); null when there is none. */
+    private LegacyJournal legacyJournal;
     private WinterTerrain terrain;
     private WinterWeather weather;
     private at.vystorm.winter.world.WinterStorms storms;
@@ -92,7 +94,10 @@ public final class WinterPlugin extends JavaPlugin {
             }
             gifts = core.loot().pouches().open(this, core, "winter");
             state = new WinterState(getDataFolder().toPath().resolve("state.json"), core.data().files());
-            journal = new BlockJournal(getDataFolder().toPath().resolve("blocks.jsonl"));
+            legacyJournal = LegacyJournal.open(getDataFolder().toPath().resolve("blocks.jsonl"));
+            ChunkRecordStorage chunkData = WinterTerrain.chunkStorage(this);
+            journal = new TrackedBlocks(chunkData, legacyJournal, session(), message -> getLogger().warning(message));
+            if (legacyJournal != null) getLogger().info("Moving " + legacyJournal.size() + " positions of the old journal blocks.jsonl into their chunks as the chunks load; the original file is kept as blocks.jsonl" + LegacyJournal.BACKUP_SUFFIX);
             zones = new at.vystorm.winter.world.SnowZones(getDataFolder().toPath().resolve("spots.yml"), core.data().files());
             configureZones();
             snowfall = new at.vystorm.winter.world.Snowfall(this, new at.vystorm.winter.world.Snowfall.Host() {
@@ -109,7 +114,7 @@ public final class WinterPlugin extends JavaPlugin {
                     snowfall.forget(event.getPlayer().getUniqueId());
                 }
             }, this);
-            terrain = new WinterTerrain(this, journal, core.area());
+            terrain = new WinterTerrain(this, journal, chunkData, core.area());
             weather = new WinterWeather(this, core.packages().clientBiomes());
             storms = new at.vystorm.winter.world.WinterStorms(this);
             refresh();
@@ -159,7 +164,8 @@ public final class WinterPlugin extends JavaPlugin {
             for (World world : getServer().getWorlds()) for (Chunk chunk : world.getLoadedChunks()) terrain.load(chunk);
             tasks = core.tasks().of(this, "WinterIsComing");
             startTasks();
-            getLogger().info("WinterIsComing ready: " + season.phase() + ", journal=" + journal.size() + " blocks");
+            getLogger().info("WinterIsComing ready: " + season.phase() + ", tracked positions in loaded chunks=" + journal.size()
+                    + (legacyJournal == null ? "" : ", waiting in the old journal=" + journal.legacyPending()));
         } catch (Exception | LinkageError failure) {
             getLogger().log(Level.SEVERE, "WinterIsComing could not start safely", failure);
             getServer().getPluginManager().disablePlugin(this);
@@ -185,6 +191,9 @@ public final class WinterPlugin extends JavaPlugin {
             if (!failed) snowfall.tick(Bukkit.getOnlinePlayers());
         });
         tasks.timer(600, 600, () -> snowball.save());
+        tasks.timer(1200, 1200, () -> {
+            if (legacyJournal != null) legacyJournal.saveLater();
+        });
         tasks.timer(7, lamps.periodTicks(), () -> {
             if (!failed) lamps.tick();
         });
@@ -468,6 +477,17 @@ public final class WinterPlugin extends JavaPlugin {
         if (settings.advent() && s.holiday().equals("ADVENT")) return "ADVENT";
         return "NONE";
     }
+    /**
+     * One id per server process, the same after a plugin reload in that process: a chunk record marked by another
+     * run was read back from the saved world.
+     */
+    private static UUID session() {
+        return UUID.fromString((String)System.getProperties().computeIfAbsent("vystorm.winter.session", unused -> UUID.randomUUID().toString()));
+    }
+    /** The tracking limit stopped new snow and ice (1.24.2): told once in the console, shown in /winter status. */
+    public void trackingLimitReached(long limit) {
+        getLogger().warning("Winter stopped placing snow: tracking limit " + limit + " reached; raise performance.max-tracked-blocks");
+    }
     public void storageFailure(Exception failure) {
         if (failed) return;
         failed = true;
@@ -611,6 +631,8 @@ public final class WinterPlugin extends JavaPlugin {
         guarded(sender, () -> {
             lang.send(sender, "status", "date", date(), "phase", season.phase(), "strength", Math.round(season.intensity() * 100), "holiday", holiday, "blocks", journal.size(), "mode", failed ? "FAULTED" : state.data().thaw ? "THAW" : state.data().manualDate == null ? "CALENDAR" : "MANUAL");
             if (zones != null && zones.limiting()) lang.send(sender, "status-spots", "count", zones.spots().size());
+            if (terrain != null && terrain.limitHit() > 0) lang.send(sender, "status-tracking-limit", "limit", terrain.limitHit());
+            if (journal.legacyPending() > 0) lang.send(sender, "status-old-journal", "count", journal.legacyPending());
             if (snowfall != null) {
                 var sf = snowfall.settings();
                 if (sf.enabled()) lang.send(sender, "status-snowfall-on", "amount", sf.amount(), "radius", sf.radius());
@@ -928,10 +950,10 @@ public final class WinterPlugin extends JavaPlugin {
         if (coldLoop != null) coldLoop.close();
         if (snowball != null) snowball.close();
         if (terrain != null) terrain.close();
-        if (journal != null) try {
-            journal.close();
+        if (legacyJournal != null) try {
+            legacyJournal.close();
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Could not close winter journal", e);
+            getLogger().log(Level.SEVERE, "Could not save the old winter journal (its previous copy stays valid)", e);
         }
     }
 }

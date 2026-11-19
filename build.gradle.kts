@@ -1,6 +1,6 @@
 plugins { java }
 group = "at.vystorm"
-version = "1.24.1"
+version = "1.24.2"
 repositories { mavenCentral(); maven("https://repo.papermc.io/repository/maven-public/") }
 val coreJar = providers.gradleProperty("vystormCoreJar").orElse("libs/Vystorm_Core.jar")
 dependencies {
