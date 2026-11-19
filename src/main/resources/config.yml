@@ -23,7 +23,7 @@ snow:
   cover-small-plants: true
   # Tall grass, sunflowers and other two-block plants disappear in winter and come back on thaw.
   remove-tall-plants: true
-  # Snow builds a ramp of up to 6 extra layers towards a one-block step.
+  # Snow builds a ramp of up to 6 extra layers towards a one-block step, never more than the snow already lying there.
   ramps: true
   # Snow also settles on top of stairs and bottom slabs. The blocks themselves are never changed.
   cover-stairs-and-slabs: true

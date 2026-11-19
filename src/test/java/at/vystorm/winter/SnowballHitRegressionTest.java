@@ -29,6 +29,7 @@ class SnowballHitRegressionTest {
     private SnowballFight fight() {
         when(plugin.snowballSettings()).thenReturn(SnowballDuels.Settings.DEFAULTS);
         when(plugin.controls(any())).thenReturn(true);
+        when(plugin.winterAt(any())).thenReturn(true);
         when(plugin.season()).thenReturn(new SeasonCalendar.State(1,"WINTER",2026,"NONE",0));
         when(plugin.lang()).thenReturn(mock(Lang.class));
         when(plugin.coldLoop()).thenReturn(mock(WinterCold.class));

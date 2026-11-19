@@ -429,6 +429,15 @@ public final class WinterPlugin extends JavaPlugin {
     public boolean controls(World world) {
         return !failed && settings.includes(world) && season.intensity() > 0 && !state.data().thaw;
     }
+    /** True while the plugin lets it snow where this player is (the cold counts it as snowfall). */
+    public boolean snowingAt(Player player) {
+        return weather != null ? weather.snowingFor(player) : player.getWorld().hasStorm();
+    }
+    /** The visible winter at a player (weather, snow colours, storms, cold): {@link #controls} and inside the spots, if they limit the world. */
+    public boolean winterAt(Player player) {
+        Location where = player.getLocation();
+        return SnowZones.winterAt(controls(player.getWorld()), zones, player.getWorld().getUID(), where.getX(), where.getZ());
+    }
     public LocalDate date() {
         return state.data().manualDate == null ? LocalDate.now(settings.zone()) : LocalDate.parse(state.data().manualDate);
     }

@@ -56,11 +56,12 @@ class SnowDepthTest {
     }
 
     @org.junit.jupiter.api.Test void rampsClimbTowardsAStep() {
-        org.junit.jupiter.api.Assertions.assertEquals(8, SnowDepth.withRamp(2, 1, 1));
-        org.junit.jupiter.api.Assertions.assertEquals(6, SnowDepth.withRamp(2, 2, 1));
-        org.junit.jupiter.api.Assertions.assertEquals(4, SnowDepth.withRamp(2, 3, 1));
+        org.junit.jupiter.api.Assertions.assertEquals(14, SnowDepth.withRamp(8, 1, 1));
+        org.junit.jupiter.api.Assertions.assertEquals(12, SnowDepth.withRamp(8, 2, 1));
+        org.junit.jupiter.api.Assertions.assertEquals(10, SnowDepth.withRamp(8, 3, 1));
         org.junit.jupiter.api.Assertions.assertEquals(2, SnowDepth.withRamp(2, 0, 1));
         org.junit.jupiter.api.Assertions.assertEquals(0, SnowDepth.withRamp(0, 1, 1));
-        org.junit.jupiter.api.Assertions.assertEquals(5, SnowDepth.withRamp(2, 1, 0.5));
+        org.junit.jupiter.api.Assertions.assertEquals(7, SnowDepth.withRamp(4, 1, 0.5));
+        org.junit.jupiter.api.Assertions.assertEquals(4, SnowDepth.withRamp(2, 1, 1), "1.24.1: a ramp is never deeper than its base");
     }
 }

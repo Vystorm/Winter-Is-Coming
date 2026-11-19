@@ -135,8 +135,9 @@ and excluded-biome boundaries. Set 0 to disable (maximum 12). No protected
 blocks are touched and no neighboring chunk is force-loaded. Newly loaded
 chunks catch up gradually through the normal budgeted terrain queue.
 
-`snow.cover-small-plants: true` temporarily covers SHORT_GRASS and FERN once
-at least four layers are intended. The durable journal keeps their exact
+`snow.cover-small-plants: true` temporarily covers SHORT_GRASS, FERN and the
+other small plants as soon as the column gets snow, with one layer like the bare
+ground next to it (until 1.24.0 only from four layers on). The durable journal keeps their exact
 original block data, including across restarts; thaw or disabling coverage
 restores them. Player replacements take precedence. Flowers, tall plants,
 crops and containers are not replaced. Clearing artificial snow creates no
@@ -146,7 +147,7 @@ free snow drops. The feature uses the existing block-form protection events.
 
 `weather.packet-snow: true` (also the default for existing configs) uses Core 0.33.0 to send snowy biome data to each player. Precipitation is vanilla client-rendered snow; no resource pack, ProtocolLib or client mod is required. Snow/ice placement remains a separate seasonal feature. The packet view changes client biome colours and potentially biome sounds, but never the saved biome or server spawning rules.
 
-The view is per player across the controlled world, with the existing biome exclusions. Core regions still protect terrain edits; they do not mask this cosmetic weather view. Newly delivered chunks receive the overlay through a bounded queue, so a brief original-biome appearance is possible. Changes from other biome-packet plugins are repaired every ten seconds. Set `weather.packet-snow: false` and reload to disable it.
+The view is per player across the controlled world, with the existing biome exclusions. While season spots limit a world (`season-spots.only-inside: true` and at least one spot there), the world keeps its own weather: players inside a spot get the snowfall as their personal weather and see only the spot as snowy biome (the part of the spots within about 32 blocks of them); players outside see the normal biome and weather. Storms and the cold also act only inside the spots. Core regions still protect terrain edits; they do not mask this cosmetic weather view. Newly delivered chunks receive the overlay through a bounded queue, so a brief original-biome appearance is possible. Changes from other biome-packet plugins are repaired every ten seconds. Set `weather.packet-snow: false` and reload to disable it.
 
 ### Cold and warmth (1.3.0)
 

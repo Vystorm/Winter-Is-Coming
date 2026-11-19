@@ -118,6 +118,7 @@ public final class WinterStorms {
     private void effects(World world, Kind kind) {
         int shown = 0;
         for (Player player : world.getPlayers()) {
+            if (!plugin.winterAt(player)) continue;   // spots limit storms too (1.24.1)
             if (player.getGameMode() != GameMode.SURVIVAL && player.getGameMode() != GameMode.ADVENTURE) continue;
             if (player.getEyeLocation().getBlock().getLightFromSky() < 12) continue;
             if (plugin.settings().excludedBiomes().contains(BiomeKeys.key(player.getLocation().getBlock().getBiome()))) continue;

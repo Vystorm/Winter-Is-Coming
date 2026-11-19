@@ -92,6 +92,65 @@ public final class SnowZones {
     /** True when snow is currently limited to the spots (at least one spot and {@code only-inside} on). */
     public boolean limiting() { return onlyInside && !spots.isEmpty(); }
 
+    /** True when the spots limit winter in this world: {@code only-inside} on and at least one spot in this world. */
+    public boolean limiting(UUID world) {
+        if (!onlyInside) return false;
+        for (Spot s : spots.values()) if (s.world().equals(world)) return true;
+        return false;
+    }
+
+    /**
+     * Whether a player at this position gets the visible winter (falling snow, snow colours, storms, cold): the plugin's
+     * winter is active in the world and the position is inside a spot or the spots do not limit that world (1.24.1).
+     */
+    public static boolean winterAt(boolean controls, SnowZones zones, UUID world, double x, double z) {
+        return controls && (zones == null || zones.insideSpots(world, x, z));
+    }
+
+    /** A four-block aligned biome cell (quart) for the client-side snow view. */
+    public record Cell(int x, int y, int z) {}
+
+    /** Most cells and chunks one client-side biome overlay may carry (Core's limit). */
+    public static final int MAX_CELLS = 4096, WINDOW_CHUNKS = 4, LAYERS = 16;
+
+    /**
+     * Biome cells inside the spots of {@code world} that a viewer at x/z gets as snowy biome while the spots limit winter
+     * (1.24.1): a window of 4 x 4 chunks around the point of the nearest spot that is closest to the viewer (the viewer
+     * himself when inside), 16 cells (64 blocks) high from twelve blocks below {@code baseY}. Cells whose centre lies
+     * outside every spot stay as they are, so the snow colours and the falling snow end at the spot border. Empty when
+     * the world has no spot.
+     */
+    public List<Cell> projection(UUID world, double x, double z, int baseY, int minY, int maxY) {
+        Spot nearest = null;
+        double best = Double.MAX_VALUE;
+        for (Spot s : spots.values()) {
+            if (!s.world().equals(world)) continue;
+            double gap = Math.hypot(x - s.x(), z - s.z()) - s.radius();
+            if (gap < best) { best = gap; nearest = s; }
+        }
+        if (nearest == null) return List.of();
+        double cx = x, cz = z;
+        if (best > 0) {
+            double d = Math.hypot(x - nearest.x(), z - nearest.z());
+            cx = nearest.x() + (x - nearest.x()) * nearest.radius() / d;
+            cz = nearest.z() + (z - nearest.z()) * nearest.radius() / d;
+        }
+        int chunkX = ((int) Math.floor(cx) >> 4) - WINDOW_CHUNKS / 2 + 1, chunkZ = ((int) Math.floor(cz) >> 4) - WINDOW_CHUNKS / 2 + 1;
+        int x0 = chunkX << 4, z0 = chunkZ << 4;
+        int y0 = Math.max(minY, Math.floorDiv(baseY - 12, 4) * 4);
+        int y1 = Math.min(maxY, y0 + LAYERS * 4);
+        List<Cell> cells = new ArrayList<>();
+        for (int qx = x0; qx < x0 + WINDOW_CHUNKS * 16; qx += 4) for (int qz = z0; qz < z0 + WINDOW_CHUNKS * 16; qz += 4) {
+            if (!insideAny(world, qx + 2, qz + 2)) continue;
+            for (int qy = y0; qy + 4 <= y1 && cells.size() < MAX_CELLS; qy += 4) cells.add(new Cell(qx, qy, qz));
+        }
+        return cells;
+    }
+    private boolean insideAny(UUID world, double x, double z) {
+        for (Spot s : spots.values()) if (s.contains(world, x, z)) return true;
+        return false;
+    }
+
     public void add(String name, Spot spot) throws IOException { spots.put(name, spot); save(); }
 
     public boolean remove(String name) throws IOException {

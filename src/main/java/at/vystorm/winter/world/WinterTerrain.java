@@ -231,12 +231,12 @@ public final class WinterTerrain implements AutoCloseable {
                 Key k = records.get((offset / 2) % records.size());
                 if (reconcile(world.getBlockAt(k.x(), k.y(), k.z()), s)) allowance--;
             } else if (lays && s.includes(world) && plugin.season().intensity() > 0 && !thaw) {
-                int column = (offset / 2) % 256;
+                int column = SnowDepth.column(ref.x(), ref.z(), offset / 2);
                 int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
                 Block top = world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING);
                 if (sample(top, s)) allowance--;
             } else if (s.includes(world) && clock.enabled() && plugin.season().intensity() <= 0 && !plugin.state().data().thaw) {
-                int column = (offset / 2) % 256;
+                int column = SnowDepth.column(ref.x(), ref.z(), offset / 2);
                 int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
                 if (grow(world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING), s)) allowance--;
             }
@@ -405,12 +405,12 @@ public final class WinterTerrain implements AutoCloseable {
                 if (!owned(snow)) return false;
                 current = ((Snow)snow.getBlockData()).getLayers();
             } else if (smallPlant(snow.getType())) {
-                if (!s.vegetationSnow() || offset != 0 || total < 4) return false;
+                if (!s.vegetationSnow() || offset != 0 || !SnowDepth.coversPlant(total)) return false;
             } else if (!snow.getType().isAir()) return false;
             if (current < target) {
                 if (!snowSupportedAt(snow, s)) return false;
                 Snow data = (Snow)Material.SNOW.createBlockData();
-                data.setLayers(smallPlant(snow.getType()) ? 4 : current + 1);
+                data.setLayers(smallPlant(snow.getType()) ? SnowDepth.FIRST_LAYERS : current + 1);
                 return edit(snow, data.getAsString(), true);
             }
             if (current < 8) return false;

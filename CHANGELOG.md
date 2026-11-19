@@ -1,3 +1,11 @@
+## 1.24.1 — 2026-11-19
+
+- Early winter looks like early winter. The first snow now appears in patches that fill in over the first third of the season. The first layers now appear scattered over open ground, also on grass, ferns and flowers, which are covered with one layer as soon as their column gets snow. Before, small plants were only covered from four layers on and then at once with four layers, so at low frost the meadows stayed bare while the ground in front of every step and the roofs turned white in thick lines.
+- Snow ramps in front of a step and on stepped roofs grow with the snow around them: the extra layers are at most as many as the snow already lying in that place, so there is no ramp on bare ground. At full winter ramps are as before.
+- The terrain pass looks at the columns of a chunk in a shuffled order instead of row by row, so snow that is still growing lies scattered instead of in straight lines.
+- With season spots (`season-spots.only-inside: true` and at least one spot in the world), all visible winter now stays inside the spots: the falling snow and the snowy biome colours, storms and the cold. The world outside keeps its own weather and colours. Before, only the snow and ice on the ground respected the spots.
+- Snow that an older version laid too deep for the current date shrinks to the new depth during the normal passes; covered plants come back from the journal when their column has no snow yet.
+
 ## 1.24.0 — 2026-11-18
 
 - Requires Vystorm Core 0.65.0. Update Core before you update this plugin.

@@ -28,7 +28,7 @@ public final class WinterCold implements AutoCloseable {
             UUID id=player.getUniqueId();
             double level=levels.getOrDefault(id,0.0);
             World world=player.getWorld();
-            boolean eligible=s.enabled()&&plugin.controls(world)&&!plugin.season().phase().equals("THAW")&&!player.isDead()&&!inPowderSnow(player)
+            boolean eligible=s.enabled()&&plugin.winterAt(player)&&!plugin.season().phase().equals("THAW")&&!player.isDead()&&!inPowderSnow(player)
                     &&(player.getGameMode()==GameMode.SURVIVAL||player.getGameMode()==GameMode.ADVENTURE)
                     &&!plugin.settings().excludedBiomes().contains(BiomeKeys.key(player.getLocation().getBlock().getBiome()));
             if(!eligible){
@@ -37,7 +37,7 @@ public final class WinterCold implements AutoCloseable {
             }
             ColdModel.Exposure exposure=exposure(player,s);
             double rate=ColdModel.perSecond(exposure,s,plugin.season().intensity(),ColdModel.night(world.getTime()),
-                    world.hasStorm(),player.isInWater(),ColdModel.protection(leather(player),handWarmer(player,s)));
+                    plugin.snowingAt(player),player.isInWater(),ColdModel.protection(leather(player),handWarmer(player,s)));
             if(exposure==ColdModel.Exposure.OUTSIDE&&rate>0&&plugin.storms()!=null)rate*=plugin.storms().coldFactor(world);
             double stored=reserve(id);
             WarmthReserve.Step step=WarmthReserve.step(stored,level,exposure,rate,SECONDS_PER_TICK,plugin.reserve());
@@ -131,7 +131,7 @@ public final class WinterCold implements AutoCloseable {
     /** A snowball hit adds a little cold; the next loop tick checks eligibility and updates the frost overlay. */
     public void chill(Player player,double amount){
         ColdModel.Settings s=plugin.cold();
-        if(!s.enabled()||amount<=0||!plugin.controls(player.getWorld())||plugin.season().phase().equals("THAW")||inPowderSnow(player)
+        if(!s.enabled()||amount<=0||!plugin.winterAt(player)||plugin.season().phase().equals("THAW")||inPowderSnow(player)
                 ||(player.getGameMode()!=GameMode.SURVIVAL&&player.getGameMode()!=GameMode.ADVENTURE))return;
         UUID id=player.getUniqueId();
         // Leather keeps the snow out just like it blocks the cold.

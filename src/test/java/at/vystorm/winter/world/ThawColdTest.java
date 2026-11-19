@@ -31,6 +31,7 @@ class ThawColdTest {
     private WinterPlugin plugin() {
         WinterPlugin plugin=mock(WinterPlugin.class);
         when(plugin.controls(any())).thenReturn(true);
+        when(plugin.winterAt(any())).thenReturn(true);
         when(plugin.season()).thenReturn(new SeasonCalendar.State(0.5,"THAW",2026,"NONE",0));
         when(plugin.cold()).thenReturn(ColdModel.Settings.DEFAULTS);
         when(plugin.reserve()).thenReturn(WarmthReserve.Settings.DEFAULTS);
