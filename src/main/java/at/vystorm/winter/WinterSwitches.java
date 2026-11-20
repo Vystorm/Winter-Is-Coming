@@ -110,8 +110,20 @@ public final class WinterSwitches {
         return value;
     }
 
+    /** Any switch by its key: a 1.24.0 feature or an older {@code enabled} switch, as read with the last load. */
+    public boolean onPath(String path) {
+        for (Feature feature : Feature.values()) if (feature.path.equals(path)) return on(feature);
+        return on(path);
+    }
+
     /** The one language key every switched-off command answers with. */
     public static final String OFF_MESSAGE = "feature-off";
+
+    /**
+     * The answer of a command or button whose own switch is on but which needs ANOTHER switch that is off; it names
+     * that switch ({@code {name}} readable, {@code {switch}} the key).
+     */
+    public static final String NEEDS_MESSAGE = "feature-needs";
 
     /**
      * Whether the terrain loop may lay new snow and ice ({@code snow.enabled}). With the master switch off nothing new
@@ -144,6 +156,11 @@ public final class WinterSwitches {
     public static String descriptionKey(String path) {
         String subject = path.endsWith(".enabled") ? path.substring(0, path.length() - ".enabled".length()) : path;
         return "features." + subject.replace('.', '-');
+    }
+
+    /** {@code snow.spring-thaw.enabled} -> {@code switch-names.snow-spring-thaw}: the language key of a switch's name. */
+    public static String labelKey(String path) {
+        return "switch-names." + descriptionKey(path).substring("features.".length());
     }
 
     /**

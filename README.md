@@ -3,7 +3,7 @@
 
 ## Feature switches (1.24.0)
 
-Every feature has its own on/off switch in `config.yml`. All switches are listed with a one-line description in `/vadmin features` (Vystorm Core 0.65.0) and apply at once, without a restart. The only exception is `tutorial.enabled`, which needs a restart. New switches are written into an existing `config.yml` on the first start, with their comments (a backup `config.yml.bak-<time>` is made first). A missing key means "on", so a server keeps the behaviour it had.
+Every feature has its own on/off switch in `config.yml`. All switches are listed with a readable name and a one-line description in `/vadmin features` (Vystorm Core 0.65.0) and apply at once, without a restart. The only exception is `tutorial.enabled`, which needs a restart. New switches are written into an existing `config.yml` on the first start, with their comments (a backup `config.yml.bak-<time>` is made first). A missing key means "on", so a server keeps the behaviour it had.
 
 - Master switch of the snow: `snow.enabled`. Off: no new snow or ice forms, and what lies stays as it is until `/winter thaw` (which still removes it and brings the original blocks back) or until the switch is on again.
 - Snow details: `snow.spring-thaw.enabled`, `snow.drifts.enabled`, `snow.soft-edges.enabled`, `season-spots.enabled`, and the older keys `snow.cover-leaves`, `snow.cover-small-plants`, `snow.remove-tall-plants`, `snow.ramps`, `snow.cover-stairs-and-slabs`, `protection.protect-core-regions`, `frost.enabled`, `build-mode.enabled`, `seasons.enabled`.
@@ -13,7 +13,7 @@ Every feature has its own on/off switch in `config.yml`. All switches are listed
 
 The older keys keep their names and still work; they are declared as switches so they show in `/vadmin features`. `season-spots.only-inside` is still read as before. Values that switched a feature off before (`drift-strength: 0`, `transition-blocks: 0`, `warm-food: 0`, `hand-warmers: []`, `chill: 0`) keep that meaning.
 
-A command of a switched-off feature answers "This feature is switched off on this server." Its entry in tab completion and help disappears at once and comes back when the switch is on again. Stored data (scores, sled times, spots, calendar doors, gifts in the pouch) is kept. `/winter status`, `/winter thaw`, `/winter reload`, `/winter claim` and `/winter claims` always work: they show the state, undo the snow, apply the switches and hand out what players already earned.
+A command of a switched-off feature answers "This feature is switched off on this server." Its entry in tab completion and help disappears at once and comes back when the switch is on again. A command that also needs another switch (`/winter duel` and `/winter surrender` need `snowball-fight.enabled`, `/winter sled` needs `sledding.enabled`; the date and lamp buttons of the admin menu need `date-tools.enabled` and `lamps.enabled`) stays listed and names that switch: "This needs “Snowball fights” (snowball-fight.enabled), which is switched off on this server." Stored data (scores, sled times, spots, calendar doors, gifts in the pouch) is kept. `/winter status`, `/winter thaw`, `/winter reload`, `/winter claim` and `/winter claims` always work: they show the state, undo the snow, apply the switches and hand out what players already earned.
 
 ## Placeholders (1.24.0)
 

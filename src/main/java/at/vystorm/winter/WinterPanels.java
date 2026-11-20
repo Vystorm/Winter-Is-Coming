@@ -93,9 +93,18 @@ final class WinterPanels {
                 return Result.error(plugin.lang().plain(player, WinterSwitches.OFF_MESSAGE));
             }
             private Result outcome(Player player) { return plugin.faulted() ? Result.error(plugin.lang().plain(player, "faulted")) : Result.ok(); }
+            /** The date buttons need date-tools.enabled; with it off they name that switch. */
+            private Result dateTools(Player player) {
+                String needs = plugin.needsText(player, WinterSwitches.Feature.DATE_TOOLS.path());
+                return needs == null ? Result.ok() : Result.error(needs);
+            }
             public Result run(Player player, String action) {
                 Result allowed = check(player);
                 if (!allowed.success()) return allowed;
+                if ("auto".equals(action) || "winter".equals(action)) {
+                    Result tools = dateTools(player);
+                    if (!tools.success()) return tools;
+                }
                 switch (action) {
                     case "auto" -> plugin.commandResume(player);
                     case "winter" -> plugin.commandSetDate(player, plugin.settings().calendar().nextPeak(plugin.date()).toString());
@@ -111,6 +120,8 @@ final class WinterPanels {
             public Result date(Player player, String date) {
                 Result allowed = check(player);
                 if (!allowed.success()) return allowed;
+                Result tools = dateTools(player);
+                if (!tools.success()) return tools;
                 if (WinterPlugin.parseDate(date) == null) return Result.error(plugin.lang().plain(player, "invalid-date", "input", date));
                 plugin.commandSetDate(player, date);
                 return outcome(player);
@@ -134,7 +145,7 @@ final class WinterPanels {
             public void settings(Player player) {
                 if (check(player).success()) config.open(player, plugin.getName());
             }
-            public void lamp(Player player) { if (check(player).success()) plugin.lamps().toggle(player); }
+            public void lamp(Player player) { if (check(player).success() && !plugin.needs(player, "lamps.enabled")) plugin.lamps().toggle(player); }
         };
     }
 }

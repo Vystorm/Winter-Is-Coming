@@ -215,16 +215,44 @@ public final class WinterPlugin extends JavaPlugin {
         return true;
     }
     /**
-     * Gives every switch a one-line description in the admin's language for {@code /vadmin features} and declares the
-     * older booleans with other names as features, so their keys keep working unchanged.
+     * Answers a command or button whose own switch is on but which needs the switch at {@code path}, when that one is
+     * off: the message names it. True when it is off.
+     */
+    boolean needs(CommandSender sender, boolean on, String path) {
+        if (on) return false;
+        lang.send(sender, WinterSwitches.NEEDS_MESSAGE, "name", lang.plain(sender, WinterSwitches.labelKey(path)), "switch", path);
+        return true;
+    }
+    /** Same as {@link #needs(CommandSender, boolean, String)} for a switch read with the last load. */
+    boolean needs(CommandSender sender, String path) {
+        return needs(sender, switches().onPath(path), path);
+    }
+    /** For panels: null while the switch at {@code path} is on, else the plain "needs" text naming it. */
+    String needsText(CommandSender sender, String path) {
+        if (switches().onPath(path)) return null;
+        return lang.plain(sender, WinterSwitches.NEEDS_MESSAGE, "name", lang.plain(sender, WinterSwitches.labelKey(path)), "switch", path);
+    }
+    /**
+     * Duels: "off" when {@code snowball-fight.duels.enabled} is off, the needs message naming snowball fights when only
+     * {@code snowball-fight.enabled} is off. True when the duel is refused.
+     */
+    boolean duelsRefused(CommandSender sender) {
+        return off(sender, on(WinterSwitches.Feature.DUELS))
+                || needs(sender, snowballSettings == null || snowballSettings.enabled(), "snowball-fight.enabled");
+    }
+    /**
+     * Gives every switch a readable name and a one-line description in the admin's language for
+     * {@code /vadmin features} and declares the older booleans with other names as features, so their keys keep
+     * working unchanged.
      */
     private void describeSwitches() {
         try {
             var config = core.settings().config();
             for (String path : WinterSwitches.allPaths()) {
+                String label = lang.ref(WinterSwitches.labelKey(path));
                 String description = lang.ref(WinterSwitches.descriptionKey(path));
-                if (WinterSwitches.DECLARED.contains(path)) config.feature(this, path, null, description);
-                else config.label(this, path, null, description);
+                if (WinterSwitches.DECLARED.contains(path)) config.feature(this, path, label, description);
+                else config.label(this, path, label, description);
             }
             config.activation(this, "tutorial.enabled", Vystorm.vystorm_core._uiMethods.settings.SettingPolicy.Activation.RESTART);
         } catch (RuntimeException | LinkageError unavailable) {
@@ -542,6 +570,8 @@ public final class WinterPlugin extends JavaPlugin {
     static Vystorm.vystorm_core.commands.CommandSpec commandSpec(WinterPlugin p) {
         // Subcommands of switched-off features are left out of tab completion and help. Core asks the condition at every
         // completion, so a switch changed with /winter reload applies at once; the command still answers the off message.
+        // Each node is gated on its OWN switch only: Core does not run a hidden node at all, so duel, surrender and sled
+        // stay listed when only snowball fights or sledding are off, and then answer which switch they need.
         return Vystorm.vystorm_core.commands.CommandSpec.command("winter")
                 .executes(ctx -> p.commandStatus(ctx.sender()))
                 .sub("status", s -> s.executes(ctx -> p.commandStatus(ctx.sender())))
@@ -558,13 +588,13 @@ public final class WinterPlugin extends JavaPlugin {
                 .sub("claims", s -> s.executes(ctx -> p.commandClaims(ctx.sender())))
                 .sub("calendar", s -> hide(p, s, sw -> sw.on("advent-calendar.enabled")).permission(CalendarMenu.PERMISSION).playerOnly().executes(ctx -> p.commandCalendar(ctx.player())))
                 .sub("snowball", s -> hide(p, s, sw -> sw.on("snowball-fight.enabled")).permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSnowball(ctx.player())))
-                .sub("duel", s -> hide(p, s, sw -> sw.on("snowball-fight.enabled") && sw.on(WinterSwitches.Feature.DUELS)).permission(SnowballFight.PERMISSION).playerOnly()
+                .sub("duel", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.DUELS)).permission(SnowballFight.PERMISSION).playerOnly()
                         .arg(Vystorm.vystorm_core.commands.Arg.word("player").suggests((ctx, prefix) -> {
                             Player player = ctx.player();
                             return Bukkit.getOnlinePlayers().stream().filter(o -> o != player && player.canSee(o)).map(Player::getName).sorted().toList();
                         }))
                         .executes(ctx -> p.commandDuel(ctx.player(), ctx.get("player"))))
-                .sub("surrender", s -> hide(p, s, sw -> sw.on("snowball-fight.enabled") && sw.on(WinterSwitches.Feature.DUELS)).permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSurrender(ctx.player())))
+                .sub("surrender", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.DUELS)).permission(SnowballFight.PERMISSION).playerOnly().executes(ctx -> p.commandSurrender(ctx.player())))
                 .sub("storm", s -> hide(p, s, sw -> sw.on("storms.enabled")).executes(ctx -> p.commandStorm(ctx.sender(), null))
                         .sub("snowstorm", l -> l.permission("winter.admin").executes(ctx -> p.commandStorm(ctx.sender(), "snowstorm")))
                         .sub("blizzard", l -> l.permission("winter.admin").executes(ctx -> p.commandStorm(ctx.sender(), "blizzard")))
@@ -576,7 +606,7 @@ public final class WinterPlugin extends JavaPlugin {
                         .sub("add", l -> l.playerOnly().arg(Vystorm.vystorm_core.commands.Arg.word("spot")).arg(Vystorm.vystorm_core.commands.Arg.integer("radius", 8, 2000).optional())
                                 .executes(ctx -> p.commandSpot(ctx.sender(), "add", ctx.get("spot"), ctx.<Integer>getOr("radius", null))))
                         .sub("remove", l -> l.arg(Vystorm.vystorm_core.commands.Arg.word("spot").suggests((ctx, prefix) -> p.zones == null ? List.of() : List.copyOf(p.zones.spots().keySet()))).executes(ctx -> p.commandSpot(ctx.sender(), "remove", ctx.get("spot"), null))))
-                .sub("sled", s -> hide(p, s, sw -> sw.on("sledding.enabled") && sw.on(WinterSwitches.Feature.SLED_RUNS)).permission("winter.sled").executes(ctx -> p.commandSled(ctx.sender(), "list", null))
+                .sub("sled", s -> hide(p, s, sw -> sw.on(WinterSwitches.Feature.SLED_RUNS)).permission("winter.sled").executes(ctx -> p.commandSled(ctx.sender(), "list", null))
                         .sub("list", l -> l.executes(ctx -> p.commandSled(ctx.sender(), "list", null)))
                         .sub("top", l -> l.arg(sledArg(p)).executes(ctx -> p.commandSled(ctx.sender(), "top", ctx.get("run"))))
                         .sub("create", l -> l.permission("winter.admin").arg(Vystorm.vystorm_core.commands.Arg.word("run")).executes(ctx -> p.commandSled(ctx.sender(), "create", ctx.get("run"))))
@@ -712,7 +742,7 @@ public final class WinterPlugin extends JavaPlugin {
     }
     /** {@code /winter sled [list|top|create|finish|delete] [run]}. */
     void commandSled(CommandSender sender, String action, String rawName) {
-        if (off(sender, switches().on("sledding.enabled") && on(WinterSwitches.Feature.SLED_RUNS))) return;
+        if (off(sender, on(WinterSwitches.Feature.SLED_RUNS)) || needs(sender, "sledding.enabled")) return;
         if (sledRuns == null) {
             lang.send(sender, "sled.unavailable");
             return;
@@ -773,11 +803,11 @@ public final class WinterPlugin extends JavaPlugin {
         }
     }
     void commandSurrender(Player player) {
-        if (off(player, duelsOn())) return;
+        if (duelsRefused(player)) return;
         guarded(player, () -> snowball.surrender(player));
     }
     void commandDuel(Player player, String name) {
-        if (off(player, duelsOn())) return;
+        if (duelsRefused(player)) return;
         guarded(player, () -> {
             Player target = Bukkit.getPlayerExact(name);
             if (target == null || !player.canSee(target)) lang.send(player, "snowball-offline");

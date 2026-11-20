@@ -54,15 +54,18 @@ final class WinterAdminMenu {
         Inventory inv = holder[0];
         var lang = plugin.lang();
         inv.setItem(4, lang.lore(lang.name(new ItemStack(Material.CLOCK), player, "admin-status", "date", plugin.date()), player, "admin-status-lore", "phase", plugin.phaseName(), "mode", plugin.modeName(), "strength", plugin.strengthPercent()));
+        String dateTools = WinterSwitches.Feature.DATE_TOOLS.path();
         button(player, inv, actions, 10, Material.COMPASS, "admin-auto", p -> {
-            plugin.commandResume(p);
+            if (!plugin.needs(p, dateTools)) plugin.commandResume(p);
             open(p);
         });
         button(player, inv, actions, 11, Material.SNOW_BLOCK, "admin-winter", p -> {
-            plugin.commandSetDate(p, plugin.settings().calendar().nextPeak(plugin.date()).toString());
+            if (!plugin.needs(p, dateTools)) plugin.commandSetDate(p, plugin.settings().calendar().nextPeak(plugin.date()).toString());
             open(p);
         });
-        button(player, inv, actions, 12, Material.WRITABLE_BOOK, "admin-date", this::askDate);
+        button(player, inv, actions, 12, Material.WRITABLE_BOOK, "admin-date", p -> {
+            if (!plugin.needs(p, dateTools)) askDate(p);
+        });
         button(player, inv, actions, 13, Material.LAVA_BUCKET, "admin-thaw", p -> {
             plugin.commandThaw(p);
             open(p);
@@ -79,7 +82,7 @@ final class WinterAdminMenu {
         actions.put(22, this::askSpeed);
         button(player, inv, actions, 16, Material.YELLOW_STAINED_GLASS, "admin-lamp", p -> {
             p.closeInventory();
-            plugin.lamps().toggle(p);
+            if (!plugin.needs(p, "lamps.enabled")) plugin.lamps().toggle(p);
         });
         player.openInventory(inv);
     }

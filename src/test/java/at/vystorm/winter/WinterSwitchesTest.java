@@ -302,6 +302,69 @@ class WinterSwitchesTest {
         verify(lang).send(sender, "sled.none");
     }
 
+    // ---- a feature that needs another switch ---------------------------------------------------------------------
+
+    @Test void givenSnowballFightsOffButDuelsOn_whenDuelOrSurrender_thenTheAnswerNamesSnowballFights() throws Exception {
+        Lang lang = mock(Lang.class);
+        Player alex = mock(Player.class);
+        when(lang.plain(alex, "switch-names.snowball-fight")).thenReturn("Snowball fights");
+        WinterPlugin plugin = plugin(lang, WinterSwitches.DEFAULTS);
+        set(plugin, "snowballSettings", new SnowballDuels.Settings(false, 0.05, 10, 120, 16));
+        plugin.commandDuel(alex, "Sam");
+        plugin.commandSurrender(alex);
+        verify(lang, times(2)).send(alex, "feature-needs", "name", "Snowball fights", "switch", "snowball-fight.enabled");
+        verify(lang, never()).send(alex, "feature-off");
+        WinterPlugin bothOff = plugin(lang, WinterSwitches.without(Feature.DUELS));
+        set(bothOff, "snowballSettings", new SnowballDuels.Settings(false, 0.05, 10, 120, 16));
+        bothOff.commandDuel(alex, "Sam");
+        verify(lang).send(alex, "feature-off");
+        verify(lang, times(2)).send(alex, "feature-needs", "name", "Snowball fights", "switch", "snowball-fight.enabled");
+    }
+
+    @Test void givenSleddingOffButRunsOn_whenSledCommand_thenTheAnswerNamesSledding() throws Exception {
+        Lang lang = mock(Lang.class);
+        CommandSender sender = admin();
+        when(lang.plain(sender, "switch-names.sledding")).thenReturn("Sledding");
+        WinterPlugin plugin = plugin(lang, WinterSwitches.read(with("sledding.enabled", false)));
+        set(plugin, "sledRuns", new SledRuns(folder.resolve("sledruns.json"), AtomicFilesInterface.DEFAULT));
+        plugin.commandSled(sender, "list", null);
+        verify(lang).send(sender, "feature-needs", "name", "Sledding", "switch", "sledding.enabled");
+        verify(lang, never()).send(sender, "feature-off");
+        verify(lang, never()).send(sender, "sled.none");
+    }
+
+    @Test void givenOnlyTheParentSwitchOff_whenTabCompleting_thenTheDependentCommandStaysListedSoItCanNameIt() throws Exception {
+        YamlConfiguration config = with("snowball-fight.enabled", false);
+        config.set("sledding.enabled", false);
+        WinterPlugin plugin = plugin(mock(Lang.class), WinterSwitches.read(config));
+        var spec = WinterPlugin.commandSpec(plugin);
+        for (String name : List.of("duel", "surrender", "sled")) assertTrue(spec.children().get(name).visibleTo(null), name);
+        assertFalse(spec.children().get("snowball").visibleTo(null), "snowball follows its own switch");
+    }
+
+    @Test void givenDateToolsOff_whenAdminMenuDateButtons_thenTheyNameDateTools() throws Exception {
+        Lang lang = mock(Lang.class);
+        when(lang.plain(any(CommandSender.class), anyString(), any(Object[].class))).thenAnswer(call -> {
+            StringBuilder text = new StringBuilder();
+            for (Object argument : call.getArguments()) if (!(argument instanceof CommandSender)) text.append(argument).append(' ');
+            return text.toString().trim();
+        });
+        Player admin = mock(Player.class);
+        when(admin.hasPermission(anyString())).thenReturn(true);
+        when(admin.isOnline()).thenReturn(true);
+        WinterPlugin plugin = plugin(lang, WinterSwitches.without(Feature.DATE_TOOLS));
+        doReturn(true).when(plugin).isEnabled();
+        var actions = WinterPanels.adminActions(plugin, Vystorm.vystorm_core._uiMethods.settings.ConfigEditorInterface.DEFAULT, mock(WinterAdminMenu.class));
+        for (var result : List.of(actions.run(admin, "auto"), actions.run(admin, "winter"), actions.date(admin, "2026-12-24"))) {
+            assertFalse(result.success());
+            assertTrue(result.message().contains("feature-needs") && result.message().contains("date-tools.enabled")
+                    && result.message().contains("switch-names.date-tools"), result.message());
+        }
+        verify(plugin, never()).commandResume(any());
+        verify(plugin, never()).commandSetDate(any(), any());
+        assertNull(plugin(lang, WinterSwitches.DEFAULTS).needsText(admin, Feature.DATE_TOOLS.path()), "date tools on: no message");
+    }
+
     // ---- administration ------------------------------------------------------------------------------------------
 
     @Test void givenAdminMenuOff_whenCommand_thenOffMessageAndOnOpens() throws Exception {

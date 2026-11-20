@@ -115,10 +115,7 @@ final class SnowballFight implements Listener, AutoCloseable {
     void challenge(Player from, Player to) {
         var lang = plugin.lang();
         var s = plugin.snowballSettings();
-        if (!plugin.duelsOn()) {
-            lang.send(from, WinterSwitches.OFF_MESSAGE);
-            return;
-        }
+        if (plugin.duelsRefused(from)) return;
         if (!from.hasPermission(PERMISSION)) {
             lang.send(from, "snowball-denied");
             return;

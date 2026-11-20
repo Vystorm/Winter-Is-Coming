@@ -1,3 +1,9 @@
+## 1.24.3 — 2026-11-20
+
+- `/vadmin features` shows every Winter switch with a readable name in the admin's language, such as "Spring thaw" or "Snowball duels", together with its one-line description. Before, the screen built most names from the config keys.
+- `/winter duel`, `/winter surrender` and `/winter sled` now say which switch they need. With `snowball-fight.enabled` or `sledding.enabled` off they answer "This needs “Snowball fights” (snowball-fight.enabled), which is switched off on this server." These commands stay in tab completion as long as their own switch is on.
+- The date buttons and the lamp button of the admin menu name `date-tools.enabled` or `lamps.enabled` in the same way when that switch is off. Config keys and defaults are unchanged.
+
 ## 1.24.2 — 2026-11-19
 
 - Snow near the coast keeps up with the calendar. Coastal frost now has its own budget: the search for the nearest shore no longer ends the snow pass of that tick, so worlds with sea or lakes in the loaded chunks get their snow as fast as worlds without water. Before, every search for a shore stopped the pass for the rest of that tick, and near the sea the snow could lag behind the date by many minutes.
