@@ -55,7 +55,7 @@ public final class SnowDepth {
     }
     private static double smooth(double t) { return t*t*(3-2*t); }
     private static double mix(double a,double b,double t) { return a+(b-a)*t; }
-    private static double hash(int x,int z) {
+    static double hash(int x,int z) {
         long h=(long)x*0x9E3779B97F4A7C15L ^ (long)z*0xC2B2AE3D27D4EB4FL;
         h=(h^(h>>>30))*0xBF58476D1CE4E5B9L;
         h=(h^(h>>>27))*0x94D049BB133111EBL;

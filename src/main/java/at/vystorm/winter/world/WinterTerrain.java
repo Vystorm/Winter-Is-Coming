@@ -263,6 +263,7 @@ public final class WinterTerrain implements AutoCloseable {
         boolean thaw = plugin.state().data().thaw;
         boolean lays = plugin.switches().laysSnow(), touches = plugin.switches().touchesSnow(thaw);
         if (touches && !drainMelt(s)) return;
+        if (touches) drainRecheck(s);
         // Frost first within its reserved share, then the snow, then the frost again with what the snow left (1.24.2).
         boolean frost = s.frost() && touches;
         if (frost) frostPass(s, true, lays, thaw);
@@ -334,7 +335,7 @@ public final class WinterTerrain implements AutoCloseable {
                     budget.waterSkip();
                     continue;
                 }
-                if (sample(top, s)) budget.changed();
+                if (sample(top, s) || shelterSample(world, x, z, s)) budget.changed();
             } else if (s.includes(world) && clock.enabled() && plugin.season().intensity() <= 0 && !plugin.state().data().thaw) {
                 int column = SnowDepth.column(ref.x(), ref.z(), offset / 2);
                 int x = (ref.x()<<4) + (column & 15), z = (ref.z()<<4) + (column>>4);
@@ -386,8 +387,17 @@ public final class WinterTerrain implements AutoCloseable {
             int offset = root == null ? SnowDepth.MAX_BLOCKS : block.getY() - root.getY();
             Snow snow = (Snow)block.getBlockData();
             if (root != null && !s.vegetationSnow() && coveredPlant(root)) intensity = 0;
-            int target = SnowDepth.atHeight(layers(root == null ? block : root, s, intensity), offset);
+            int target;
+            boolean shelteredSnow = windOn(s) && sheltered(block, s);
+            if (shelteredSnow) {
+                // Wind-blown snow (1.25.0): the rays decide again, so a porch that was closed loses its snow. Sheltered
+                // snow is one block at most; anything stacked on it melts.
+                if (intensity > 0 && !budget.mayTrace()) return false;
+                target = root == block ? shelterTarget(shelterView(block.getWorld(), s), block, s, intensity) : 0;
+            } else target = SnowDepth.atHeight(layers(root == null ? block : root, s, intensity), offset);
             if (snow.getLayers() > target) {
+                // creep (1.25.0): the sheltered cell downwind takes half of this cell's layers, look at it again soon
+                if (shelteredSnow) recheckDownwind(block, s);
                 if (snow.getLayers() == 1) return edit(block, entry.original(), false);
                 snow.setLayers(snow.getLayers() - 1);
                 return edit(block, snow.getAsString(), false);
@@ -444,9 +454,8 @@ public final class WinterTerrain implements AutoCloseable {
         return 1;
     }
     /** Single-block plants snow may cover; the original comes back on thaw. By name, so newer plants also work on older servers. */
-    private static final Set<String> SMALL_PLANTS = Set.of("SHORT_GRASS", "FERN", "DANDELION", "POPPY", "BLUE_ORCHID", "ALLIUM", "AZURE_BLUET", "RED_TULIP", "ORANGE_TULIP", "WHITE_TULIP", "PINK_TULIP", "OXEYE_DAISY", "CORNFLOWER", "LILY_OF_THE_VALLEY", "TORCHFLOWER", "DEAD_BUSH", "PINK_PETALS", "WILDFLOWERS", "LEAF_LITTER", "SHORT_DRY_GRASS", "BUSH");
     public static boolean smallPlant(Material material) {
-        return SMALL_PLANTS.contains(material.name());
+        return Shelter.SMALL_PLANTS.contains(material.name());
     }
     private boolean coveredPlant(Block root) {
         var entry = journal.get(key(root));
@@ -523,6 +532,152 @@ public final class WinterTerrain implements AutoCloseable {
             if (current < 8) return false;
         }
         return false;
+    }
+    // ---- wind-blown snow (1.25.0) -------------------------------------------------------------------------------------
+    private ShelterView shelterView;
+    private UUID shelterWorld;
+    private boolean shelterLeaves, shelterPlants;
+    private long raysTraced;
+    /** Rays of wind-blown snow traced since the start and the block reads they and the filter needed. */
+    public long raysTraced() {
+        return raysTraced;
+    }
+    public long shelterReads() {
+        return shelterView == null ? 0 : shelterReadsBefore + shelterView.reads();
+    }
+    private long shelterReadsBefore;
+    boolean windOn(WinterSettings s) {
+        return plugin.switches().on(at.vystorm.winter.WinterSwitches.Feature.WIND_BLOWN);
+    }
+    /** The world as the wind sees it, caches cleared: one evaluation per call. */
+    private ShelterView shelterView(World world, WinterSettings s) {
+        boolean leaves = s.windBlown().leavesBlock(), plants = s.vegetationSnow();
+        if (shelterView == null || !world.getUID().equals(shelterWorld) || leaves != shelterLeaves || plants != shelterPlants) {
+            if (shelterView != null) shelterReadsBefore += shelterView.reads();
+            shelterView = new ShelterView(new ShelterView.Source() {
+                public boolean chunkLoaded(int chunkX, int chunkZ) { return world.isChunkLoaded(chunkX, chunkZ); }
+                public int heightmap(int x, int z) { return world.getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING); }
+                public String material(int x, int y, int z) { return world.getBlockAt(x, y, z).getType().name(); }
+                public boolean own(int x, int y, int z) { return owned(world.getBlockAt(x, y, z)); }
+                public boolean takesSnow(int x, int y, int z) { return groundSupportsSnow(world.getBlockAt(x, y, z), plugin.settings()); }
+                public int minY() { return world.getMinHeight(); }
+                public int layers(int x, int y, int z) { return world.getBlockAt(x, y, z).getBlockData() instanceof Snow snow ? snow.getLayers() : 0; }
+            }, leaves, plants);
+            shelterWorld = world.getUID();
+            shelterLeaves = leaves;
+            shelterPlants = plants;
+        }
+        shelterView.reset();
+        return shelterView;
+    }
+    /**
+     * Wind-blown snow: one more layer on a sheltered block top of this column (under a roof edge or canopy) that the
+     * wind reaches. Same edit, form event, records, budgets, spots, build mode, region flag and biomes as {@link #sample};
+     * own ray budget per tick. False when nothing changed.
+     */
+    private boolean shelterSample(World world, int x, int z, WinterSettings s) {
+        if (!windOn(s) || !budget.mayTrace()) return false;
+        WinterSettings.WindBlown wb = s.windBlown();
+        ShelterView view = shelterView(world, s);
+        if (!Shelter.candidate(view, x, z, wb.wind())) return false;
+        double intensity = plugin.season().intensity();
+        for (int y : Shelter.surfaces(view, x, z, wb.maxHeight())) {
+            if (!budget.mayTrace()) return false;
+            Block cell = world.getBlockAt(x, y, z);
+            if (!allowed(cell.getLocation()) || s.excludedBiomes().contains(BiomeKeys.key(cell.getBiome()))) continue;
+            if (cell.getType() == Material.SNOW && (!owned(cell) || !s.vegetationSnow() && coveredPlant(cell))) continue;
+            int current = cell.getType() == Material.SNOW ? ((Snow)cell.getBlockData()).getLayers() : 0;
+            if (current >= Math.min(8, wb.maxLayers())) continue;
+            int target = shelterTarget(view, cell, s, intensity);
+            if (current >= target) continue;
+            Snow data = (Snow)Material.SNOW.createBlockData();
+            data.setLayers(smallPlant(cell.getType()) ? SnowDepth.FIRST_LAYERS : current + 1);
+            return edit(cell, data.getAsString(), true);
+        }
+        return false;
+    }
+    /** The snow lies below the column's highest blocking block (a roof or canopy over it), not on the open top. */
+    private boolean sheltered(Block snow, WinterSettings s) {
+        World world = snow.getWorld();
+        if (snow.getY() > world.getHighestBlockYAt(snow.getX(), snow.getZ(), HeightMap.MOTION_BLOCKING)) return false;
+        return snow.getY() < shelterView(world, s).height(snow.getX(), snow.getZ());
+    }
+    // Early re-check after a block was placed near sheltered snow: the positions wait here for the next ticks.
+    private final ArrayDeque<Key> recheck = new ArrayDeque<>();
+    private final Set<Key> recheckQueued = new HashSet<>();
+    /** At most this many positions wait for an early re-check; the normal reconcile still reaches the rest. */
+    static final int RECHECK_LIMIT = 4096;
+    /**
+     * A player placed a block: tracked snow whose rays it may cross ({@link Shelter#mayShade}) is checked again within
+     * the next ticks instead of at the next visit of the pass. Only record lookups here, no block reads.
+     */
+    public void placed(Block placed) {
+        WinterSettings s = plugin.settings();
+        if (s == null || !windOn(s)) return;
+        World world = placed.getWorld();
+        WindRay.Wind wind = s.windBlown().wind();
+        Shelter.Shade shade = Shelter.Shade.of(wind);
+        int reach = WindRay.horizontalReach(wind) + 2, px = placed.getX(), py = placed.getY(), pz = placed.getZ();
+        Map<TrackedBlocks.ChunkId, Boolean> records = new HashMap<>();
+        UUID id = world.getUID();
+        for (int dz = -reach; dz <= reach; dz++) for (int dx = -reach; dx <= reach; dx++) {
+            int x = px + dx, z = pz + dz;
+            TrackedBlocks.ChunkId chunk = new TrackedBlocks.ChunkId(id, x >> 4, z >> 4);
+            if (!records.computeIfAbsent(chunk, c -> journal.count(c) > 0)) continue;
+            for (int y = py; y >= py - wind.maxHeight() && y > world.getMinHeight(); y--) {
+                if (!shade.test(px, py, pz, x, y, z)) continue;
+                Key key = new Key(id, x, y, z);
+                var entry = journal.get(key);
+                if (entry == null || entry.released() || recheckQueued.size() >= RECHECK_LIMIT) continue;
+                if (recheckQueued.add(key)) recheck.addLast(key);
+            }
+        }
+    }
+    /**
+     * Sheltered snow shrinks: the cell one step downwind may hold creep that depends on it ({@link Shelter#upwindLayers}),
+     * so it waits for an early re-check too; a closed porch then loses its snow cell after cell without waiting for the
+     * pass. Only a record lookup, no block read.
+     */
+    private void recheckDownwind(Block block, WinterSettings s) {
+        int[] up = Shelter.upwindStep(s.windBlown().wind());
+        Key key = new Key(block.getWorld().getUID(), block.getX() - up[0], block.getY(), block.getZ() - up[1]);
+        var entry = journal.get(key);
+        if (entry == null || entry.released() || recheckQueued.size() >= RECHECK_LIMIT) return;
+        if (recheckQueued.add(key)) recheck.addLast(key);
+    }
+    /** Positions waiting for an early re-check (tests, status). */
+    public int rechecksWaiting() {
+        return recheck.size();
+    }
+    /** Works through the early re-checks within the change and ray budgets; a position that still changes stays queued. */
+    private void drainRecheck(WinterSettings s) {
+        int visits = 0;
+        while (!recheck.isEmpty() && budget.mayChange() && budget.mayTrace() && visits++ < 256) {
+            Key key = recheck.pollFirst();
+            recheckQueued.remove(key);
+            World world = Bukkit.getWorld(key.world());
+            if (world == null || !world.isChunkLoaded(key.x() >> 4, key.z() >> 4)) continue;
+            Block block = world.getBlockAt(key.x(), key.y(), key.z());
+            if (block.getType() != Material.SNOW) continue;
+            if (reconcile(block, s, false)) {
+                budget.changed();
+                // one layer per visit: look again once this change is in the world (next tick)
+                if (recheckQueued.add(key)) recheck.addLast(key);
+            }
+        }
+    }
+    /**
+     * Layers a sheltered block top should carry now ({@link Shelter#target}): the cone's free rays scale the normal depth
+     * capped by max-layers and headroom, one layer less per cell under the roof, half of the sheltered neighbour's snow
+     * upwind (no ramps under roofs).
+     */
+    private int shelterTarget(ShelterView view, Block cell, WinterSettings s, double intensity) {
+        if (intensity <= 0) return 0;
+        int depth = SnowDepth.target(s.layers(), intensity, cell.getX(), cell.getZ(), s.driftStrength(), edgeFactor(cell, s));
+        if (depth <= 0) return 0;
+        budget.traced(WindRay.CONE_RAYS);
+        raysTraced += WindRay.CONE_RAYS;
+        return Shelter.target(view, cell.getX(), cell.getY(), cell.getZ(), s.windBlown().wind(), depth, s.windBlown().maxLayers());
     }
     /** Spring, summer and autumn on the highest ground only, so nothing under a roof or on farmland changes. Not journaled: the next season decides again. */
     private boolean grow(Block ground, WinterSettings s) {

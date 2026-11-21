@@ -30,6 +30,7 @@ public final class WinterSwitches {
         SPRING_THAW("snow.spring-thaw.enabled"),
         DRIFTS("snow.drifts.enabled"),
         SOFT_EDGES("snow.soft-edges.enabled"),
+        WIND_BLOWN("snow.wind-blown.enabled"),
         SPOTS("season-spots.enabled"),
         HOLIDAYS("holidays.enabled"),
         COUNTDOWN("holidays.countdown.enabled"),
@@ -163,8 +164,12 @@ public final class WinterSwitches {
         return "switch-names." + descriptionKey(path).substring("features.".length());
     }
 
+    /** Settings that are not switches but new since 1.24.0; {@link #addMissing} writes them into old files too. */
+    public static final List<String> ADDED_KEYS = List.of("snow.wind-blown.angle", "snow.wind-blown.wind-from",
+            "snow.wind-blown.max-height", "snow.wind-blown.max-layers", "snow.wind-blown.leaves-block");
+
     /**
-     * Writes the switches that are new in 1.24.0 into an existing {@code config.yml}, with their comments, and leaves
+     * Writes the switches that are new in 1.24.0 (and {@link #ADDED_KEYS}) into an existing {@code config.yml}, with their comments, and leaves
      * every other key alone (the file is registered without Core's full merge because a deleted mission goal must stay
      * deleted). The old file is copied to {@code config.yml.bak-<time>} first. Returns the number of keys added.
      */
@@ -180,10 +185,10 @@ public final class WinterSwitches {
         }
         try {
             int added = addMissing(file, defaults);
-            if (added > 0) plugin.getLogger().info("Added " + added + " new switch(es) to config.yml (a backup of the old file is next to it)");
+            if (added > 0) plugin.getLogger().info("Added " + added + " new key(s) to config.yml (a backup of the old file is next to it)");
             return added;
         } catch (IOException | InvalidConfigurationException failure) {
-            plugin.getLogger().warning("config.yml was left as it is, new switches use their defaults: " + failure.getMessage());
+            plugin.getLogger().warning("config.yml was left as it is, new keys use their defaults: " + failure.getMessage());
             return 0;
         }
     }
@@ -193,6 +198,7 @@ public final class WinterSwitches {
         disk.load(file);
         int added = 0;
         for (Feature feature : Feature.values()) if (add(disk, defaults, feature.path)) added++;
+        for (String path : ADDED_KEYS) if (add(disk, defaults, path)) added++;
         if (added == 0) return 0;
         String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss"));
         Files.copy(file.toPath(), file.toPath().resolveSibling(file.getName() + ".bak-" + stamp), StandardCopyOption.REPLACE_EXISTING);

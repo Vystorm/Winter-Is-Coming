@@ -38,6 +38,21 @@ snow:
   # Soft edges at protected regions and excluded biomes. false = hard edge, whatever transition-blocks says.
   soft-edges:
     enabled: true
+  # Wind-blown snow: the snow comes in at an angle, so it also settles under roof edges and canopies that are open to
+  # the wind. Never inside closed rooms: walls, doors, glass and panes keep it out. Falling flakes stay vertical.
+  wind-blown:
+    # false: snow only on open ground as before; snow already under roofs stays until it melts with the season.
+    enabled: true
+    # Angle of the snow from the vertical in degrees (0..40).
+    angle: 20
+    # Where the wind comes from: west, north, east, south or a compass degree (0 = north, 90 = east).
+    wind-from: west
+    # Highest roof or canopy the snow still gets under, in blocks (2..24); also bounds the work per block.
+    max-height: 12
+    # Most layers under a roof (1..8); never so high that the snow touches the block above.
+    max-layers: 4
+    # true: leaves stop the snow like a roof, so under a tree it only lies along the windward rim.
+    leaves-block: true
   excluded-biomes: [desert, badlands, eroded_badlands, wooded_badlands]
   clear-materials: [DIRT_PATH, FARMLAND, RAIL, POWERED_RAIL]
 frost:

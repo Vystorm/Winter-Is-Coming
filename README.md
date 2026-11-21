@@ -1,12 +1,45 @@
 # Winter Is Coming
 
 
+## Wind-blown snow (1.25.0)
+
+The snow comes in at an angle with the wind, so it also settles under roof edges, porches, bridges, overhangs and tree canopies that are open to the wind. The wind blows from one direction in every world, west unless you change it. How far the snow gets under a roof depends on the height of the roof. The snow is deepest at the windward edge and gets thinner towards the inside, so there is no hard line where it ends. It lies like a drift, not like stairs: every row along the edge has its own drift line, so in one row the snow stays deep for an extra block and in the next it thins out sooner, and these differences wander along the edge in soft waves a few blocks long. The pattern belongs to the place (the same blocks every time, also after a restart). With the default angle of 20° and `max-layers: 4`, the layers per block counted from the windward edge of a roof that is open on every side, the most common rows first:
+
+| Free blocks under the roof | Snow reaches | Deep winter | About a quarter into the winter |
+| --- | --- | --- | --- |
+| 2 | 1 to 2 blocks | 2, 1 (sometimes 2) | 2, 1 (sometimes 2) |
+| 3 | 2 to 3 blocks | 4, 2 / 4, 3, 1 / 4, 3, 2 | 3, 2, 1 / 3, 1 / 3, 2 |
+| 5 | 2 to 4 blocks | 4, 2, 1 / 4, 3, 2, 1 / 4, 3, 1 | 3, 2, 1 / 3, 3, 2, 1 |
+| 8 | 3 to 5 blocks | 4, 3, 2, 1 / 4, 4, 3, 2, 1 / 4, 2, 1 | 3, 3, 2, 1 / 3, 2, 1 / 3, 2, 2, 1 |
+| 12 | 4 to 6 blocks | 4, 4, 3, 2, 1 / 4, 3, 2, 1 / 4, 3, 3, 2, 1 | 3, 2, 2, 1 / 3, 3, 2, 2, 1 |
+
+The first block under the roof always gets the full depth; from one block to the next the snow never drops by more than 2 layers. Along the sides of a roof that face the wind at up to 45°, the snow also forms a drift from that side, so the corners are rounded. Early in the winter single blocks stay bare, as on open ground. A block that gets fewer paths of snow (for example near a post) can have less. Under a roof that is open on several sides, some snow also comes in from the sides that face the wind at up to 45°. Under an opening only two blocks high (a low porch or a doorway) there are never more than 2 layers, so a player can still walk in.
+
+Never inside closed rooms. The plugin follows each path of the snow block by block and counts every block that touches the path, also at a corner or an edge, as a wall. Walls, glass, panes, bars, fences, slabs, stairs, doors and trapdoors (open or closed) keep the snow out, and so do leaves unless you set `leaves-block: false`. A house with a door and windows gets no snow inside, whichever way the wind blows. When a player closes a porch with blocks, its snow melts again within seconds; a space that is closed by commands or by another plugin loses its snow when the plugin's pass next visits that chunk.
+
+```yaml
+snow:
+  wind-blown:
+    enabled: true       # the switch "Wind-blown snow" in /vadmin features
+    angle: 20           # 0..40 degrees from the vertical
+    wind-from: west     # west, north, east, south or a compass degree (0 = north, 90 = east)
+    max-height: 12      # 2..24: the highest roof or canopy the snow still gets under
+    max-layers: 4       # 1..8 layers under a roof
+    leaves-block: true  # leaves stop the snow, so under a tree it lies along the windward rim only
+```
+
+How the depth under a roof is worked out: the full depth is the depth the snow has on open ground at that moment, but at most `max-layers`, at most 7 when a block lies right above (the snow never touches it) and at most 2 under an opening two blocks high. Each row has a drift line: from the full depth at the first block it falls to nothing between the reach of a single path and two blocks further in; where exactly it ends, whether it stays deep first or falls early, and where its one-layer steps land come from fixed patterns of the position (smooth along the edge, so neighbouring rows are similar). The distance is counted straight into the wind, or along the sides at 45° when that is shorter. A block that a quarter or more of the paths reach gets the drift line's depth, at most that share of the full depth and at least one layer. Behind the last block the paths reach, snow drifts in from the block in front of it (on the windward side) if that block lies under the roof too: up to the drift line, and always at least one layer less than that block. That drift only moves from one free block to the next at the same height, never through a wall, door, pane, fence or across a corner, so closed rooms stay empty. Existing configs get these keys on the first start, with their comments (a backup of the old file is made first). `/winter status` shows whether wind-blown snow is on, the wind and how many paths were traced since the start.
+
+What stays as it was: open ground keeps the same snow as before (there is no shadow behind walls), falling flakes (weather, client snow, particles) still fall straight down, and the thaw brings back every original block, under roofs as well. With the switch off, no new snow forms under roofs; snow that already lies there stays until it melts with the season or with `/winter thaw`.
+
+The work stays small: only columns with lower ground on the windward side are looked at, at most 128 paths are traced per tick inside the existing pass, a path that would enter an unloaded chunk counts as blocked (no chunk is ever loaded for it), and nothing scans the area around players.
+
 ## Feature switches (1.24.0)
 
 Every feature has its own on/off switch in `config.yml`. All switches are listed with a readable name and a one-line description in `/vadmin features` (Vystorm Core 0.65.0) and apply at once, without a restart. The only exception is `tutorial.enabled`, which needs a restart. New switches are written into an existing `config.yml` on the first start, with their comments (a backup `config.yml.bak-<time>` is made first). A missing key means "on", so a server keeps the behaviour it had.
 
 - Master switch of the snow: `snow.enabled`. Off: no new snow or ice forms, and what lies stays as it is until `/winter thaw` (which still removes it and brings the original blocks back) or until the switch is on again.
-- Snow details: `snow.spring-thaw.enabled`, `snow.drifts.enabled`, `snow.soft-edges.enabled`, `season-spots.enabled`, and the older keys `snow.cover-leaves`, `snow.cover-small-plants`, `snow.remove-tall-plants`, `snow.ramps`, `snow.cover-stairs-and-slabs`, `protection.protect-core-regions`, `frost.enabled`, `build-mode.enabled`, `seasons.enabled`.
+- Snow details: `snow.spring-thaw.enabled`, `snow.drifts.enabled`, `snow.soft-edges.enabled`, `snow.wind-blown.enabled` (1.25.0), `season-spots.enabled`, and the older keys `snow.cover-leaves`, `snow.cover-small-plants`, `snow.remove-tall-plants`, `snow.ramps`, `snow.cover-stairs-and-slabs`, `protection.protect-core-regions`, `frost.enabled`, `build-mode.enabled`, `seasons.enabled`.
 - Weather and cold: `weather.enabled`, `weather.packet-snow`, `weather.warm-biome-particles`, `snowfall.enabled`, `storms.enabled`, `storms.darkness`, `cold.enabled`, `cold.damage`, `cold.breath`, `cold.warnings`, `cold.hot-meals.enabled`, `cold.warm-hands.enabled`, `cold.reserve.enabled`.
 - Holidays and games: `holidays.enabled` (master for gifts, countdown and fireworks), `holidays.countdown.enabled`, `holidays.advent`, `holidays.christmas`, `holidays.new-year`, `holidays.fireworks`, `advent-calendar.enabled`, `advent-calendar.catch-up`, `advent-calendar.join-reminder`, `snowball-fight.enabled`, `snowball-fight.duels.enabled`, `snowball-fight.hit-chill.enabled`, `community-missions.enabled`, `sledding.enabled`, `sledding.runs.enabled`, `lamps.enabled`.
 - Administration: `admin-menu.enabled`, `date-tools.enabled` (`/winter preview`, `setdate`, `resume`), `world-events.enabled`, `spawns.enabled`, `tutorial.enabled`.

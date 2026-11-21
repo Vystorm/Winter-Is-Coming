@@ -1,3 +1,14 @@
+## 1.25.0 — 2026-11-21
+
+- Servers that are already in winter will see snow appear under roof edges, porches, bridges and tree canopies that are open to the wind during the next passes after the update. If you do not want that, set `snow.wind-blown.enabled: false` in `config.yml` and run `/winter reload`, or switch off "Wind-blown snow" in `/vadmin features`. Snow on open ground is the same as before.
+- New: wind-blown snow. The snow comes in at 20° with a wind from the west, so it also lies under roofs and canopies on the windward side. The snow is deepest at the windward edge and thins out towards the inside like a drift, not like stairs: each row along the edge has its own drift line, so the snow reaches 2 to 3 blocks under a roof 3 blocks high, 2 to 4 under 5 blocks and 3 to 5 under 8 blocks, in soft waves along the edge. The pattern is fixed per place and the same after every restart. Under an opening only two blocks high (a low porch, a doorway) there are never more than 2 layers, so players can still walk in. The README has the full table.
+- Never inside closed rooms. Each path of the snow is followed block by block, and any block that touches it, also at a corner or an edge, stops it. Walls, glass, panes, fences, slabs, stairs, doors and trapdoors (open or closed) and leaves keep it out, so a house with a door and windows stays free of snow from every wind direction.
+- When a player places a block that closes a porch or another sheltered spot, the snow there is checked again within seconds and melts if the wind no longer reaches it. Spaces closed by commands or other plugins are checked at the plugin's next pass over the chunk.
+- New settings under `snow.wind-blown`: `enabled`, `angle` (0..40), `wind-from` (west, north, east, south or a compass degree), `max-height` (2..24), `max-layers` (1..8, default 4) and `leaves-block`. They are added to an existing `config.yml` on the first start, with their comments, after a backup of the old file.
+- `/winter status` shows a line for wind-blown snow with the wind direction, the angle and the number of paths traced since the start.
+- Falling flakes (weather, client snow, particles) still fall straight down. The thaw brings back every original block, the ones under roofs included. The work for wind-blown snow stays inside the existing terrain pass with a small budget of its own per tick and never loads a chunk.
+- Still requires Vystorm Core 0.65.0 or newer.
+
 ## 1.24.3 — 2026-11-20
 
 - `/vadmin features` shows every Winter switch with a readable name in the admin's language, such as "Spring thaw" or "Snowball duels", together with its one-line description. Before, the screen built most names from the config keys.

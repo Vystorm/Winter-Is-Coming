@@ -369,6 +369,8 @@ snowfall-off: '<gray>La neve che cade è disattivata per te. /winter snowfall la
 snowfall-disabled: '<yellow>La neve che cade è disattivata su questo server (snowfall.enabled in config.yml).'
 status-snowfall-on: '<gray>Nevicata: attiva ({amount} fiocchi al secondo, raggio {radius})'
 status-snowfall-off: '<gray>Nevicata: disattivata'
+status-wind-blown-on: '<gray>Neve portata dal vento: attiva (vento da {from}°, {angle}° dalla verticale; {rays} raggi tracciati, {reads} blocchi letti)'
+status-wind-blown-off: '<gray>Neve portata dal vento: disattivata'
 admin-snowfall: '<yellow>Nevicata</yellow>'
 admin-snowfall-label: 'Quantità di neve (0 = disattivata)'
 admin-snowfall-text: 'Fiocchi al secondo intorno a ogni giocatore, con qualsiasi meteo. 0 disattiva l''effetto. È indipendente dalla velocità della neve, che cambia solo quanto in fretta la neve cresce a terra.'
@@ -382,6 +384,7 @@ features:
   snow-spring-thaw: "Disgelo da calendar.thaw in poi. Disattivato: la neve resta fino a /winter thaw o al prossimo inverno."
   snow-drifts: "Cumuli di neve di profondità diversa. Disattivato: profondità uniforme."
   snow-soft-edges: "Bordi di neve morbidi presso regioni protette e biomi esclusi."
+  snow-wind-blown: "La neve si posa anche sotto i bordi dei tetti e le chiome aperti al vento. Mai nelle stanze chiuse."
   season-spots: "Luoghi di stagione: neve solo nei cerchi di /winter spot."
   holidays: "Feste: regali, conto alla rovescia di Capodanno e fuochi d'artificio."
   holidays-countdown: "Conto alla rovescia di Capodanno in chat."
@@ -431,6 +434,7 @@ switch-names:
   snow-spring-thaw: "Disgelo primaverile"
   snow-drifts: "Cumuli di neve"
   snow-soft-edges: "Bordi di neve morbidi"
+  snow-wind-blown: "Neve portata dal vento"
   season-spots: "Luoghi di stagione"
   holidays: "Feste"
   holidays-countdown: "Conto alla rovescia di Capodanno"

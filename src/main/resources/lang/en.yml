@@ -368,6 +368,8 @@ snowfall-off: '<gray>Falling snow is off for you. /winter snowfall brings it bac
 snowfall-disabled: '<yellow>Falling snow is switched off on this server (snowfall.enabled in config.yml).'
 status-snowfall-on: '<gray>Snowfall: on ({amount} flakes per second, radius {radius})'
 status-snowfall-off: '<gray>Snowfall: off'
+status-wind-blown-on: '<gray>Wind-blown snow: on (wind from {from}°, {angle}° from the vertical; {rays} rays traced, {reads} block reads)'
+status-wind-blown-off: '<gray>Wind-blown snow: off'
 admin-snowfall: '<yellow>Snowfall</yellow>'
 admin-snowfall-label: 'Snowfall amount (0 = off)'
 admin-snowfall-text: 'Flakes per second that fall around every player, whatever the weather. 0 switches the effect off. This is separate from the snow speed, which only changes how fast snow grows on the ground.'
@@ -381,6 +383,7 @@ features:
   snow-spring-thaw: "Spring thaw from calendar.thaw on. Off: snow stays until /winter thaw or the next winter."
   snow-drifts: "Snow drifts of different depth. Off: even depth."
   snow-soft-edges: "Soft snow edges at protected regions and excluded biomes."
+  snow-wind-blown: "Snow also settles under roof edges and canopies that are open to the wind. Never inside closed rooms."
   season-spots: "Season spots: snow only inside the circles set with /winter spot."
   holidays: "Holidays: gifts, New Year countdown and fireworks."
   holidays-countdown: "New Year countdown in chat."
@@ -430,6 +433,7 @@ switch-names:
   snow-spring-thaw: "Spring thaw"
   snow-drifts: "Snow drifts"
   snow-soft-edges: "Soft snow edges"
+  snow-wind-blown: "Wind-blown snow"
   season-spots: "Season spots"
   holidays: "Holidays"
   holidays-countdown: "New Year countdown"

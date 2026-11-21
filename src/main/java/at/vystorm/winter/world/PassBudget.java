@@ -26,7 +26,16 @@ public final class PassBudget {
         cellLimit = Math.max(1, searchBudget / 2);
         cells = 0;
         searched = false;
+        rays = RAYS_PER_TICK;
     }
+
+    /** Rays of wind-blown snow per tick (1.25.0): sixteen sheltered block tops of eight rays each. */
+    public static final int RAYS_PER_TICK = 128;
+    private int rays;
+    /** One more sheltered block top (a cone of rays) fits into this tick. */
+    public boolean mayTrace() { return rays >= WindRay.CONE_RAYS; }
+    public void traced(int count) { rays -= count; }
+    public int rays() { return rays; }
 
     public boolean mayChange() { return changes >= 1; }
     public void changed() { changes--; }

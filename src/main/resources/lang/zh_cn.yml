@@ -368,6 +368,8 @@ snowfall-off: '<gray>你的飘雪已关闭。/winter 降雪 可重新开启。'
 snowfall-disabled: '<yellow>本服务器已关闭飘雪（config.yml 中的 snowfall.enabled）。'
 status-snowfall-on: '<gray>飘雪：开启（每秒 {amount} 片雪花，半径 {radius}）'
 status-snowfall-off: '<gray>飘雪：关闭'
+status-wind-blown-on: '<gray>风吹雪：开启（风从 {from}° 吹来，与竖直方向成 {angle}°；已追踪 {rays} 条射线，读取 {reads} 个方块）'
+status-wind-blown-off: '<gray>风吹雪：关闭'
 admin-snowfall: '<yellow>飘雪</yellow>'
 admin-snowfall-label: '飘雪数量（0 = 关闭）'
 admin-snowfall-text: '无论天气如何，每位玩家周围每秒飘落的雪花数。0 表示关闭。这与降雪速度无关，后者只决定地面积雪增长的快慢。'
@@ -381,6 +383,7 @@ features:
   snow-spring-thaw: "从 calendar.thaw 起春季融雪。关闭：雪保留到 /winter thaw 或下一个冬天。"
   snow-drifts: "深浅不一的雪堆。关闭：深度均匀。"
   snow-soft-edges: "在受保护区域和排除的生物群系旁雪的边缘柔和过渡。"
+  snow-wind-blown: "雪也会落在迎风敞开的屋檐和树冠下。封闭的房间里永远不会有雪。"
   season-spots: "季节地点：只在 /winter spot 设置的圆内下雪。"
   holidays: "节日：礼物、新年倒计时和烟花。"
   holidays-countdown: "聊天中的新年倒计时。"
@@ -430,6 +433,7 @@ switch-names:
   snow-spring-thaw: "春季融雪"
   snow-drifts: "雪堆"
   snow-soft-edges: "柔和雪边"
+  snow-wind-blown: "风吹雪"
   season-spots: "季节地点"
   holidays: "节日"
   holidays-countdown: "新年倒计时"

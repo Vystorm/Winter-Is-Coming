@@ -111,12 +111,15 @@ class WinterBlockStagesTest {
         harness.fire(new BlockBreakEvent(block, player));
         harness.fire(placing());
         verify(terrain, never()).release(any());
+        verify(terrain, never()).placed(any());
 
         deny[0] = false;
         assertFalse(harness.fire(new BlockBreakEvent(block, player)).isCancelled());
         verify(terrain).release(block);
         assertFalse(harness.fire(placing()).isCancelled());
         verify(terrain, org.mockito.Mockito.times(2)).release(block);
+        // 1.25.0: a placed block also queues an early re-check of sheltered snow it may now block
+        verify(terrain).placed(block);
     }
 
     @Test

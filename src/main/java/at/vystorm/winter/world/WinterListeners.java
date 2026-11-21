@@ -72,8 +72,8 @@ public final class WinterListeners implements Listener {
         Block above=e.getBlock().getRelative(org.bukkit.block.BlockFace.UP);
         if(!e.isCancelled()&&above.getType()==Material.SNOW&&terrain.owned(above))terrain.clear(above);
     }
-    /** Stage OBSERVE, registered in {@link #handleBlockEvents}. */
-    public void place(BlockPlaceEvent e){terrain.release(e.getBlock());}
+    /** Stage OBSERVE, registered in {@link #handleBlockEvents}: releases the spot; sheltered snow whose wind the new block may block is checked again soon (1.25.0). */
+    public void place(BlockPlaceEvent e){terrain.release(e.getBlock());terrain.placed(e.getBlock());}
     /** Stage PROTECT, registered in {@link #handleTerrainEvents}. */
     public void flow(BlockFromToEvent e){if(terrain.owned(e.getToBlock()))e.setCancelled(true);}
     /** Stage PROTECT, registered in {@link #handleTerrainEvents}. */

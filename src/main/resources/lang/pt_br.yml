@@ -369,6 +369,8 @@ snowfall-off: '<gray>A neve caindo está desligada para você. /winter snowfall 
 snowfall-disabled: '<yellow>A neve caindo está desligada neste servidor (snowfall.enabled no config.yml).'
 status-snowfall-on: '<gray>Nevasca: ligada ({amount} flocos por segundo, raio {radius})'
 status-snowfall-off: '<gray>Nevasca: desligada'
+status-wind-blown-on: '<gray>Neve levada pelo vento: ligada (vento de {from}°, {angle}° da vertical; {rays} raios traçados, {reads} blocos lidos)'
+status-wind-blown-off: '<gray>Neve levada pelo vento: desligada'
 admin-snowfall: '<yellow>Nevasca</yellow>'
 admin-snowfall-label: 'Quantidade de neve (0 = desligada)'
 admin-snowfall-text: 'Flocos por segundo ao redor de cada jogador, com qualquer clima. 0 desliga o efeito. É independente da velocidade da neve, que só muda a rapidez com que a neve cresce no chão.'
@@ -382,6 +384,7 @@ features:
   snow-spring-thaw: "Degelo a partir de calendar.thaw. Desligado: a neve fica até /winter thaw ou o próximo inverno."
   snow-drifts: "Montes de neve com profundidade variada. Desligado: profundidade uniforme."
   snow-soft-edges: "Bordas suaves de neve perto de regiões protegidas e biomas excluídos."
+  snow-wind-blown: "A neve também se acumula sob beirais e copas de árvores abertos ao vento. Nunca em cômodos fechados."
   season-spots: "Locais de estação: neve só dentro dos círculos de /winter spot."
   holidays: "Feriados: presentes, contagem regressiva do Ano-Novo e fogos de artifício."
   holidays-countdown: "Contagem regressiva do Ano-Novo no chat."
@@ -431,6 +434,7 @@ switch-names:
   snow-spring-thaw: "Degelo da primavera"
   snow-drifts: "Montes de neve"
   snow-soft-edges: "Bordas suaves de neve"
+  snow-wind-blown: "Neve levada pelo vento"
   season-spots: "Locais de estação"
   holidays: "Feriados"
   holidays-countdown: "Contagem regressiva do Ano-Novo"

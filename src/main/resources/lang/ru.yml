@@ -368,6 +368,8 @@ snowfall-off: '<gray>Падающий снег для тебя выключен.
 snowfall-disabled: '<yellow>Падающий снег на этом сервере выключен (snowfall.enabled в config.yml).'
 status-snowfall-on: '<gray>Снегопад: включён ({amount} снежинок в секунду, радиус {radius})'
 status-snowfall-off: '<gray>Снегопад: выключен'
+status-wind-blown-on: '<gray>Снег, принесённый ветром: включён (ветер с {from}°, {angle}° от вертикали; {rays} лучей прослежено, {reads} блоков прочитано)'
+status-wind-blown-off: '<gray>Снег, принесённый ветром: выключен'
 admin-snowfall: '<yellow>Снегопад</yellow>'
 admin-snowfall-label: 'Количество снега (0 = выключен)'
 admin-snowfall-text: 'Снежинок в секунду вокруг каждого игрока при любой погоде. 0 выключает эффект. Это не то же самое, что скорость снега: она лишь определяет, как быстро снег нарастает на земле.'
@@ -381,6 +383,7 @@ features:
   snow-spring-thaw: "Оттепель с даты calendar.thaw. Выкл.: снег лежит до /winter thaw или до следующей зимы."
   snow-drifts: "Сугробы разной глубины. Выкл.: ровная глубина."
   snow-soft-edges: "Мягкие края снега у защищённых регионов и исключённых биомов."
+  snow-wind-blown: "Снег ложится и под краями крыш и кронами деревьев, открытыми ветру. Никогда в закрытых помещениях."
   season-spots: "Сезонные места: снег только внутри кругов из /winter spot."
   holidays: "Праздники: подарки, новогодний отсчёт и фейерверк."
   holidays-countdown: "Новогодний отсчёт в чате."
@@ -430,6 +433,7 @@ switch-names:
   snow-spring-thaw: "Весенняя оттепель"
   snow-drifts: "Сугробы"
   snow-soft-edges: "Мягкие края снега"
+  snow-wind-blown: "Снег, принесённый ветром"
   season-spots: "Сезонные места"
   holidays: "Праздники"
   holidays-countdown: "Новогодний отсчёт"

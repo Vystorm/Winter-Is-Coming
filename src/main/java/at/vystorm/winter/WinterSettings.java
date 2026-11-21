@@ -16,7 +16,7 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
         int period, int columns, int changes, int maxTracked, boolean weather, double snowChance,
         int weatherSeconds, boolean particles, boolean packetSnow, boolean spawns, double skeleton, double spider, double creeper,
         boolean advent, boolean christmas, boolean newYear, MonthDay christmasStart, MonthDay christmasEnd,
-        boolean fireworks, Material reward, int rewardAmount, Terrain terrain) {
+        boolean fireworks, Material reward, int rewardAmount, Terrain terrain, WindBlown windBlown) {
     public static WinterSettings read(FileConfiguration c) {
         Material reward = Material.valueOf(c.getString("holidays.reward-material", "COOKIE"));
         if (!reward.isItem() || reward.isAir()) throw new IllegalArgumentException("Reward must be an item");
@@ -35,7 +35,42 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
                 holiday(c,"holidays.advent"),holiday(c,"holidays.christmas"),holiday(c,"holidays.new-year"),
                 date(c,"holidays.christmas-start"),date(c,"holidays.christmas-end"),holiday(c,"holidays.fireworks"),
                 reward,integer(c,"holidays.reward-amount",1,reward.getMaxStackSize()),
-                Terrain.read(c));
+                Terrain.read(c), WindBlown.read(c));
+    }
+    /**
+     * Wind-blown snow (1.25.0, {@code snow.wind-blown.*}): snow also settles under roof edges and canopies that are open
+     * to the wind. {@code angle} from the vertical, {@code from} = compass degrees the wind comes from, {@code maxHeight}
+     * = highest roof or canopy snow still gets under, {@code maxLayers} = cap under roofs. The on/off switch is
+     * {@code snow.wind-blown.enabled} in {@link WinterSwitches}.
+     */
+    public record WindBlown(double angle, double from, int maxHeight, int maxLayers, boolean leavesBlock) {
+        public static final WindBlown DEFAULTS = new WindBlown(20, 270, 12, 4, true);
+        public static WindBlown read(FileConfiguration c) {
+            return new WindBlown(optionalNumber(c, "snow.wind-blown.angle", 20, 0, 40), windFrom(c.getString("snow.wind-blown.wind-from", "west")),
+                    optionalInteger(c, "snow.wind-blown.max-height", 12, 2, 24), optionalInteger(c, "snow.wind-blown.max-layers", 4, 1, 8),
+                    c.getBoolean("snow.wind-blown.leaves-block", true));
+        }
+        /** {@code west|north|east|south} or a compass degree (0 = north, 90 = east): where the wind comes from. */
+        static double windFrom(String value) {
+            String v = value == null ? "west" : value.trim().toLowerCase(java.util.Locale.ROOT);
+            switch (v) {
+                case "north": return 0;
+                case "east": return 90;
+                case "south": return 180;
+                case "west": return 270;
+                default:
+            }
+            try {
+                double degrees = Double.parseDouble(v);
+                if (Double.isFinite(degrees) && degrees >= 0 && degrees <= 360) return degrees % 360;
+            } catch (NumberFormatException ignored) {
+                // falls through to the message
+            }
+            throw new IllegalArgumentException("snow.wind-blown.wind-from must be west, north, east, south or 0..360");
+        }
+        public at.vystorm.winter.world.WindRay.Wind wind() {
+            return new at.vystorm.winter.world.WindRay.Wind(angle, from, maxHeight);
+        }
     }
     /** Per-block terrain switches, read once with the rest of the settings. */
     public record Terrain(boolean ramps, boolean coverStairsAndSlabs, boolean removeTallPlants) {

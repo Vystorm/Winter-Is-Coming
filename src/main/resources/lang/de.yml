@@ -368,6 +368,8 @@ snowfall-off: '<gray>Fallender Schnee ist für dich aus. /winter snowfall bringt
 snowfall-disabled: '<yellow>Fallender Schnee ist auf diesem Server ausgeschaltet (snowfall.enabled in der config.yml).'
 status-snowfall-on: '<gray>Schneefall: an ({amount} Flocken pro Sekunde, Radius {radius})'
 status-snowfall-off: '<gray>Schneefall: aus'
+status-wind-blown-on: '<gray>Windgetriebener Schnee: an (Wind aus {from}°, {angle}° zur Senkrechten; {rays} Strahlen verfolgt, {reads} Blöcke gelesen)'
+status-wind-blown-off: '<gray>Windgetriebener Schnee: aus'
 admin-snowfall: '<yellow>Schneefall</yellow>'
 admin-snowfall-label: 'Schneefall-Menge (0 = aus)'
 admin-snowfall-text: 'Flocken pro Sekunde, die um jeden Spieler fallen, egal bei welchem Wetter. 0 schaltet den Effekt aus. Das ist unabhängig vom Schnee-Tempo, das nur bestimmt, wie schnell Schnee am Boden wächst.'
@@ -381,6 +383,7 @@ features:
   snow-spring-thaw: "Tauwetter ab calendar.thaw. Aus: der Schnee bleibt bis /winter thaw oder zum nächsten Winter."
   snow-drifts: "Schneeverwehungen mit unterschiedlicher Tiefe. Aus: gleichmäßige Tiefe."
   snow-soft-edges: "Weiche Schneeränder an geschützten Regionen und ausgenommenen Biomen."
+  snow-wind-blown: "Schnee legt sich auch unter Dachkanten und Baumkronen, die zum Wind hin offen sind. Nie in geschlossenen Räumen."
   season-spots: "Saisonorte: Schnee nur in den Kreisen aus /winter spot."
   holidays: "Feiertage: Geschenke, Neujahrs-Countdown und Feuerwerk."
   holidays-countdown: "Neujahrs-Countdown im Chat."
@@ -430,6 +433,7 @@ switch-names:
   snow-spring-thaw: "Tauwetter"
   snow-drifts: "Schneeverwehungen"
   snow-soft-edges: "Weiche Schneeränder"
+  snow-wind-blown: "Windgetriebener Schnee"
   season-spots: "Saisonorte"
   holidays: "Feiertage"
   holidays-countdown: "Neujahrs-Countdown"

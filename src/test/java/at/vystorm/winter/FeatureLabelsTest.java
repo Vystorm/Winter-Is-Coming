@@ -49,6 +49,9 @@ class FeatureLabelsTest {
             String needs = lang.getString(WinterSwitches.NEEDS_MESSAGE, "");
             assertTrue(needs.contains("{name}") && needs.contains("{switch}"), code + " needs message");
         }
+        // 1.25.0: wind-blown snow is one of the switches checked above, in every language
+        assertTrue(WinterSwitches.allPaths().contains("snow.wind-blown.enabled"));
+        assertEquals("Wind-blown snow", resource("lang/en.yml").getString(WinterSwitches.labelKey("snow.wind-blown.enabled")));
         assertEquals("switch-names.snow-spring-thaw", WinterSwitches.labelKey("snow.spring-thaw.enabled"));
         assertEquals("switch-names.snow-cover-leaves", WinterSwitches.labelKey("snow.cover-leaves"));
     }

@@ -370,6 +370,8 @@ snowfall-off: '<gray>La neige qui tombe est désactivée pour toi. /winter snowf
 snowfall-disabled: '<yellow>La neige qui tombe est désactivée sur ce serveur (snowfall.enabled dans config.yml).'
 status-snowfall-on: '<gray>Chute de neige : activée ({amount} flocons par seconde, rayon {radius})'
 status-snowfall-off: '<gray>Chute de neige : désactivée'
+status-wind-blown-on: '<gray>Neige portée par le vent : activée (vent de {from}°, {angle}° par rapport à la verticale ; {rays} rayons suivis, {reads} blocs lus)'
+status-wind-blown-off: '<gray>Neige portée par le vent : désactivée'
 admin-snowfall: '<yellow>Chute de neige</yellow>'
 admin-snowfall-label: 'Quantité de neige (0 = désactivée)'
 admin-snowfall-text: 'Flocons par seconde autour de chaque joueur, quelle que soit la météo. 0 désactive l''effet. Ce réglage est distinct de la vitesse de la neige, qui ne change que la vitesse à laquelle la neige s''accumule au sol.'
@@ -383,6 +385,7 @@ features:
   snow-spring-thaw: "Dégel à partir de calendar.thaw. Désactivé : la neige reste jusqu'à /winter thaw ou l'hiver suivant."
   snow-drifts: "Congères de profondeur variable. Désactivé : profondeur égale."
   snow-soft-edges: "Bords de neige adoucis près des régions protégées et des biomes exclus."
+  snow-wind-blown: "La neige se dépose aussi sous les bords de toit et les feuillages ouverts au vent. Jamais dans les pièces fermées."
   season-spots: "Lieux de saison : neige seulement dans les cercles de /winter spot."
   holidays: "Fêtes : cadeaux, compte à rebours du Nouvel An et feu d'artifice."
   holidays-countdown: "Compte à rebours du Nouvel An dans le chat."
@@ -432,6 +435,7 @@ switch-names:
   snow-spring-thaw: "Dégel de printemps"
   snow-drifts: "Congères"
   snow-soft-edges: "Bords de neige adoucis"
+  snow-wind-blown: "Neige portée par le vent"
   season-spots: "Lieux de saison"
   holidays: "Fêtes"
   holidays-countdown: "Compte à rebours du Nouvel An"

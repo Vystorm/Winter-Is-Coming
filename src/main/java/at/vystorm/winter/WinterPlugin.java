@@ -668,6 +668,12 @@ public final class WinterPlugin extends JavaPlugin {
                 if (sf.enabled()) lang.send(sender, "status-snowfall-on", "amount", sf.amount(), "radius", sf.radius());
                 else lang.send(sender, "status-snowfall-off");
             }
+            if (terrain != null) {
+                var wind = settings.windBlown();
+                if (on(WinterSwitches.Feature.WIND_BLOWN)) lang.send(sender, "status-wind-blown-on", "from", plainNumber(wind.from()), "angle", plainNumber(wind.angle()),
+                        "rays", terrain.raysTraced(), "reads", terrain.shelterReads());
+                else lang.send(sender, "status-wind-blown-off");
+            }
             if (!failed && !state.data().thaw && season.phase().equals("OFF")) {
                 LocalDate today = date(), next = settings.calendar().nextStart(today);
                 lang.send(sender, "next-season", "date", next, "days", java.time.temporal.ChronoUnit.DAYS.between(today, next));
@@ -682,6 +688,10 @@ public final class WinterPlugin extends JavaPlugin {
             if (sender instanceof Player player && coldLoop != null && coldLoop.reserve(player.getUniqueId()) > 0)
                 lang.send(sender, "warmth-status", "seconds", (int)Math.ceil(coldLoop.reserve(player.getUniqueId())));
         });
+    }
+    /** 20.0 -> "20", 22.5 -> "22.5". */
+    static String plainNumber(double value) {
+        return value == Math.rint(value) ? Long.toString((long)value) : Double.toString(value);
     }
     void commandWarmth(Player player) {
         guarded(player, () -> {
