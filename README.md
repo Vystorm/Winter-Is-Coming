@@ -42,7 +42,7 @@ Every feature has its own on/off switch in `config.yml`. All switches are listed
 - Snow details: `snow.spring-thaw.enabled`, `snow.drifts.enabled`, `snow.soft-edges.enabled`, `snow.wind-blown.enabled` (1.25.0), `season-spots.enabled`, and the older keys `snow.cover-leaves`, `snow.cover-small-plants`, `snow.remove-tall-plants`, `snow.ramps`, `snow.cover-stairs-and-slabs`, `protection.protect-core-regions`, `frost.enabled`, `build-mode.enabled`, `seasons.enabled`.
 - Weather and cold: `weather.enabled`, `weather.packet-snow`, `weather.warm-biome-particles`, `snowfall.enabled`, `storms.enabled`, `storms.darkness`, `cold.enabled`, `cold.damage`, `cold.breath`, `cold.warnings`, `cold.hot-meals.enabled`, `cold.warm-hands.enabled`, `cold.reserve.enabled`.
 - Holidays and games: `holidays.enabled` (master for gifts, countdown and fireworks), `holidays.countdown.enabled`, `holidays.advent`, `holidays.christmas`, `holidays.new-year`, `holidays.fireworks`, `advent-calendar.enabled`, `advent-calendar.catch-up`, `advent-calendar.join-reminder`, `snowball-fight.enabled`, `snowball-fight.duels.enabled`, `snowball-fight.hit-chill.enabled`, `community-missions.enabled`, `sledding.enabled`, `sledding.runs.enabled`, `lamps.enabled`.
-- Administration: `admin-menu.enabled`, `date-tools.enabled` (`/winter preview`, `setdate`, `resume`), `world-events.enabled`, `spawns.enabled`, `tutorial.enabled`.
+- Administration: `admin-menu.enabled`, `date-tools.enabled` (`/winter preview`, `setdate`, `resume`), `world-events.enabled`, `spawns.enabled`, `tutorial.enabled`, `rankings.enabled` (1.26.0, the rankings below).
 
 The older keys keep their names and still work; they are declared as switches so they show in `/vadmin features`. `season-spots.only-inside` is still read as before. Values that switched a feature off before (`drift-strength: 0`, `transition-blocks: 0`, `warm-food: 0`, `hand-warmers: []`, `chill: 0`) keep that meaning.
 
@@ -66,6 +66,25 @@ With Vystorm Core 0.65.0 the plugin registers the namespace `winter`. Each value
 | `calendar_opened`, `calendar_waiting` | Advent doors opened this year and waiting today |
 
 Examples: `%vystorm_winter_phase%` shows `WINTER`, `{winter:cold}` shows `35`. `phase`, `strength`, `holiday`, `season_year` and `active` also answer off the server thread (scoreboard and tab plugins); the other values answer on the server thread.
+
+## Rankings (1.26.0)
+
+With Vystorm Core 0.67.0 or newer the plugin offers two rankings of the current winter season. They read the snowball leaderboard in `snowball.json`, so offline players are included; only names and numbers are shown. A new season starts both with an empty board, as the leaderboard always did.
+
+| Source id | Counts |
+| --- | --- |
+| `winter:snowball-hits` | Snowball hits on other players in this winter season |
+| `winter:snowball-wins` | Snowball duels won in this winter season |
+
+Vystorm Boards 1.21.0 or newer shows them on a board; put a text element above as heading:
+
+```yaml
+elements:
+  - {type: text, text: "<aqua>Best snowball throwers", x: 16, y: 12, size: 22}
+  - {type: top, source: "winter:snowball-hits", x: 16, y: 48, width: 480, rows: 10, highlight: true}
+```
+
+Placeholders, with `<key>` = `snowball-hits` or `snowball-wins` and `<n>` = 1 to 100: `%vystorm_winter_top_<key>_<n>_name%`, `%vystorm_winter_top_<key>_<n>_value%` (formatted in the viewer's language; `_raw` for the plain number), `%vystorm_winter_rank_<key>%` and `%vystorm_winter_value_<key>%` for the viewer (`-` if none). Short form in Vystorm texts: `{winter:top_snowball-hits:1:name}`, `{winter:rank_snowball-wins}`. `/vadmin placeholders rankings` lists them. Switch: `rankings.enabled`; with `snowball-fight.enabled` off neither ranking is offered, with `snowball-fight.duels.enabled` off only `winter:snowball-wins` is gone. With an older Core the plugin offers no rankings and works as before.
 
 ## Visible snowfall (1.22.0)
 

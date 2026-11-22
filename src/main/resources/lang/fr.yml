@@ -398,6 +398,7 @@ features:
   date-tools: "Outils de date : /winter preview, setdate et resume."
   world-events: "Événements et état de l'hiver dans le catalogue d'événements de Core."
   tutorial: "Tutoriel de l'hiver dans le menu de Core. Nécessite un redémarrage."
+  rankings: "Classements winter:snowball-hits et winter:snowball-wins pour les tableaux et les placeholders (nécessite Vystorm Core 0.67.0)."
   frost: "Gel côtier : l'eau gèle depuis le rivage."
   weather: "Météo hivernale et ciel enneigé."
   spawns: "Poids saisonniers des monstres pour SpawnDirector."
@@ -448,6 +449,7 @@ switch-names:
   date-tools: "Outils de date"
   world-events: "Événements du monde"
   tutorial: "Tutoriel"
+  rankings: "Classements"
   frost: "Gel côtier"
   weather: "Météo hivernale"
   spawns: "Apparitions saisonnières des monstres"
@@ -496,3 +498,10 @@ placeholder:
   snowball_rank: "Place au classement des boules de neige, 0 sans tir"
   calendar_opened: "Portes de l'Avent ouvertes cette année ; vide si le calendrier est désactivé"
   calendar_waiting: "Portes de l'Avent qui attendent aujourd'hui"
+rankings:
+  snowball-hits:
+    label: "Tirs de boules de neige"
+    description: "Tirs de boules de neige réussis pendant cette saison d'hiver"
+  snowball-wins:
+    label: "Duels de boules de neige gagnés"
+    description: "Duels de boules de neige gagnés pendant cette saison d'hiver"

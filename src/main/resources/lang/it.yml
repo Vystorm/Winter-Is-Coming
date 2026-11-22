@@ -397,6 +397,7 @@ features:
   date-tools: "Strumenti per la data: /winter preview, setdate e resume."
   world-events: "Eventi e stato dell'inverno nel catalogo eventi di Core."
   tutorial: "Tutorial dell'inverno nel menu di Core. Serve un riavvio."
+  rankings: "Classifiche winter:snowball-hits e winter:snowball-wins per tabelloni e placeholder (serve Vystorm Core 0.67.0)."
   frost: "Gelo costiero: l'acqua gela partendo dalla riva."
   weather: "Meteo invernale e cielo innevato."
   spawns: "Pesi stagionali dei mob per SpawnDirector."
@@ -447,6 +448,7 @@ switch-names:
   date-tools: "Strumenti per la data"
   world-events: "Eventi del mondo"
   tutorial: "Tutorial"
+  rankings: "Classifiche"
   frost: "Gelo costiero"
   weather: "Meteo invernale"
   spawns: "Mob stagionali"
@@ -495,3 +497,10 @@ placeholder:
   snowball_rank: "Posto nella classifica delle palle di neve, 0 senza colpi"
   calendar_opened: "Porticine dell'Avvento aperte quest'anno; vuoto con il calendario disattivato"
   calendar_waiting: "Porticine dell'Avvento che aspettano oggi"
+rankings:
+  snowball-hits:
+    label: "Colpi di palla di neve"
+    description: "Colpi di palla di neve in questa stagione invernale"
+  snowball-wins:
+    label: "Duelli a palle di neve vinti"
+    description: "Duelli a palle di neve vinti in questa stagione invernale"

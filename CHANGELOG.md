@@ -1,3 +1,10 @@
+## 1.26.0 — 2026-11-22
+
+- Two new rankings of the current winter season: `winter:snowball-hits`, the players with the most snowball hits on other players, and `winter:snowball-wins`, the players with the most snowball duels won. Vystorm Boards shows them on a board with `{type: top, source: "winter:snowball-hits", rows: 10}`, and the same values are placeholders, for example `%vystorm_winter_top_snowball-hits_1_name%` and `%vystorm_winter_rank_snowball-wins%`. They are read from the snowball leaderboard that `snowball.json` already holds, so players who are offline are listed from the first start, and a new season starts them empty like the leaderboard. Only names and numbers are shown.
+- Showing the rankings on a board needs Vystorm Core 0.67.0 or newer and Vystorm Boards 1.21.0 or newer. The plugin itself still runs with Vystorm Core 0.65.0 or newer; with an older Core it offers no rankings and everything else works as before.
+- New switch `rankings.enabled`, on by default and listed in `/vadmin features` as "Rankings" in seven languages. It is added to an existing `config.yml` on the first start, with its comment. Off, or with `snowball-fight.enabled` off, the rankings are not offered; with `snowball-fight.duels.enabled` off only `winter:snowball-wins` is gone. A change applies with `/winter reload` without a restart.
+- The file format of `snowball.json` is unchanged.
+
 ## 1.25.0 — 2026-11-21
 
 - Servers that are already in winter will see snow appear under roof edges, porches, bridges and tree canopies that are open to the wind during the next passes after the update. If you do not want that, set `snow.wind-blown.enabled: false` in `config.yml` and run `/winter reload`, or switch off "Wind-blown snow" in `/vadmin features`. Snow on open ground is the same as before.

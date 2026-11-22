@@ -160,6 +160,8 @@ public final class WinterPlugin extends JavaPlugin {
             } catch (RuntimeException unavailable) {
                 getLogger().warning("Placeholders not registered: " + unavailable);
             }
+            rankingsReady = true;
+            applyRankings();
             core.command().register(this, lang, commandSpec(this));
             for (World world : getServer().getWorlds()) for (Chunk chunk : world.getLoadedChunks()) terrain.load(chunk);
             tasks = core.tasks().of(this, "WinterIsComing");
@@ -631,6 +633,50 @@ public final class WinterPlugin extends JavaPlugin {
     boolean duelsOn() {
         return (snowballSettings == null || snowballSettings.enabled()) && on(WinterSwitches.Feature.DUELS);
     }
+
+    // ---- rankings winter:snowball-hits and winter:snowball-wins (1.26.0, Core 0.67.0) ----
+
+    /** Set once the placeholders are registered at start; a refusal is logged once per run. */
+    private boolean rankingsReady, rankingsRefused;
+
+    /** {@code winter:snowball-hits}: {@code rankings.enabled} and snowball fights on. */
+    boolean hitsRanked() {
+        return on(WinterSwitches.Feature.RANKINGS) && (snowballSettings == null || snowballSettings.enabled());
+    }
+
+    /** {@code winter:snowball-wins}: {@code rankings.enabled} and duels on. */
+    boolean winsRanked() {
+        return on(WinterSwitches.Feature.RANKINGS) && duelsOn();
+    }
+
+    /** Offers or removes the rankings after the switches were read; nothing at all on a Core older than 0.67.0. */
+    void applyRankings() {
+        if (core == null) return;
+        Throwable refused = rankings(CoreApi.has("placeholder-rankings"), this, core::placeholders, hitsRanked(), winsRanked(),
+                () -> snowball == null || season == null ? List.of() : snowball.scores().rows(snowball.season()),
+                key -> lang == null ? key : lang.ref(key));
+        if (refused != null && !rankingsRefused) {
+            rankingsRefused = true;
+            getLogger().warning("Rankings not offered: " + refused);
+        }
+    }
+
+    /**
+     * Declares (or removes) the rankings when Core has rankings. The class naming Core's ranking types is only loaded
+     * inside this check. Returns the refusal (logged once by the caller), null when it worked or there was nothing to do.
+     */
+    static Throwable rankings(boolean coreHasRankings, org.bukkit.plugin.Plugin plugin,
+                              java.util.function.Supplier<Vystorm.vystorm_core._advancedMethods.placeholderHandler.PlaceholderInterface> registry,
+                              boolean hitsOn, boolean winsOn, java.util.function.Supplier<? extends Collection<SnowballScores.Row>> rows,
+                              java.util.function.UnaryOperator<String> ref) {
+        if (!coreHasRankings) return null;
+        try {
+            WinterRankings.apply(plugin, registry.get(), hitsOn, winsOn, rows, ref);
+            return null;
+        } catch (RuntimeException | LinkageError refused) {
+            return refused;
+        }
+    }
     void commandAdmin(Player player) {
         if (off(player, on(WinterSwitches.Feature.ADMIN_MENU))) return;
         guarded(player, () -> adminMenu.open(player));
@@ -924,6 +970,7 @@ public final class WinterPlugin extends JavaPlugin {
             switches = proposedSwitches;
             switchesReloaded(core == null ? null : core.command(), previousSwitches, proposedSwitches);
             if (!duelsOn()) snowball.duels().clear();
+            if (rankingsReady) applyRankings();   // rankings.enabled, snowball fights and duels apply without a restart
             configureZones();
             refresh();
             events.tick();

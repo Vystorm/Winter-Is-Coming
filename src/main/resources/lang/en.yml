@@ -396,6 +396,7 @@ features:
   date-tools: "Date tools: /winter preview, setdate and resume."
   world-events: "Winter events and state in the Core event catalogue."
   tutorial: "Winter tutorial in the Core menu. Needs a restart."
+  rankings: "Rankings winter:snowball-hits and winter:snowball-wins for boards and placeholders (needs Vystorm Core 0.67.0)."
   frost: "Coastal frost: water freezes outward from the shore."
   weather: "Winter weather and snowy sky."
   spawns: "Seasonal mob weights for SpawnDirector."
@@ -446,6 +447,7 @@ switch-names:
   date-tools: "Date tools"
   world-events: "World events"
   tutorial: "Tutorial"
+  rankings: "Rankings"
   frost: "Coastal frost"
   weather: "Winter weather"
   spawns: "Seasonal mob spawns"
@@ -494,3 +496,10 @@ placeholder:
   snowball_rank: "Place on the snowball leaderboard, 0 without hits"
   calendar_opened: "Advent doors opened this year; empty with the calendar off"
   calendar_waiting: "Advent doors waiting today"
+rankings:
+  snowball-hits:
+    label: "Snowball hits"
+    description: "Snowball hits in this winter season"
+  snowball-wins:
+    label: "Snowball duel wins"
+    description: "Snowball duels won in this winter season"

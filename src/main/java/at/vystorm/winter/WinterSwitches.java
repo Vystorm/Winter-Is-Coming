@@ -42,7 +42,9 @@ public final class WinterSwitches {
         ADMIN_MENU("admin-menu.enabled"),
         DATE_TOOLS("date-tools.enabled"),
         WORLD_EVENTS("world-events.enabled"),
-        TUTORIAL("tutorial.enabled");
+        TUTORIAL("tutorial.enabled"),
+        /** 1.26.0: the rankings winter:snowball-hits and winter:snowball-wins (Core 0.67.0). */
+        RANKINGS("rankings.enabled");
 
         private final String path;
         Feature(String path) { this.path = path; }

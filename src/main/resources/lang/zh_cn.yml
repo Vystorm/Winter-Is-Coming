@@ -396,6 +396,7 @@ features:
   date-tools: "日期工具：/winter preview、setdate 和 resume。"
   world-events: "Core 事件目录中的冬季事件和状态。"
   tutorial: "Core 菜单中的冬季教程。需要重启。"
+  rankings: "排行榜 winter:snowball-hits 和 winter:snowball-wins，用于看板和占位符（需要 Vystorm Core 0.67.0）。"
   frost: "海岸霜冻：水从岸边开始结冰。"
   weather: "冬季天气和下雪的天空。"
   spawns: "供 SpawnDirector 使用的季节性怪物权重。"
@@ -446,6 +447,7 @@ switch-names:
   date-tools: "日期工具"
   world-events: "世界事件"
   tutorial: "教程"
+  rankings: "排行榜"
   frost: "海岸霜冻"
   weather: "冬季天气"
   spawns: "季节性怪物生成"
@@ -494,3 +496,10 @@ placeholder:
   snowball_rank: "雪球排行榜名次，无命中时为 0"
   calendar_opened: "今年已打开的降临节门数；日历关闭时为空"
   calendar_waiting: "今天等待打开的降临节门数"
+rankings:
+  snowball-hits:
+    label: "雪球命中"
+    description: "本冬季的雪球命中次数"
+  snowball-wins:
+    label: "雪球决斗胜场"
+    description: "本冬季赢得的雪球决斗"

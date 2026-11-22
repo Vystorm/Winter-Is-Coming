@@ -397,6 +397,7 @@ features:
   date-tools: "Ferramentas de data: /winter preview, setdate e resume."
   world-events: "Eventos e estado do inverno no catálogo de eventos do Core."
   tutorial: "Tutorial do inverno no menu do Core. Precisa de reinício."
+  rankings: "Rankings winter:snowball-hits e winter:snowball-wins para painéis e placeholders (precisa do Vystorm Core 0.67.0)."
   frost: "Geada costeira: a água congela a partir da margem."
   weather: "Clima de inverno e céu com neve."
   spawns: "Pesos sazonais de mobs para o SpawnDirector."
@@ -447,6 +448,7 @@ switch-names:
   date-tools: "Ferramentas de data"
   world-events: "Eventos do mundo"
   tutorial: "Tutorial"
+  rankings: "Rankings"
   frost: "Geada costeira"
   weather: "Clima de inverno"
   spawns: "Mobs sazonais"
@@ -495,3 +497,10 @@ placeholder:
   snowball_rank: "Posição no ranking de bolas de neve, 0 sem acertos"
   calendar_opened: "Portas do Advento abertas neste ano; vazio com o calendário desligado"
   calendar_waiting: "Portas do Advento esperando hoje"
+rankings:
+  snowball-hits:
+    label: "Acertos de bola de neve"
+    description: "Acertos de bola de neve nesta temporada de inverno"
+  snowball-wins:
+    label: "Duelos de bolas de neve vencidos"
+    description: "Duelos de bolas de neve vencidos nesta temporada de inverno"

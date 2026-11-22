@@ -396,6 +396,7 @@ features:
   date-tools: "Datumswerkzeuge: /winter preview, setdate und resume."
   world-events: "Winterereignisse und Winterzustand im Ereigniskatalog von Core."
   tutorial: "Winter-Tutorial im Core-Menü. Braucht einen Neustart."
+  rankings: "Ranglisten winter:snowball-hits und winter:snowball-wins für Tafeln und Platzhalter (braucht Vystorm Core 0.67.0)."
   frost: "Küstenfrost: Wasser friert vom Ufer aus zu."
   weather: "Winterwetter und verschneiter Himmel."
   spawns: "Jahreszeitliche Mob-Gewichte für SpawnDirector."
@@ -446,6 +447,7 @@ switch-names:
   date-tools: "Datumswerkzeuge"
   world-events: "Weltereignisse"
   tutorial: "Tutorial"
+  rankings: "Ranglisten"
   frost: "Küstenfrost"
   weather: "Winterwetter"
   spawns: "Jahreszeitliche Mob-Spawns"
@@ -494,3 +496,10 @@ placeholder:
   snowball_rank: "Platz in der Schneeball-Bestenliste, 0 ohne Treffer"
   calendar_opened: "In diesem Jahr geöffnete Adventstürchen; leer bei ausgeschaltetem Kalender"
   calendar_waiting: "Heute wartende Adventstürchen"
+rankings:
+  snowball-hits:
+    label: "Schneeballtreffer"
+    description: "Schneeballtreffer in dieser Wintersaison"
+  snowball-wins:
+    label: "Gewonnene Schneeballduelle"
+    description: "Gewonnene Schneeballduelle in dieser Wintersaison"

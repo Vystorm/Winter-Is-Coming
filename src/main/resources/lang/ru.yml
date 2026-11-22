@@ -396,6 +396,7 @@ features:
   date-tools: "Инструменты даты: /winter preview, setdate и resume."
   world-events: "Зимние события и состояние в каталоге событий Core."
   tutorial: "Зимнее обучение в меню Core. Нужен перезапуск."
+  rankings: "Рейтинги winter:snowball-hits и winter:snowball-wins для табло и плейсхолдеров (нужен Vystorm Core 0.67.0)."
   frost: "Прибрежный мороз: вода замерзает от берега."
   weather: "Зимняя погода и снежное небо."
   spawns: "Сезонные веса мобов для SpawnDirector."
@@ -446,6 +447,7 @@ switch-names:
   date-tools: "Инструменты даты"
   world-events: "События мира"
   tutorial: "Обучение"
+  rankings: "Рейтинги"
   frost: "Прибрежный мороз"
   weather: "Зимняя погода"
   spawns: "Сезонные мобы"
@@ -494,3 +496,10 @@ placeholder:
   snowball_rank: "Место в таблице снежков, 0 без попаданий"
   calendar_opened: "Открытые в этом году дверцы Адвента; пусто при выключенном календаре"
   calendar_waiting: "Дверцы Адвента, ждущие сегодня"
+rankings:
+  snowball-hits:
+    label: "Попадания снежками"
+    description: "Попадания снежками в этом зимнем сезоне"
+  snowball-wins:
+    label: "Победы в дуэлях в снежки"
+    description: "Выигранные дуэли в снежки в этом зимнем сезоне"

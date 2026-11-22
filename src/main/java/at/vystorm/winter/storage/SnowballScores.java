@@ -60,6 +60,14 @@ public final class SnowballScores {
         return entry == null ? new Row(player, "", 0, 0) : new Row(player, entry.name, entry.hits, entry.wins);
     }
 
+    /** Every player on the board of {@code season}, unsorted, from memory (offline players included); empty for another season. */
+    public List<Row> rows(int season) {
+        if (data.season != season) return List.of();
+        List<Row> rows = new ArrayList<>(data.players.size());
+        data.players.forEach((id, e) -> rows.add(new Row(UUID.fromString(id), e.name == null ? "" : e.name, e.hits, e.wins)));
+        return rows;
+    }
+
     /** Best players by hits, then duel wins, then name. */
     public List<Row> top(int limit, int season) {
         if (data.season != season) return List.of();

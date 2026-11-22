@@ -61,7 +61,7 @@ class WinterSwitchesTest {
             if (parent.contains(".") && config.getConfigurationSection(parent) != null
                     && config.getConfigurationSection(parent).getKeys(false).isEmpty()) config.set(parent, null);
         }
-        for (String top : List.of("admin-menu", "date-tools", "world-events", "tutorial")) config.set(top, null);
+        for (String top : List.of("admin-menu", "date-tools", "world-events", "tutorial", "rankings")) config.set(top, null);
         return config;
     }
 

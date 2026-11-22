@@ -318,5 +318,13 @@ world-events:
 tutorial:
   enabled: true
 
+# Rankings for Vystorm Boards and placeholders: winter:snowball-hits (snowball hits this season) and winter:snowball-wins
+# (snowball duels won this season), read from the snowball leaderboard, so offline players are included. Only names
+# and numbers are shown. Needs Vystorm Core 0.67.0 or newer; with an older Core nothing is offered and the rest of the
+# plugin works as before. Off: the rankings are not offered. snowball-fight.enabled off removes both, duels off removes
+# winter:snowball-wins.
+rankings:
+  enabled: true
+
 # Switched-off commands disappear from tab completion and help at once and answer "This feature is switched off on
 # this server." Every switch applies at once.
