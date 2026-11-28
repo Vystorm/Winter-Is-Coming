@@ -45,6 +45,31 @@ class TrackedBlocksTest {
     }
 
     @Test
+    void nextActiveWalksPastGivenUpMarkersAndWrapsRound() {
+        TrackedBlocks blocks = store(new MapStorage());
+        ChunkId c = chunk(0, 0);
+        blocks.load(c, (x, y, z) -> "minecraft:air");
+        assertEquals(-1, blocks.nextActive(c, 0), "no records");
+        for (int y = 64; y < 70; y++) assertNotNull(blocks.intent(key(1, y, 1), "minecraft:air", snow(1)));
+        // records sorted by height: index i = y 64 + i; give up all but y 66 and y 68
+        for (int y : new int[]{64, 65, 67, 69}) blocks.release(key(1, y, 1));
+        assertEquals(2, blocks.active(c));
+        assertEquals(6, blocks.count(c));
+        assertEquals(2, blocks.nextActive(c, 0));
+        assertEquals(2, blocks.nextActive(c, 2));
+        assertEquals(4, blocks.nextActive(c, 3));
+        assertEquals(2, blocks.nextActive(c, 5), "wraps round");
+        assertEquals(2, blocks.nextActive(c, 11), "any start, taken modulo the count");
+        assertEquals(key(1, 66, 1), blocks.keyAt(c, blocks.nextActive(c, 0)));
+        blocks.release(key(1, 66, 1));
+        blocks.release(key(1, 68, 1));
+        assertEquals(0, blocks.active(c));
+        assertEquals(-1, blocks.nextActive(c, 0), "only markers left");
+        assertEquals(0, blocks.active(chunk(5, 5)), "a chunk that is not loaded");
+        assertEquals(-1, blocks.nextActive(chunk(5, 5), 0));
+    }
+
+    @Test
     void recordsSurviveUnloadAndLoadExactly() {
         MapStorage storage = new MapStorage();
         TrackedBlocks blocks = store(storage);

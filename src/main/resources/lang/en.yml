@@ -351,8 +351,8 @@ panel-mode-faulted: 'Storage error'
 panel-mode-thaw: 'Forced thaw'
 panel-mode-calendar: 'Real calendar'
 panel-mode-manual: 'Manual date'
-build-on: '<aqua>🧱 Build mode on: no plugin snow within {radius} blocks of you. /winter build turns it off.'
-build-off: '<gray>Build mode off: snow returns around you.'
+build-on: "<aqua>🧱 Snow-free building on: the plugin's snow within {radius} blocks of this spot is cleared now and stays away while it is on. /winter build or the Winter menu turns it off."
+build-off: "<gray>Snow-free building off: this spot stays snow-free for {minutes} more minutes, then the snow returns slowly."
 build-active: '<dark_aqua>🧱 Build mode is on (/winter build)'
 build-disabled: '<yellow>Build mode is switched off in config.yml.'
 spot-added: '<green>Season spot {name} added: snow falls within {radius} blocks of here.'
@@ -370,6 +370,7 @@ status-snowfall-on: '<gray>Snowfall: on ({amount} flakes per second, radius {rad
 status-snowfall-off: '<gray>Snowfall: off'
 status-wind-blown-on: '<gray>Wind-blown snow: on (wind from {from}°, {angle}° from the vertical; {rays} rays traced, {reads} block reads)'
 status-wind-blown-off: '<gray>Wind-blown snow: off'
+status-snow-cover: '<gray>Snow cover: {mode} (biome depth, ramps and rounded steps with smooth; classic = the look up to 1.26.0)'
 admin-snowfall: '<yellow>Snowfall</yellow>'
 admin-snowfall-label: 'Snowfall amount (0 = off)'
 admin-snowfall-text: 'Flakes per second that fall around every player, whatever the weather. 0 switches the effect off. This is separate from the snow speed, which only changes how fast snow grows on the ground.'
@@ -409,7 +410,9 @@ features:
   seasons: "Year-round seasons: plants change in spring, summer and autumn."
   storms: "Snowstorms and blizzards with a warning."
   sledding: "Boats are faster on snow."
-  build-mode: "Build mode: no plugin snow around a builder."
+  build-mode: "Snow-free building: players clear the plugin's snow around them (/winter build or the Winter menu)."
+  build-mode-halo: "Snow-free halo around blocks players place or break near the surface."
+  build-mode-under-blocks: "A block placed on the plugin's snow keeps that snow under it through the thaw, so it never floats."
   snowfall: "Falling snow particles around players."
   snow-cover-leaves: "Snow on tree leaves."
   snow-cover-small-plants: "Snow covers small plants; they come back on thaw."
@@ -461,6 +464,8 @@ switch-names:
   storms: "Snowstorms"
   sledding: "Sledding"
   build-mode: "Build mode"
+  build-mode-halo: "Snow-free halo"
+  build-mode-under-blocks: "Snow under blocks"
   snowfall: "Falling snow"
   snow-cover-leaves: "Snow on leaves"
   snow-cover-small-plants: "Snow over small plants"
@@ -503,3 +508,35 @@ rankings:
   snowball-wins:
     label: "Snowball duel wins"
     description: "Snowball duels won in this winter season"
+player-panel-title: "Winter"
+player-panel-subtitle: "Your winter: warmth, falling snow, missions and snowball duels"
+player-panel-date: "Date"
+player-panel-status: "{phase} · {value}%"
+player-panel-status-lore: "Date: {date}"
+player-panel-snowfall: "Falling snow"
+player-panel-snowfall-text: "Snowflakes falling around you (only for you)"
+player-panel-snowfall-on: "Falling snow: on"
+player-panel-snowfall-off: "Falling snow: off"
+player-panel-missions: "Missions"
+player-panel-claim: "Claim ({pending})"
+player-panel-claim-text: "Collect your gifts and mission rewards"
+player-panel-duel: "Snowball duel"
+player-panel-duel-text: "Challenge a player to a snowball duel"
+player-panel-duel-name: "Player name"
+player-panel-duel-not-here: "Not in a snowball fight right now"
+build-limit: "<yellow>All {max} snow-free areas of the server are in use. Try again later."
+build-cooldown: "<yellow>Wait {seconds} s before you move your snow-free area again."
+build-protected: "<yellow>You may not build here, so the snow stays."
+build-started: "🧱 Clearing the snow within {radius} blocks…"
+build-cleared: "🧱 Snow-free: {blocks} blocks cleared in {seconds} s"
+build-ended: "❄ Your snow-free area has ended: the snow comes back slowly."
+player-panel-build: "Snow-free"
+player-panel-build-on-text: "On: no plugin snow within {radius} blocks of where you switched it on"
+player-panel-build-after-text: "Off: snow-free for {minutes} more min, then the snow returns"
+player-panel-build-off-text: "Clears the snow within {radius} blocks around you so you can build"
+player-panel-build-on: "Snow-free building: on, radius {radius}"
+player-panel-build-off: "Snow-free building: off"
+status-build: "<gray>Snow-free building: {areas} areas (limit {max}), {halos} halos around fresh blocks, {cleared} positions cleared"
+admin-build: "Building"
+admin-build-text: "Snow-free building: {areas} of {max} areas in use, {halos} halos around fresh blocks."
+admin-build-permanent: "For a place that stays snow-free for good, use a season spot (/winter spot) or a region whose flag winter is false (Vystorm Protect or Core regions)."

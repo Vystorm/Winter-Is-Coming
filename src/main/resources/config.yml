@@ -18,12 +18,60 @@ snow:
     enabled: true
   # Total depth per column: 8 layers = one block; 12 = 1.5 blocks; 64 = 8 blocks.
   max-layers: 12
+  # How the open snow lies. smooth: each biome has its own depth (see biome-depth), the depth changes gently across
+  # biome borders, the snow builds ramps in front of steps and rounds their edges, and it thins out towards roof edges
+  # and tree crowns. classic: the look up to version 1.26.0 (patches of different depth, ramps only in front of
+  # one-block steps, the same depth in every biome).
+  cover: smooth
+  # Snow depth per biome with cover: smooth, as a share of max-layers (1 = max-layers, 0 = no snow). Names without
+  # "minecraft:", or patterns with * such as "*_taiga". Biomes not listed use the plugin's own table; biomes of other
+  # plugins and data packs get a depth from their temperature. excluded-biomes still get no snow at all.
+  biome-depth:
+    frozen_peaks: 1.0
+    jagged_peaks: 1.0
+    snowy_slopes: 1.0
+    grove: 1.0
+    ice_spikes: 1.0
+    snowy_taiga: 0.95
+    snowy_plains: 0.9
+    stony_peaks: 0.85
+    taiga: 0.85
+    old_growth_pine_taiga: 0.85
+    old_growth_spruce_taiga: 0.85
+    windswept_hills: 0.85
+    windswept_forest: 0.85
+    windswept_gravelly_hills: 0.8
+    frozen_river: 0.8
+    meadow: 0.8
+    cherry_grove: 0.75
+    pale_garden: 0.75
+    snowy_beach: 0.7
+    plains: 0.7
+    sunflower_plains: 0.7
+    forest: 0.7
+    flower_forest: 0.7
+    birch_forest: 0.7
+    old_growth_birch_forest: 0.7
+    dark_forest: 0.65
+    river: 0.5
+    stony_shore: 0.5
+    mushroom_fields: 0.5
+    swamp: 0.45
+    beach: 0.4
+    mangrove_swamp: 0.35
+    sparse_jungle: 0.3
+    windswept_savanna: 0.3
+    jungle: 0.25
+    bamboo_jungle: 0.25
+    savanna: 0.2
+    savanna_plateau: 0.2
   cover-leaves: true
   # Single-block grass, ferns and flowers (two-block plants stay visible); original blocks are restored on thaw.
   cover-small-plants: true
   # Tall grass, sunflowers and other two-block plants disappear in winter and come back on thaw.
   remove-tall-plants: true
-  # Snow builds a ramp of up to 6 extra layers towards a one-block step, never more than the snow already lying there.
+  # Snow builds a ramp of up to 6 extra layers towards a step, never more than the snow already lying there (with
+  # cover: smooth also round step edges and the thinner snow at roof edges).
   ramps: true
   # Snow also settles on top of stairs and bottom slabs. The blocks themselves are never changed.
   cover-stairs-and-slabs: true
@@ -277,11 +325,38 @@ season-spots:
   # Older setting, still read: false also ignores the spots, but /winter spot keeps working.
   only-inside: true
 
-# Build mode (1.20.0): /winter build lets a player build without the plugin's snow. While it is on, no plugin snow
-# forms within the radius around them and the plugin's existing snow there melts away. Natural snow stays.
+# Snow-free building (build mode, 1.20.0; reworked in 1.28.0). A player switches it on in the Winter menu (/winter) or
+# with /winter build (permission winter.build): the plugin's snow and ice within the radius around the spot where he
+# switched it on go back to the original blocks within a few seconds, nearest first, and no plugin snow or ice forms
+# there while it is on and for after-minutes once he switches it off or logs out. Then the snow returns with the normal
+# passes. Only where the player may build (Core's build check; protected plots of others stay as they are). Natural
+# snow stays. The cold is unchanged: it is still winter there.
 build-mode:
   enabled: true
+  # Radius of a player's snow-free area in blocks (4..max-radius).
   radius: 24
+  max-radius: 64
+  # Minutes the area stays snow-free after the player switches it off or logs out (0 = the snow returns at once).
+  after-minutes: 30
+  # Snow-free areas at the same time on the whole server; players with winter.build.unlimited are not counted.
+  max-areas: 16
+  # Seconds between two starts of the same player (moving the area); not for winter.build.unlimited.
+  cooldown-seconds: 10
+  # Plugin snow and ice blocks cleared per tick for snow-free areas and halos (1..512), on top of the normal passes.
+  clear-per-tick: 64
+  halo:
+    # Off by default. true: without any click, a block a player places, or a block he breaks near the surface, keeps a
+    # small circle around it free of the plugin's snow and ice for a while (snow next to a new block goes away then).
+    # Players who want to build without snow use their own switch in /winter (/winter build) instead.
+    enabled: false
+    radius: 6
+    minutes: 30
+    # Halos on the whole server at most; the oldest ends first.
+    max: 4096
+  under-blocks:
+    # A block a player places on the plugin's snow (or ice) keeps that snow under it through the thaw, so the block
+    # does not end up floating one block above the ground in spring. That snow then belongs to the world.
+    enabled: true
 
 # Visible falling snow around each player: white dust particles, independent of the real weather and the biome (it also
 # snows where vanilla has no snow).

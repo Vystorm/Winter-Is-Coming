@@ -352,8 +352,8 @@ panel-mode-faulted: 'Errore di salvataggio'
 panel-mode-thaw: 'Disgelo forzato'
 panel-mode-calendar: 'Calendario reale'
 panel-mode-manual: 'Data manuale'
-build-on: '<aqua>🧱 Modalità costruzione attiva: niente neve del plugin entro {radius} blocchi da te. /winter build la disattiva.'
-build-off: '<gray>Modalità costruzione disattivata: la neve torna.'
+build-on: "<aqua>🧱 Costruzione senza neve attiva: la neve del plugin entro {radius} blocchi da questo punto viene tolta ora e resta via finché è attiva. /winter build o il menu Inverno la disattiva."
+build-off: "<gray>Costruzione senza neve disattivata: questo punto resta senza neve per altri {minutes} minuti, poi la neve torna lentamente."
 build-active: '<dark_aqua>🧱 Modalità costruzione attiva (/winter build)'
 build-disabled: '<yellow>La modalità costruzione è disattivata in config.yml.'
 spot-added: '<green>Zona stagionale {name} aggiunta: la neve cade entro {radius} blocchi da qui.'
@@ -371,6 +371,7 @@ status-snowfall-on: '<gray>Nevicata: attiva ({amount} fiocchi al secondo, raggio
 status-snowfall-off: '<gray>Nevicata: disattivata'
 status-wind-blown-on: '<gray>Neve portata dal vento: attiva (vento da {from}°, {angle}° dalla verticale; {rays} raggi tracciati, {reads} blocchi letti)'
 status-wind-blown-off: '<gray>Neve portata dal vento: disattivata'
+status-snow-cover: '<gray>Manto nevoso: {mode} (smooth: spessore per bioma, rampe e gradini arrotondati; classic = l’aspetto fino alla 1.26.0)'
 admin-snowfall: '<yellow>Nevicata</yellow>'
 admin-snowfall-label: 'Quantità di neve (0 = disattivata)'
 admin-snowfall-text: 'Fiocchi al secondo intorno a ogni giocatore, con qualsiasi meteo. 0 disattiva l''effetto. È indipendente dalla velocità della neve, che cambia solo quanto in fretta la neve cresce a terra.'
@@ -410,7 +411,9 @@ features:
   seasons: "Stagioni tutto l'anno: le piante cambiano in primavera, estate e autunno."
   storms: "Tempeste di neve e bufere con preavviso."
   sledding: "Le barche vanno più veloci sulla neve."
-  build-mode: "Modalità costruzione: niente neve del plugin intorno a chi costruisce."
+  build-mode: "Costruzione senza neve: i giocatori tolgono la neve del plugin attorno a sé (/winter build o il menu Inverno)."
+  build-mode-halo: "Cerchio senza neve attorno ai blocchi che i giocatori piazzano o rompono vicino alla superficie."
+  build-mode-under-blocks: "Un blocco piazzato sulla neve del plugin tiene quella neve sotto di sé anche dopo il disgelo; non resta mai sospeso."
   snowfall: "Fiocchi che cadono intorno ai giocatori."
   snow-cover-leaves: "Neve sulle foglie degli alberi."
   snow-cover-small-plants: "La neve copre le piccole piante; tornano con il disgelo."
@@ -462,6 +465,8 @@ switch-names:
   storms: "Tempeste di neve"
   sledding: "Slitta"
   build-mode: "Modalità costruzione"
+  build-mode-halo: "Cerchio senza neve"
+  build-mode-under-blocks: "Neve sotto i blocchi"
   snowfall: "Neve che cade"
   snow-cover-leaves: "Neve sulle foglie"
   snow-cover-small-plants: "Neve sulle piccole piante"
@@ -504,3 +509,35 @@ rankings:
   snowball-wins:
     label: "Duelli a palle di neve vinti"
     description: "Duelli a palle di neve vinti in questa stagione invernale"
+player-panel-title: "Inverno"
+player-panel-subtitle: "Il tuo inverno: calore, neve che cade, missioni e duelli a palle di neve"
+player-panel-date: "Data"
+player-panel-status: "{phase} · {value}%"
+player-panel-status-lore: "Data: {date}"
+player-panel-snowfall: "Neve che cade"
+player-panel-snowfall-text: "Fiocchi di neve intorno a te (solo per te)"
+player-panel-snowfall-on: "Neve che cade: sì"
+player-panel-snowfall-off: "Neve che cade: no"
+player-panel-missions: "Missioni"
+player-panel-claim: "Ritira ({pending})"
+player-panel-claim-text: "Ritira i regali e i premi delle missioni"
+player-panel-duel: "Duello di neve"
+player-panel-duel-text: "Sfida un giocatore a un duello a palle di neve"
+player-panel-duel-name: "Nome del giocatore"
+player-panel-duel-not-here: "Ora non partecipa alle battaglie di neve"
+build-limit: "<yellow>Tutte le {max} aree senza neve del server sono in uso. Riprova più tardi."
+build-cooldown: "<yellow>Aspetta {seconds} s prima di spostare di nuovo la tua area senza neve."
+build-protected: "<yellow>Qui non puoi costruire, quindi la neve resta."
+build-started: "🧱 Rimozione della neve entro {radius} blocchi…"
+build-cleared: "🧱 Senza neve: {blocks} blocchi liberati in {seconds} s"
+build-ended: "❄ La tua area senza neve è terminata: la neve torna lentamente."
+player-panel-build: "Senza neve"
+player-panel-build-on-text: "Attiva: niente neve del plugin entro {radius} blocchi dal punto in cui l'hai attivata"
+player-panel-build-after-text: "Disattivata: ancora {minutes} min senza neve, poi la neve torna"
+player-panel-build-off-text: "Toglie la neve entro {radius} blocchi attorno a te per costruire"
+player-panel-build-on: "Costruzione senza neve: attiva, raggio {radius}"
+player-panel-build-off: "Costruzione senza neve: disattivata"
+status-build: "<gray>Costruzione senza neve: {areas} aree (limite {max}), {halos} cerchi attorno a blocchi recenti, {cleared} posizioni liberate"
+admin-build: "Costruzione"
+admin-build-text: "Costruzione senza neve: {areas} aree su {max} in uso, {halos} cerchi attorno a blocchi recenti."
+admin-build-permanent: "Per un luogo che resti senza neve per sempre: uno spot stagionale (/winter spot) o una regione con il flag winter a false (Vystorm Protect o regioni del Core)."

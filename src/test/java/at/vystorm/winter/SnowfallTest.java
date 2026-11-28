@@ -67,13 +67,13 @@ class SnowfallTest {
     @Test void spotsLimitFlakesOnlyInWorldsThatHaveSpots() throws Exception {
         UUID w = UUID.randomUUID(), other = UUID.randomUUID();
         var zones = new SnowZones(Files.createTempDirectory("spots").resolve("spots.yml"), Vystorm.vystorm_core._coreMethods.dataStorage.AtomicFilesInterface.DEFAULT);
-        zones.configure(true, 24);
+        zones.configure(true);
         assertTrue(zones.insideSpots(w, 500, 500));
         zones.add("a", new SnowZones.Spot(w, 0, 0, 50));
         assertTrue(zones.insideSpots(w, 10, 10));
         assertFalse(zones.insideSpots(w, 500, 500));
         assertTrue(zones.insideSpots(other, 500, 500));
-        zones.configure(false, 24);
+        zones.configure(false);
         assertTrue(zones.insideSpots(w, 500, 500));
     }
 }

@@ -11,7 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 /**
  * Where the plugin may lay snow (1.20.0): season spots (circles with a radius around a centre, {@code spots.yml}) and
- * build mode (no plugin snow within a radius of players who turned it on). With at least one spot and
+ * snow-free building ({@link BuildAreas}, 1.28.0: players' areas and the halos around fresh blocks). With at least one spot and
  * {@code season-spots.only-inside}, snow only falls inside the spots. Server thread; checks are cheap because they run
  * for every block the terrain cycle looks at. Tested without a server.
  */
@@ -24,15 +24,11 @@ public final class SnowZones {
         }
     }
 
-    private record Builder(UUID world, double x, double z) {}
-
     private final Path file;
     private final AtomicFilesInterface files;
     private final TreeMap<String, Spot> spots = new TreeMap<>();
-    private final Set<UUID> buildMode = new HashSet<>();
-    private List<Builder> builders = List.of();
     private boolean onlyInside = true;
-    private int buildRadius = 24;
+    private BuildAreas areas;
 
     /** @param files Core's file part, {@code api.data().files()} */
     public SnowZones(Path file, AtomicFilesInterface files) {
@@ -48,18 +44,16 @@ public final class SnowZones {
         }
     }
 
-    public void configure(boolean onlyInside, int buildRadius) {
+    public void configure(boolean onlyInside) {
         this.onlyInside = onlyInside;
-        this.buildRadius = Math.max(0, buildRadius);
     }
+
+    /** The snow-free building circles, asked first by {@link #allows}; null = none. */
+    public void areas(BuildAreas areas) { this.areas = areas; }
 
     /** True when the plugin may lay or keep snow at this position. */
     public boolean allows(UUID world, double x, double z) {
-        for (Builder b : builders) {
-            if (!b.world().equals(world)) continue;
-            double dx = x - b.x(), dz = z - b.z();
-            if (dx * dx + dz * dz <= (double) buildRadius * buildRadius) return false;
-        }
+        if (areas != null && areas.free(world, (int) Math.floor(x), (int) Math.floor(z))) return false;
         if (!onlyInside || spots.isEmpty()) return true;
         // only worlds that have spots are limited to them; other worlds keep snow everywhere (1.20.1)
         boolean worldHasSpot = false;
@@ -169,26 +163,4 @@ public final class SnowZones {
         Files.createDirectories(file.getParent());
         files.write(file, yaml);
     }
-
-    // ---- build mode -----------------------------------------------------------------------------------------------
-
-    /** Toggles build mode; returns the new state. */
-    public boolean toggleBuild(UUID player) {
-        if (buildMode.remove(player)) return false;
-        buildMode.add(player);
-        return true;
-    }
-
-    public boolean building(UUID player) { return buildMode.contains(player); }
-
-    public void forget(UUID player) { buildMode.remove(player); }
-
-    /** Snapshot of builder positions; call about once a second with (player, world, x, z) of online builders. */
-    public void updateBuilders(List<Object[]> positions) {
-        List<Builder> next = new ArrayList<>(positions.size());
-        for (Object[] p : positions) next.add(new Builder((UUID) p[0], (double) p[1], (double) p[2]));
-        builders = List.copyOf(next);
-    }
-
-    public Set<UUID> buildModePlayers() { return Collections.unmodifiableSet(buildMode); }
 }

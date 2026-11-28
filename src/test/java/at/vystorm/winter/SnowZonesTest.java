@@ -14,21 +14,22 @@ class SnowZonesTest {
     void spotsLimitOnlyTheirOwnWorldAndBuildersKeepSnowAway(@TempDir Path dir) throws Exception {
         UUID a = UUID.randomUUID(), b = UUID.randomUUID(), builder = UUID.randomUUID();
         SnowZones zones = new SnowZones(dir.resolve("spots.yml"), Vystorm.vystorm_core._coreMethods.dataStorage.AtomicFilesInterface.DEFAULT);
-        zones.configure(true, 24);
+        zones.configure(true);
         assertTrue(zones.allows(a, 500, 500), "no spots: snow everywhere");
         zones.add("town", new SnowZones.Spot(a, 0, 0, 50));
         assertTrue(zones.allows(a, 30, 30));
         assertFalse(zones.allows(a, 60, 0), "outside the spot");
         assertTrue(zones.allows(b, 60, 0), "a world without spots keeps snow");
-        assertTrue(zones.toggleBuild(builder));
-        zones.updateBuilders(List.<Object[]>of(new Object[]{a, 10.0, 10.0}));
+        var areas = new at.vystorm.winter.world.BuildAreas(() -> 0L);
+        zones.areas(areas);
+        assertEquals(at.vystorm.winter.world.BuildAreas.Outcome.STARTED, areas.start(builder, a, 10, 10, 24, false, null).outcome());
         assertFalse(zones.allows(a, 20, 20), "near a builder");
         assertTrue(zones.allows(a, 30, -10), "inside the spot, away from the builder");
         assertTrue(new SnowZones(dir.resolve("spots.yml"), Vystorm.vystorm_core._coreMethods.dataStorage.AtomicFilesInterface.DEFAULT).spots().containsKey("town"), "saved");
         assertTrue(zones.limiting());
-        zones.configure(false, 24);
+        zones.configure(false);
         assertFalse(zones.limiting(), "only-inside off: spots do not limit");
-        zones.updateBuilders(List.of());
+        areas.clear();
         assertTrue(zones.allows(a, 60, 0), "only-inside off");
     }
 
@@ -37,7 +38,7 @@ class SnowZonesTest {
     void visibleWinterStopsAtTheSpotBorder(@TempDir Path dir) throws Exception {
         UUID a = UUID.randomUUID(), b = UUID.randomUUID();
         SnowZones zones = new SnowZones(dir.resolve("spots.yml"), Vystorm.vystorm_core._coreMethods.dataStorage.AtomicFilesInterface.DEFAULT);
-        zones.configure(true, 24);
+        zones.configure(true);
         assertFalse(zones.limiting(a), "no spot yet");
         assertTrue(SnowZones.winterAt(true, zones, a, 500, 500), "no spots: winter everywhere");
         assertTrue(zones.projection(a, 0, 0, 64, -64, 320).isEmpty(), "no spots: the whole-world snow view is used, no spot cells");
@@ -74,7 +75,7 @@ class SnowZonesTest {
         assertFalse(far.isEmpty(), "the spot edge facing the viewer");
         for (SnowZones.Cell c : far) assertTrue(Math.hypot(c.x() + 2, c.z() + 2) <= 40);
         assertTrue(zones.projection(b, 0, 0, 70, -64, 320).isEmpty(), "other world: no spot cells");
-        zones.configure(false, 24);
+        zones.configure(false);
         assertFalse(zones.limiting(a), "only-inside off");
         assertTrue(SnowZones.winterAt(true, zones, a, 50, 0));
     }

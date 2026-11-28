@@ -18,6 +18,30 @@ class PassBudgetTest {
     }
 
     @Test
+    void idleChunksGiveTheirColumnBackUpToEightTimesTheLimit() {
+        PassBudget b = new PassBudget();
+        b.tick(16, 20, 4, 8192);
+        int skipped = 0;
+        while (b.snowColumn()) if (b.idleSkip()) skipped++;
+        assertEquals(32, skipped, "eight times the four columns");
+        assertFalse(b.idleSkip());
+        b.tick(16, 20, 4, 8192);
+        assertTrue(b.idleSkip(), "a new tick gives new skips");
+    }
+
+    @Test
+    void idleFrostChunksGiveTheirFrostColumnBackWithTheirOwnCap() {
+        PassBudget b = new PassBudget();
+        b.tick(16, 20, 4, 8192);
+        int skipped = 0;
+        while (b.frostColumn()) if (b.frostIdleSkip()) skipped++;
+        assertEquals(32, skipped, "eight times the four frost columns");
+        assertFalse(b.frostIdleSkip());
+        assertTrue(b.idleSkip(), "the snow's skips are its own");
+        assertTrue(b.snowColumn(), "and so are its columns");
+    }
+
+    @Test
     void bothGetTheirShareWhenBothWantEveryChange() {
         PassBudget b = new PassBudget();
         int frost = 0, snow = 0;

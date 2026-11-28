@@ -353,8 +353,8 @@ panel-mode-faulted: 'Erreur de stockage'
 panel-mode-thaw: 'Dégel forcé'
 panel-mode-calendar: 'Calendrier réel'
 panel-mode-manual: 'Date manuelle'
-build-on: '<aqua>🧱 Mode construction activé : pas de neige du plugin à {radius} blocs autour de toi. /winter build le désactive.'
-build-off: '<gray>Mode construction désactivé : la neige revient.'
+build-on: "<aqua>🧱 Construction sans neige activée : la neige du plugin dans un rayon de {radius} blocs autour de cet endroit est dégagée maintenant et reste absente tant que c'est activé. /winter build ou le menu Hiver la désactive."
+build-off: "<gray>Construction sans neige désactivée : cet endroit reste sans neige encore {minutes} minutes, puis la neige revient lentement."
 build-active: '<dark_aqua>🧱 Mode construction actif (/winter build)'
 build-disabled: '<yellow>Le mode construction est désactivé dans config.yml.'
 spot-added: '<green>Zone de saison {name} ajoutée : la neige tombe dans un rayon de {radius} blocs.'
@@ -372,6 +372,7 @@ status-snowfall-on: '<gray>Chute de neige : activée ({amount} flocons par secon
 status-snowfall-off: '<gray>Chute de neige : désactivée'
 status-wind-blown-on: '<gray>Neige portée par le vent : activée (vent de {from}°, {angle}° par rapport à la verticale ; {rays} rayons suivis, {reads} blocs lus)'
 status-wind-blown-off: '<gray>Neige portée par le vent : désactivée'
+status-snow-cover: '<gray>Couche de neige : {mode} (smooth : épaisseur par biome, rampes et marches arrondies ; classic = l’aspect jusqu’à 1.26.0)'
 admin-snowfall: '<yellow>Chute de neige</yellow>'
 admin-snowfall-label: 'Quantité de neige (0 = désactivée)'
 admin-snowfall-text: 'Flocons par seconde autour de chaque joueur, quelle que soit la météo. 0 désactive l''effet. Ce réglage est distinct de la vitesse de la neige, qui ne change que la vitesse à laquelle la neige s''accumule au sol.'
@@ -411,7 +412,9 @@ features:
   seasons: "Saisons toute l'année : les plantes changent au printemps, en été et en automne."
   storms: "Tempêtes de neige et blizzards avec avertissement."
   sledding: "Les bateaux vont plus vite sur la neige."
-  build-mode: "Mode construction : pas de neige du plugin autour d'un bâtisseur."
+  build-mode: "Construction sans neige : les joueurs dégagent la neige du plugin autour d'eux (/winter build ou le menu Hiver)."
+  build-mode-halo: "Cercle sans neige autour des blocs que les joueurs posent ou cassent près de la surface."
+  build-mode-under-blocks: "Un bloc posé sur la neige du plugin garde cette neige dessous, même après le dégel ; il ne flotte jamais."
   snowfall: "Flocons qui tombent autour des joueurs."
   snow-cover-leaves: "Neige sur les feuilles des arbres."
   snow-cover-small-plants: "La neige couvre les petites plantes ; elles reviennent au dégel."
@@ -463,6 +466,8 @@ switch-names:
   storms: "Tempêtes de neige"
   sledding: "Luge"
   build-mode: "Mode construction"
+  build-mode-halo: "Cercle sans neige"
+  build-mode-under-blocks: "Neige sous les blocs"
   snowfall: "Neige qui tombe"
   snow-cover-leaves: "Neige sur les feuilles"
   snow-cover-small-plants: "Neige sur les petites plantes"
@@ -505,3 +510,35 @@ rankings:
   snowball-wins:
     label: "Duels de boules de neige gagnés"
     description: "Duels de boules de neige gagnés pendant cette saison d'hiver"
+player-panel-title: "Hiver"
+player-panel-subtitle: "Ton hiver : chaleur, neige qui tombe, missions et duels de boules de neige"
+player-panel-date: "Date"
+player-panel-status: "{phase} · {value}%"
+player-panel-status-lore: "Date : {date}"
+player-panel-snowfall: "Chute de neige"
+player-panel-snowfall-text: "Flocons qui tombent autour de toi (pour toi seul)"
+player-panel-snowfall-on: "Chute de neige : oui"
+player-panel-snowfall-off: "Chute de neige : non"
+player-panel-missions: "Missions"
+player-panel-claim: "Récupérer ({pending})"
+player-panel-claim-text: "Récupère tes cadeaux et les récompenses des missions"
+player-panel-duel: "Duel de neige"
+player-panel-duel-text: "Défie un joueur en duel de boules de neige"
+player-panel-duel-name: "Nom du joueur"
+player-panel-duel-not-here: "Ne participe pas aux batailles de neige en ce moment"
+build-limit: "<yellow>Les {max} zones sans neige du serveur sont toutes utilisées. Réessaie plus tard."
+build-cooldown: "<yellow>Attends {seconds} s avant de déplacer à nouveau ta zone sans neige."
+build-protected: "<yellow>Tu ne peux pas construire ici, la neige reste donc."
+build-started: "🧱 Dégagement de la neige dans un rayon de {radius} blocs…"
+build-cleared: "🧱 Sans neige : {blocks} blocs dégagés en {seconds} s"
+build-ended: "❄ Ta zone sans neige est terminée : la neige revient lentement."
+player-panel-build: "Sans neige"
+player-panel-build-on-text: "Activé : pas de neige du plugin dans un rayon de {radius} blocs autour de l'endroit où tu l'as activé"
+player-panel-build-after-text: "Désactivé : encore {minutes} min sans neige, puis la neige revient"
+player-panel-build-off-text: "Dégage la neige dans un rayon de {radius} blocs autour de toi pour construire"
+player-panel-build-on: "Construction sans neige : activée, rayon {radius}"
+player-panel-build-off: "Construction sans neige : désactivée"
+status-build: "<gray>Construction sans neige : {areas} zones (limite {max}), {halos} cercles autour de blocs récents, {cleared} positions dégagées"
+admin-build: "Construction"
+admin-build-text: "Construction sans neige : {areas} zones sur {max} utilisées, {halos} cercles autour de blocs récents."
+admin-build-permanent: "Pour un endroit qui reste sans neige pour de bon : un spot de saison (/winter spot) ou une région dont le flag winter vaut false (Vystorm Protect ou régions du Core)."

@@ -50,6 +50,38 @@ public final class TrackedBlocks {
     public interface Blocks {
         String at(int x, int y, int z);
     }
+    /**
+     * The cells of one chunk that a bulk edit wrote without block events (Core's BlocksEditedEvent, 1.27.0). States are
+     * ids of the edit's own state table; {@link #text} turns one into block data text and is only asked for cells the
+     * plugin has a record or a memory for.
+     */
+    public interface EditedCells {
+        UUID world();
+        int chunkX();
+        int chunkZ();
+        /** The cells went back to their state before an earlier edit. */
+        boolean undo();
+        UUID edit();
+        int size();
+        int x(int i);
+        int y(int i);
+        int z(int i);
+        int afterId(int i);
+        String text(int stateId);
+    }
+    /** What {@link #edited} did: positions forgotten (original back), released, left to the next visit, tracked again. */
+    public record EditOutcome(int forgotten, int released, int kept, int retracked) {
+        public static final EditOutcome NONE = new EditOutcome(0, 0, 0, 0);
+    }
+    /** Positions per world that bulk edits took from the plugin and that an undo may give back (in memory only). */
+    public static final int EDIT_MEMORY_LIMIT = 100_000;
+    /**
+     * An edit tool writes a chunk's cells over several ticks and announces the chunk once all are written, so a visit
+     * of the terrain pass may give a written position up (or forget it) before the event. A record given up or
+     * forgotten within this time before the event counts as taken by the edit.
+     */
+    public static final long RECENT_RELEASE_NANOS = 60_000_000_000L;
+    static final int RECENT_RELEASE_LIMIT = 65_536;
 
     static final int FORMAT = 1;
     private static final int ID_BITS = 21, ID_MASK = (1 << ID_BITS) - 1;
@@ -247,6 +279,25 @@ public final class TrackedBlocks {
         Records r = chunks.get(chunk);
         return r == null ? 0 : r.n;
     }
+    /** Positions of a loaded chunk whose original still has to come back (given-up markers not counted). */
+    public int active(ChunkId chunk) {
+        Records r = chunks.get(chunk);
+        return r == null ? 0 : r.active;
+    }
+    /**
+     * Index of the first record at or after {@code from} (wrapping round once) that is not a given-up marker, -1 when
+     * the chunk has none. The terrain pass walks with it, so given-up markers cost no visit (1.27.0).
+     */
+    public int nextActive(ChunkId chunk, int from) {
+        Records r = chunks.get(chunk);
+        if (r == null || r.active == 0 || r.n == 0) return -1;
+        int start = Math.floorMod(from, r.n);
+        for (int i = 0; i < r.n; i++) {
+            int at = start + i < r.n ? start + i : start + i - r.n;
+            if (!isReleased(r.val[at])) return at;
+        }
+        return -1;
+    }
     public Key keyAt(ChunkId chunk, int index) {
         Records r = chunks.get(chunk);
         return r == null || index < 0 || index >= r.n ? null : key(chunk, r.pos[index]);
@@ -303,6 +354,7 @@ public final class TrackedBlocks {
         if (r == null || r.broken) return;
         int at = r.find(local(key));
         if (at < 0 || isReleased(r.val[at])) return;
+        recent(key, chunk, r.val[at]);
         r.val[at] = RELEASED | original(r.val[at]);
         r.active--;
         active--;
@@ -316,11 +368,240 @@ public final class TrackedBlocks {
         if (r == null || r.broken) return;
         int at = r.find(local(key));
         if (at < 0 || isReleased(r.val[at])) return;
+        recent(key, chunk, r.val[at]);
         r.removeAt(at);
         r.active--;
         active--;
         dirty.add(chunk);
     }
+    // ---- bulk edits (1.27.0) ------------------------------------------------------------------------------------------
+    /** A position's record before a bulk edit took it, kept for the undo of that edit. */
+    private record Former(long val, UUID edit) { }
+    /** One edit's remembered positions, in the order they were added. */
+    private static final class EditList {
+        final List<ChunkId> chunks = new ArrayList<>();
+        final List<int[]> positions = new ArrayList<>();
+        /** Positions of this list still remembered for this edit; the list goes when it reaches 0. */
+        int live;
+    }
+    private final Map<ChunkId, Map<Integer, Former>> memory = new HashMap<>();
+    /** Per world: the edits with remembered positions, oldest first. */
+    private final Map<UUID, LinkedHashMap<UUID, EditList>> memoryEdits = new HashMap<>();
+    private final Map<UUID, Integer> memorySize = new HashMap<>();
+    private final Set<UUID> memoryWarned = new HashSet<>();
+    private int rememberedTotal;
+
+    /** Positions taken by bulk edits that an undo may still give back to the plugin. */
+    public int remembered() {
+        return rememberedTotal;
+    }
+
+    /** Records given up or forgotten lately, per chunk: position -> {value, time}; oldest out over the limit. */
+    private final Map<ChunkId, Map<Integer, long[]>> recent = new HashMap<>();
+    private final ArrayDeque<Object[]> recentOrder = new ArrayDeque<>();
+    private int recentSize;
+    private java.util.function.LongSupplier clock = System::nanoTime;
+
+    /** The clock of {@link #RECENT_RELEASE_NANOS} (tests). */
+    public void clock(java.util.function.LongSupplier value) {
+        clock = Objects.requireNonNull(value, "value");
+    }
+    private long recentSeq;
+    private void recent(Key key, ChunkId chunk, long val) {
+        int p = local(key);
+        long seq = ++recentSeq;
+        long[] before = recent.computeIfAbsent(chunk, c -> new HashMap<>()).put(p, new long[]{val, clock.getAsLong(), seq});
+        if (before == null) recentSize++;
+        recentOrder.addLast(new Object[]{chunk, p, seq});
+        // over the limit the oldest go first; an order entry whose position was taken or renewed since only goes
+        while (recentOrder.size() > RECENT_RELEASE_LIMIT) {
+            Object[] old = recentOrder.pollFirst();
+            Map<Integer, long[]> m = recent.get((ChunkId) old[0]);
+            long[] v = m == null ? null : m.get((Integer) old[1]);
+            if (v == null || v[2] != (Long) old[2]) continue;
+            m.remove((Integer) old[1]);
+            recentSize--;
+            if (m.isEmpty()) recent.remove((ChunkId) old[0]);
+        }
+    }
+
+    /**
+     * A bulk edit wrote cells of one loaded chunk without block events. Treated like a player's block place or break:
+     * <ul>
+     *   <li>the original block is back: the position is forgotten;</li>
+     *   <li>a new edit (not an undo) wrote a block the record accepts as the plugin's (the same snow, the same ice):
+     *       the position is given up, so the thaw never takes the player's block away;</li>
+     *   <li>any other block: left to the next visit of the terrain pass, which gives the position up as today.</li>
+     * </ul>
+     * The record a new edit took is remembered (at most {@link #EDIT_MEMORY_LIMIT} positions per world, oldest edit
+     * first out). An undo that brings back exactly the block the record expected (or the one before) tracks the
+     * position again with that record, so the thaw restores the original. Positions given up before the edit stay
+     * given up. The chunk record is stored once at the end. Cost: nothing for a chunk without records or memory,
+     * otherwise one binary search per cell.
+     */
+    public EditOutcome edited(EditedCells cells) {
+        ChunkId chunk = new ChunkId(cells.world(), cells.chunkX(), cells.chunkZ());
+        Records r = chunks.get(chunk);
+        if (r == null || r.broken) return EditOutcome.NONE;
+        Map<Integer, Former> remembered = memory.get(chunk);
+        boolean undo = cells.undo();
+        // records the terrain pass gave up or forgot in this chunk shortly before the event (written cells, see RECENT_RELEASE_NANOS)
+        Map<Integer, long[]> lately = undo ? null : recent.get(chunk);
+        if (r.n == 0 && remembered == null && lately == null) return EditOutcome.NONE;
+        if (undo ? remembered == null : r.active == 0 && lately == null) return EditOutcome.NONE;
+        long now = clock.getAsLong();
+        Map<Integer, Integer> palette = new HashMap<>();
+        int forgotten = 0, releasedNow = 0, kept = 0, retracked = 0;
+        int[] took = undo ? null : new int[Math.min(cells.size(), Math.max(r.active, 1))];
+        long[] tookVal = undo ? null : new long[took.length];
+        int took_n = 0;
+        boolean changed = false;
+        for (int i = 0, size = cells.size(); i < size; i++) {
+            int p = cells.y(i) << 8 | (cells.z(i) & 15) << 4 | cells.x(i) & 15;
+            if (undo) {
+                Former former = remembered == null ? null : remembered.get(p);
+                if (former != null) {
+                    int after = palette(palette, cells, cells.afterId(i));
+                    long fv = former.val();
+                    if (after >= 0 && after != original(fv) && (after == expected(fv) || after == previous(fv))) {
+                        int at = r.find(p);
+                        if (at < 0) {
+                            r.insert(-at - 1, p, fv);
+                            r.active++;
+                            active++;
+                            changed = true;
+                        } else if (isReleased(r.val[at])) {
+                            r.val[at] = fv;
+                            r.active++;
+                            active++;
+                            released--;
+                            changed = true;
+                        }
+                        remembered.remove(p);
+                        memoryRemoved(chunk, 1);
+                        listLost(chunk.world(), former.edit(), 1);
+                        retracked++;
+                        continue;
+                    }
+                }
+                continue;
+            }
+            if (r.active == 0 && lately == null) break;
+            int at = r.find(p);
+            if (at < 0 || isReleased(r.val[at])) {
+                long[] gone = lately == null ? null : lately.remove(p);
+                if (gone != null) {
+                    recentSize--;
+                    // given up or forgotten by a visit after this edit wrote the cell: the edit took it
+                    if (now - gone[1] <= RECENT_RELEASE_NANOS) {
+                        if (took_n == took.length) {
+                            took = Arrays.copyOf(took, took.length * 2);
+                            tookVal = Arrays.copyOf(tookVal, took.length);
+                        }
+                        took[took_n] = p;
+                        tookVal[took_n++] = gone[0];
+                    }
+                }
+                continue;
+            }
+            long v = r.val[at];
+            int after = palette(palette, cells, cells.afterId(i));
+            if (took_n == took.length) {
+                took = Arrays.copyOf(took, took.length * 2);
+                tookVal = Arrays.copyOf(tookVal, took.length);
+            }
+            took[took_n] = p;
+            tookVal[took_n++] = v;
+            if (after == original(v)) {
+                r.removeAt(at);
+                r.active--;
+                active--;
+                forgotten++;
+                changed = true;
+            } else if (after >= 0 && (after == expected(v) || after == previous(v))) {
+                r.val[at] = RELEASED | original(v);
+                r.active--;
+                active--;
+                released++;
+                releasedNow++;
+                changed = true;
+            } else kept++;
+        }
+        if (lately != null && lately.isEmpty()) recent.remove(chunk);
+        if (took_n > 0) remember(chunk, cells.edit(), Arrays.copyOf(took, took_n), Arrays.copyOf(tookVal, took_n));
+        if (changed) {
+            dirty.add(chunk);
+            commit();
+        }
+        return new EditOutcome(forgotten, releasedNow, kept, retracked);
+    }
+    /** The plugin's palette id of an edit state, -1 when the plugin never tracked that state (it then matches nothing). */
+    private int palette(Map<Integer, Integer> cache, EditedCells cells, int stateId) {
+        Integer known = cache.get(stateId);
+        if (known != null) return known;
+        Integer id = ids.get(cells.text(stateId));
+        int out = id == null ? -1 : id;
+        cache.put(stateId, out);
+        return out;
+    }
+    private void remember(ChunkId chunk, UUID edit, int[] positions, long[] values) {
+        Map<Integer, Former> byPos = memory.computeIfAbsent(chunk, c -> new HashMap<>());
+        LinkedHashMap<UUID, EditList> edits = memoryEdits.computeIfAbsent(chunk.world(), w -> new LinkedHashMap<>());
+        EditList list = edits.computeIfAbsent(edit, e -> new EditList());
+        list.chunks.add(chunk);
+        list.positions.add(positions);
+        int added = 0;
+        for (int i = 0; i < positions.length; i++) {
+            Former before = byPos.put(positions[i], new Former(values[i], edit));
+            list.live++;
+            if (before == null) added++;
+            else listLost(chunk.world(), before.edit(), 1);
+        }
+        int size = memorySize.merge(chunk.world(), added, Integer::sum);
+        rememberedTotal += added;
+        // Over the limit: the oldest edits go first, whole; the newest edit always stays.
+        while (size > EDIT_MEMORY_LIMIT && edits.size() > 1) {
+            UUID oldest = edits.keySet().iterator().next();
+            EditList gone = edits.remove(oldest);
+            for (int c = 0; c < gone.chunks.size(); c++) {
+                ChunkId at = gone.chunks.get(c);
+                Map<Integer, Former> m = memory.get(at);
+                if (m == null) continue;
+                int dropped = 0;
+                for (int p : gone.positions.get(c)) {
+                    Former f = m.get(p);
+                    if (f != null && f.edit().equals(oldest)) {
+                        m.remove(p);
+                        dropped++;
+                    }
+                }
+                memoryRemoved(at, dropped);
+            }
+            size = memorySize.getOrDefault(chunk.world(), 0);
+            if (memoryWarned.add(chunk.world()))
+                warn.accept("Winter remembers the snow of at most " + EDIT_MEMORY_LIMIT + " positions per world that bulk edits"
+                        + " replaced; the oldest edit was forgotten, so undoing it brings back snow that does not thaw");
+        }
+    }
+    /** {@code count} positions of an edit's list are no longer remembered for it; an empty list is removed. */
+    private void listLost(UUID world, UUID edit, int count) {
+        LinkedHashMap<UUID, EditList> edits = memoryEdits.get(world);
+        EditList list = edits == null ? null : edits.get(edit);
+        if (list == null) return;
+        list.live -= count;
+        if (list.live <= 0) {
+            edits.remove(edit);
+            if (edits.isEmpty()) memoryEdits.remove(world);
+        }
+    }
+    private void memoryRemoved(ChunkId chunk, int count) {
+        if (count == 0) return;
+        rememberedTotal -= count;
+        memorySize.merge(chunk.world(), -count, Integer::sum);
+        Map<Integer, Former> m = memory.get(chunk);
+        if (m != null && m.isEmpty()) memory.remove(chunk);
+    }
+
     /** Stores every changed chunk record. */
     public void commit() {
         if (dirty.isEmpty()) return;

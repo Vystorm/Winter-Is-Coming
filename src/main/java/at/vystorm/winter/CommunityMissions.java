@@ -94,6 +94,18 @@ public final class CommunityMissions implements Listener {
         credit(player);
         plugin.lang().send(player,"missions-claim");
     }
+    /** The rows of {@link #show} for the player panel; null when the player may not see the missions (1.28.0). */
+    List<WinterPlayerPanel.Mission> rows(Player player) {
+        if (!settings.enabled() || !player.hasPermission("winter.missions")) return null;
+        List<WinterPlayerPanel.Mission> rows = new ArrayList<>();
+        for (Definition definition : settings.goals()) {
+            MissionStore.Progress progress = store.progress(plugin.season().seasonYear(), definition);
+            Definition fixed = progress.definition();
+            rows.add(new WinterPlayerPanel.Mission(fixed.id(), plugin.lang().plain(plugin.lang().language(player),
+                    "missions-objective-" + fixed.objective().name().toLowerCase(Locale.ROOT)), progress.count(), fixed.goal()));
+        }
+        return rows;
+    }
     @EventHandler public void join(PlayerJoinEvent event) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!event.getPlayer().isOnline()) return;

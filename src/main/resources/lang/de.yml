@@ -351,8 +351,8 @@ panel-mode-faulted: 'Speicherfehler'
 panel-mode-thaw: 'Erzwungenes Tauwetter'
 panel-mode-calendar: 'Echter Kalender'
 panel-mode-manual: 'Manuelles Datum'
-build-on: '<aqua>🧱 Baumodus an: kein Plugin-Schnee im Umkreis von {radius} Blöcken. /winter build schaltet ihn aus.'
-build-off: '<gray>Baumodus aus: Der Schnee kommt zurück.'
+build-on: "<aqua>🧱 Schneefrei bauen an: Der Plugin-Schnee im Umkreis von {radius} Blöcken um diese Stelle wird jetzt geräumt und bleibt weg, solange es an ist. /winter build oder das Winter-Menü schaltet es aus."
+build-off: "<gray>Schneefrei bauen aus: Diese Stelle bleibt noch {minutes} Minuten schneefrei, dann kommt der Schnee langsam zurück."
 build-active: '<dark_aqua>🧱 Baumodus ist an (/winter build)'
 build-disabled: '<yellow>Der Baumodus ist in der config.yml ausgeschaltet.'
 spot-added: '<green>Season-Spot {name} gesetzt: Schnee fällt im Umkreis von {radius} Blöcken.'
@@ -370,6 +370,7 @@ status-snowfall-on: '<gray>Schneefall: an ({amount} Flocken pro Sekunde, Radius 
 status-snowfall-off: '<gray>Schneefall: aus'
 status-wind-blown-on: '<gray>Windgetriebener Schnee: an (Wind aus {from}°, {angle}° zur Senkrechten; {rays} Strahlen verfolgt, {reads} Blöcke gelesen)'
 status-wind-blown-off: '<gray>Windgetriebener Schnee: aus'
+status-snow-cover: '<gray>Schneedecke: {mode} (smooth: Tiefe je Biom, Rampen und gerundete Stufen; classic = das Bild bis 1.26.0)'
 admin-snowfall: '<yellow>Schneefall</yellow>'
 admin-snowfall-label: 'Schneefall-Menge (0 = aus)'
 admin-snowfall-text: 'Flocken pro Sekunde, die um jeden Spieler fallen, egal bei welchem Wetter. 0 schaltet den Effekt aus. Das ist unabhängig vom Schnee-Tempo, das nur bestimmt, wie schnell Schnee am Boden wächst.'
@@ -409,7 +410,9 @@ features:
   seasons: "Jahreszeiten das ganze Jahr: Pflanzen wechseln im Frühling, Sommer und Herbst."
   storms: "Schneestürme und Blizzards mit Vorwarnung."
   sledding: "Boote sind auf Schnee schneller."
-  build-mode: "Baumodus: kein Plugin-Schnee um einen Bauenden."
+  build-mode: "Schneefrei bauen: Spieler räumen den Plugin-Schnee um sich (/winter build oder das Winter-Menü)."
+  build-mode-halo: "Schneefreier Kreis um Blöcke, die Spieler nahe der Oberfläche setzen oder abbauen."
+  build-mode-under-blocks: "Ein Block auf dem Schnee des Plugins behält diesen Schnee unter sich, auch nach dem Tauwetter; er schwebt nie."
   snowfall: "Fallende Schneeflocken um die Spieler."
   snow-cover-leaves: "Schnee auf Baumlaub."
   snow-cover-small-plants: "Schnee bedeckt kleine Pflanzen; sie kommen beim Tauen zurück."
@@ -461,6 +464,8 @@ switch-names:
   storms: "Schneestürme"
   sledding: "Schlittenfahren"
   build-mode: "Baumodus"
+  build-mode-halo: "Schneefreier Kreis"
+  build-mode-under-blocks: "Schnee unter Blöcken"
   snowfall: "Fallender Schnee"
   snow-cover-leaves: "Schnee auf Laub"
   snow-cover-small-plants: "Schnee über kleinen Pflanzen"
@@ -503,3 +508,35 @@ rankings:
   snowball-wins:
     label: "Gewonnene Schneeballduelle"
     description: "Gewonnene Schneeballduelle in dieser Wintersaison"
+player-panel-title: "Winter"
+player-panel-subtitle: "Dein Winter: Wärme, Schneefall, Missionen und Schneeballduelle"
+player-panel-date: "Datum"
+player-panel-status: "{phase} · {value}%"
+player-panel-status-lore: "Datum: {date}"
+player-panel-snowfall: "Schneefall"
+player-panel-snowfall-text: "Schneeflocken um dich herum (nur für dich)"
+player-panel-snowfall-on: "Schneefall: an"
+player-panel-snowfall-off: "Schneefall: aus"
+player-panel-missions: "Missionen"
+player-panel-claim: "Abholen ({pending})"
+player-panel-claim-text: "Geschenke und Missionsbelohnungen abholen"
+player-panel-duel: "Schneeduell"
+player-panel-duel-text: "Einen Spieler zum Schneeballduell herausfordern"
+player-panel-duel-name: "Spielername"
+player-panel-duel-not-here: "Gerade nicht bei der Schneeballschlacht dabei"
+build-limit: "<yellow>Alle {max} schneefreien Bereiche des Servers sind belegt. Versuche es später noch einmal."
+build-cooldown: "<yellow>Warte {seconds} s, bevor du deinen schneefreien Bereich wieder versetzt."
+build-protected: "<yellow>Hier darfst du nicht bauen, darum bleibt der Schnee."
+build-started: "🧱 Der Schnee im Umkreis von {radius} Blöcken wird geräumt …"
+build-cleared: "🧱 Schneefrei: {blocks} Blöcke in {seconds} s geräumt"
+build-ended: "❄ Dein schneefreier Bereich ist abgelaufen: Der Schnee kommt langsam zurück."
+player-panel-build: "Schneefrei"
+player-panel-build-on-text: "An: kein Plugin-Schnee im Umkreis von {radius} Blöcken um die Stelle, an der du es eingeschaltet hast"
+player-panel-build-after-text: "Aus: noch {minutes} Min. schneefrei, dann kommt der Schnee zurück"
+player-panel-build-off-text: "Räumt den Schnee im Umkreis von {radius} Blöcken, damit du bauen kannst"
+player-panel-build-on: "Schneefrei bauen: an, Radius {radius}"
+player-panel-build-off: "Schneefrei bauen: aus"
+status-build: "<gray>Schneefrei bauen: {areas} Bereiche (Grenze {max}), {halos} Kreise um frische Blöcke, {cleared} Positionen geräumt"
+admin-build: "Bauen"
+admin-build-text: "Schneefrei bauen: {areas} von {max} Bereichen belegt, {halos} Kreise um frische Blöcke."
+admin-build-permanent: "Für eine Stelle, die dauerhaft schneefrei bleibt: ein Saison-Spot (/winter spot) oder eine Region mit dem Flag winter auf false (Vystorm Protect oder Core-Regionen)."

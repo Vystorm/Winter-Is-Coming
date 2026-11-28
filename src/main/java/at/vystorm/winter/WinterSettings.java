@@ -72,10 +72,31 @@ public record WinterSettings(Set<String> worlds, ZoneId zone, SeasonCalendar cal
             return new at.vystorm.winter.world.WindRay.Wind(angle, from, maxHeight);
         }
     }
-    /** Per-block terrain switches, read once with the rest of the settings. */
-    public record Terrain(boolean ramps, boolean coverStairsAndSlabs, boolean removeTallPlants) {
+    /**
+     * Per-block terrain switches, read once with the rest of the settings. {@code cover} ({@code snow.cover}, 1.27.0):
+     * smooth (biome depth, gentle drifts, ramps and rounded steps) or classic (the look up to 1.26.0); {@code biomes}:
+     * the admin's {@code snow.biome-depth} entries over the built-in table.
+     */
+    public record Terrain(boolean ramps, boolean coverStairsAndSlabs, boolean removeTallPlants, at.vystorm.winter.world.SnowCover.Mode cover,
+            at.vystorm.winter.world.SnowCover.BiomeTable biomes) {
+        public Terrain(boolean ramps, boolean coverStairsAndSlabs, boolean removeTallPlants) {
+            this(ramps, coverStairsAndSlabs, removeTallPlants, at.vystorm.winter.world.SnowCover.Mode.SMOOTH, at.vystorm.winter.world.SnowCover.BiomeTable.DEFAULT);
+        }
         public static Terrain read(FileConfiguration c) {
-            return new Terrain(c.getBoolean("snow.ramps", true), c.getBoolean("snow.cover-stairs-and-slabs", true), c.getBoolean("snow.remove-tall-plants", true));
+            return new Terrain(c.getBoolean("snow.ramps", true), c.getBoolean("snow.cover-stairs-and-slabs", true), c.getBoolean("snow.remove-tall-plants", true),
+                    at.vystorm.winter.world.SnowCover.Mode.parse(c.getString("snow.cover", "smooth")), biomeTable(c));
+        }
+        /** {@code snow.biome-depth}: biome name or pattern -> share of max-layers (0..1); a missing section = the built-in table. */
+        static at.vystorm.winter.world.SnowCover.BiomeTable biomeTable(FileConfiguration c) {
+            var section = c.getConfigurationSection("snow.biome-depth");
+            if (section == null) return at.vystorm.winter.world.SnowCover.BiomeTable.DEFAULT;
+            java.util.Map<String, Double> values = new java.util.LinkedHashMap<>();
+            for (String key : section.getKeys(false)) {
+                Object v = section.get(key);
+                if (!(v instanceof Number n)) throw new IllegalArgumentException("snow.biome-depth." + key + " must be a number 0..1");
+                values.put(key, n.doubleValue());
+            }
+            return new at.vystorm.winter.world.SnowCover.BiomeTable(values);
         }
     }
     /**

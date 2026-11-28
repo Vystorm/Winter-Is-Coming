@@ -351,8 +351,8 @@ panel-mode-faulted: '存储错误'
 panel-mode-thaw: '强制融雪'
 panel-mode-calendar: '真实日历'
 panel-mode-manual: '手动日期'
-build-on: '<aqua>🧱 建造模式已开启：你周围 {radius} 格内不会有插件雪。/winter build 关闭。'
-build-off: '<gray>建造模式已关闭：雪会回来。'
+build-on: "<aqua>🧱 无雪建造已开启：此处 {radius} 格内的插件积雪现在清除，开启期间不会再积雪。用 /winter build 或冬季菜单关闭。"
+build-off: "<gray>无雪建造已关闭：此处还会保持无雪 {minutes} 分钟，之后积雪会慢慢回来。"
 build-active: '<dark_aqua>🧱 建造模式已开启（/winter build）'
 build-disabled: '<yellow>建造模式已在 config.yml 中关闭。'
 spot-added: '<green>已添加季节区域 {name}：此处 {radius} 格内会下雪。'
@@ -370,6 +370,7 @@ status-snowfall-on: '<gray>飘雪：开启（每秒 {amount} 片雪花，半径 
 status-snowfall-off: '<gray>飘雪：关闭'
 status-wind-blown-on: '<gray>风吹雪：开启（风从 {from}° 吹来，与竖直方向成 {angle}°；已追踪 {rays} 条射线，读取 {reads} 个方块）'
 status-wind-blown-off: '<gray>风吹雪：关闭'
+status-snow-cover: '<gray>积雪：{mode}（smooth：按生物群系的深度、坡道和圆滑的台阶；classic = 1.26.0 及以前的样子）'
 admin-snowfall: '<yellow>飘雪</yellow>'
 admin-snowfall-label: '飘雪数量（0 = 关闭）'
 admin-snowfall-text: '无论天气如何，每位玩家周围每秒飘落的雪花数。0 表示关闭。这与降雪速度无关，后者只决定地面积雪增长的快慢。'
@@ -409,7 +410,9 @@ features:
   seasons: "全年四季：植物在春、夏、秋季变化。"
   storms: "带预警的暴风雪和雪暴。"
   sledding: "船在雪上更快。"
-  build-mode: "建造模式：建造者周围没有插件的雪。"
+  build-mode: "无雪建造：玩家清除自己周围的插件积雪（/winter build 或冬季菜单）。"
+  build-mode-halo: "玩家在地表附近放置或破坏方块时，周围出现一圈无雪区域。"
+  build-mode-under-blocks: "放在插件积雪上的方块会保留身下的积雪，解冻后也不会悬空。"
   snowfall: "玩家周围飘落的雪花。"
   snow-cover-leaves: "树叶上的雪。"
   snow-cover-small-plants: "雪覆盖小型植物；融雪时它们会回来。"
@@ -461,6 +464,8 @@ switch-names:
   storms: "暴风雪"
   sledding: "雪橇"
   build-mode: "建造模式"
+  build-mode-halo: "无雪圈"
+  build-mode-under-blocks: "方块下的雪"
   snowfall: "飘落的雪"
   snow-cover-leaves: "树叶积雪"
   snow-cover-small-plants: "小型植物积雪"
@@ -503,3 +508,35 @@ rankings:
   snowball-wins:
     label: "雪球决斗胜场"
     description: "本冬季赢得的雪球决斗"
+player-panel-title: "冬季"
+player-panel-subtitle: "你的冬天：温暖、飘雪、任务和雪球对决"
+player-panel-date: "日期"
+player-panel-status: "{phase} · {value}%"
+player-panel-status-lore: "日期：{date}"
+player-panel-snowfall: "飘雪"
+player-panel-snowfall-text: "你周围飘落的雪花（只对你）"
+player-panel-snowfall-on: "飘雪：开"
+player-panel-snowfall-off: "飘雪：关"
+player-panel-missions: "任务"
+player-panel-claim: "领取 ({pending})"
+player-panel-claim-text: "领取你的礼物和任务奖励"
+player-panel-duel: "雪球对决"
+player-panel-duel-text: "向一名玩家发起雪球对决"
+player-panel-duel-name: "玩家名"
+player-panel-duel-not-here: "现在不在打雪仗"
+build-limit: "<yellow>服务器的 {max} 个无雪区域都在使用中，请稍后再试。"
+build-cooldown: "<yellow>请等待 {seconds} 秒后再移动你的无雪区域。"
+build-protected: "<yellow>你不能在这里建造，所以积雪保留。"
+build-started: "🧱 正在清除 {radius} 格内的积雪…"
+build-cleared: "🧱 无雪：{seconds} 秒内清除了 {blocks} 个方块"
+build-ended: "❄ 你的无雪区域已结束：积雪会慢慢回来。"
+player-panel-build: "无雪建造"
+player-panel-build-on-text: "开启：你开启时所在位置 {radius} 格内没有插件积雪"
+player-panel-build-after-text: "关闭：还会无雪 {minutes} 分钟，之后积雪回来"
+player-panel-build-off-text: "清除你周围 {radius} 格内的积雪，方便建造"
+player-panel-build-on: "无雪建造：开启，半径 {radius}"
+player-panel-build-off: "无雪建造：关闭"
+status-build: "<gray>无雪建造：{areas} 个区域（上限 {max}），新方块周围 {halos} 个无雪圈，已清除 {cleared} 个位置"
+admin-build: "建造"
+admin-build-text: "无雪建造：已用 {areas}/{max} 个区域，新方块周围 {halos} 个无雪圈。"
+admin-build-permanent: "想让某处永久无雪：使用季节点（/winter spot）或将 winter 标志设为 false 的区域（Vystorm Protect 或 Core 区域）。"

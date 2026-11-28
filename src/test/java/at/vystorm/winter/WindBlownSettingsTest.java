@@ -72,10 +72,15 @@ class WindBlownSettingsTest {
     @Test void givenA1243Config_whenTheNewVersionStarts_thenItGainsEveryWindKeyWithCommentsAndKeepsTheRest() throws Exception {
         YamlConfiguration old = defaults();
         old.set("snow.wind-blown", null);
+        old.set("snow.cover", null);         // 1.27.0 keys: a 1.24.3 file has none of them either
+        old.set("snow.biome-depth", null);
         old.set("snow.max-layers", 16);
+        // 1.28.0 keys of snow-free building: a 1.24.3 file has only build-mode.enabled and build-mode.radius
+        for (String key : java.util.List.of("max-radius", "after-minutes", "max-areas", "cooldown-seconds", "clear-per-tick", "halo", "under-blocks"))
+            old.set("build-mode." + key, null);
         File file = folder.resolve("config.yml").toFile();
         old.save(file);
-        assertEquals(1 + WinterSwitches.ADDED_KEYS.size(), WinterSwitches.addMissing(file, defaults()));
+        assertEquals(1 + WinterSwitches.ADDED_KEYS.size() + 2, WinterSwitches.addMissing(file, defaults()), "with the two building switches");
         YamlConfiguration merged = YamlConfiguration.loadConfiguration(file);
         assertTrue(merged.getBoolean("snow.wind-blown.enabled"));
         assertEquals(20, merged.getInt("snow.wind-blown.angle"));

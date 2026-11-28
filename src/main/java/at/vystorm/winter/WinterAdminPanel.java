@@ -13,7 +13,18 @@ import org.bukkit.entity.Player;
 /** Administration rendered entirely from a snapshot; actions re-check live state. */
 final class WinterAdminPanel {
     static final String NAME = "winter-admin";
-    record Overview(LocalDate date, String phase, String mode, long strength, int speed, boolean seasons, int snowfall) {}
+    record Overview(LocalDate date, String phase, String mode, long strength, int speed, boolean seasons, int snowfall, Building building) {
+        Overview(LocalDate date, String phase, String mode, long strength, int speed, boolean seasons, int snowfall) {
+            this(date, phase, mode, strength, speed, seasons, snowfall, null);
+        }
+    }
+    /** Snow-free building (1.28.0): areas in use, the cap and the halos; null while build mode is off. */
+    record Building(int areas, int max, int halos) {}
+    static Building building(WinterBuilding building) {
+        if (building == null || !building.enabled()) return null;
+        var areas = building.areas();
+        return new Building(areas.counted(), areas.settings().maxAreas(), areas.halos());
+    }
     interface Actions {
         Result check(Player player);
         Result run(Player player, String action);
@@ -59,10 +70,15 @@ final class WinterAdminPanel {
                             if (result.success()) a.refresh();
                             return result;
                         }));
+        var tabs = Ui.tabs("admin-tabs").tab("season", ctx.text("panel-season"), controls)
+                .tab("performance", ctx.text("admin-speed"), performance);
+        // Snow-free building (1.28.0): what players use now, and where a permanent snow-free place comes from.
+        if (o.building() != null) tabs.tab("building", ctx.text("admin-build"), Ui.col().gap(6).children(
+                Ui.text(ctx.text("admin-build-text", "areas", o.building().areas(), "max", o.building().max(), "halos", o.building().halos())).id("build-text"),
+                Ui.text(ctx.text("admin-build-permanent")).id("build-permanent").style(Ui.TextStyle.MUTED)));
         return Panel.page(ctx.text("admin-title")).subtitle(ctx.text("admin-status", "date", o.date()))
                 .icon(Ui.item(Material.SNOW_BLOCK)).size(Panel.Size.MEDIUM)
-                .children(Ui.tabs("admin-tabs").tab("season", ctx.text("panel-season"), controls)
-                        .tab("performance", ctx.text("admin-speed"), performance))
+                .children(tabs)
                 .footer(Ui.button("settings").label(ctx.text("admin-settings")).icon(Ui.item(Material.COMPARATOR)).ghost().onClick(a -> {
                     Result allowed = actions.check(a.player());
                     if (!allowed.success()) return allowed;

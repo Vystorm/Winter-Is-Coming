@@ -17,9 +17,18 @@ import org.bukkit.event.player.PlayerQuitEvent;
 final class WinterPanels {
     private WinterPanels() {}
 
-    static void register(WinterPlugin plugin, API core, CalendarMenu calendar, WinterAdminMenu admin) {
+    static void register(WinterPlugin plugin, API core, CalendarMenu calendar, WinterAdminMenu admin, WinterPlayerMenu player) {
         Panels panels = core.gui().panels().of(plugin);
         PlatformCompatInterface platform = core.compat().platform();
+        WinterPlayerPanel.Actions playerActions = player.actions();
+        PanelSpec.Builder playerPanel = PanelSpec.builder(plugin.lang().ref("player-panel-title"))
+                .access(p -> plugin.isEnabled())
+                .render(ctx -> WinterPlayerPanel.panel(ctx, player.overview(ctx.player()), playerActions))
+                .fallback(p -> player.openChest(p));
+        // Core 0.71.0: picks started from the chest come back to this panel (screen when it can open, else the chest).
+        if (contextFallbackAvailable()) playerPanel = WinterPicks.contextFallback(playerPanel, core, plugin, player);
+        panels.register(WinterPlayerPanel.NAME, playerPanel.build());
+        player.panelOpener(p -> open(plugin, panels, p, WinterPlayerPanel.NAME));
         CalendarPanel calendarPanel = new CalendarPanel(plugin, platform, calendar, calendarActions(plugin, platform, calendar));
         WinterAdminPanel.Actions adminActions = adminActions(plugin, core.settings().config(), admin);
         panels.register(CalendarPanel.NAME, PanelSpec.builder(plugin.lang().ref("calendar-menu"))
@@ -29,13 +38,18 @@ final class WinterPanels {
         panels.register(WinterAdminPanel.NAME, PanelSpec.builder(plugin.lang().ref("admin-title"))
                 .access(p -> plugin.isEnabled() && !plugin.faulted() && adminMenuOn(plugin) && p.hasPermission(WinterAdminMenu.PERMISSION))
                 .render(ctx -> WinterAdminPanel.panel(ctx, new WinterAdminPanel.Overview(plugin.date(), plugin.phaseName(), plugin.modeName(),
-                        plugin.strengthPercent(), plugin.settings().changes(), plugin.clock().enabled(), plugin.snowfallSlider()), adminActions))
+                        plugin.strengthPercent(), plugin.settings().changes(), plugin.clock().enabled(), plugin.snowfallSlider(),
+                        WinterAdminPanel.building(plugin.building())), adminActions))
                 .fallback(admin::openChest).build());
         admin.panelOpener(p -> open(plugin, panels, p, WinterAdminPanel.NAME));
         // Keep the existing seasonal /vmenu entry, whose visibility differs from command access.
         plugin.getServer().getPluginManager().registerEvents(new Listener() {
             @EventHandler public void quit(PlayerQuitEvent event) { calendarPanel.forget(event.getPlayer().getUniqueId()); }
         }, plugin);
+    }
+
+    static boolean contextFallbackAvailable() {
+        try { return Vystorm.vystorm_core.CoreApi.has("panel-fallback-context"); } catch (LinkageError olderCore) { return false; }
     }
 
     /** admin-menu.enabled (1.24.0); a plugin without switches read yet counts as on. */

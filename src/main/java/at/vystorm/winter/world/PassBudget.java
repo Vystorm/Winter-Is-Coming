@@ -11,7 +11,7 @@ public final class PassBudget {
 
     private double changes;
     private double frostShare;
-    private int snowColumns, frostColumns, waterSkips, cells, cellLimit;
+    private int snowColumns, frostColumns, waterSkips, idleSkips, frostIdleSkips, cells, cellLimit;
     private boolean searched;
 
     /** Starts a tick: earns changes, resets the column and cell limits. */
@@ -23,6 +23,8 @@ public final class PassBudget {
         snowColumns = columnsThisTick;
         frostColumns = columnsThisTick;
         waterSkips = columnsThisTick * 8;
+        idleSkips = columnsThisTick * 8;
+        frostIdleSkips = columnsThisTick * 8;
         cellLimit = Math.max(1, searchBudget / 2);
         cells = 0;
         searched = false;
@@ -68,6 +70,27 @@ public final class PassBudget {
         if (waterSkips <= 0) return false;
         waterSkips--;
         snowColumns++;
+        return true;
+    }
+    /**
+     * The snow pass met a chunk with nothing to restore and nothing to sample (during a thaw: only given-up markers or
+     * no records): the column is given back, up to eight times the column limit per tick (1.27.0). Without it every
+     * loaded chunk took the same share of the columns, and a few hundred idle chunks starved the thaw of the rest.
+     */
+    public boolean idleSkip() {
+        if (idleSkips <= 0) return false;
+        idleSkips--;
+        snowColumns++;
+        return true;
+    }
+    /**
+     * The frost met a chunk with no record to look at and no water to freeze (a thaw, outside the winter, an excluded
+     * world): the column is given back like {@link #idleSkip}, with its own cap of eight times the column limit (1.27.0).
+     */
+    public boolean frostIdleSkip() {
+        if (frostIdleSkips <= 0) return false;
+        frostIdleSkips--;
+        frostColumns++;
         return true;
     }
     /** Gives back a column the frost looked at but could not search this tick (the cursor goes back as well). */

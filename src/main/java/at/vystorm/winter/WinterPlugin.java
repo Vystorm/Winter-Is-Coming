@@ -41,6 +41,7 @@ public final class WinterPlugin extends JavaPlugin {
     private at.vystorm.winter.world.WinterLamps lamps;
     private WinterAdminMenu adminMenu;
     private CalendarMenu calendar;
+    private WinterPlayerMenu playerMenu;
     private SnowballDuels.Settings snowballSettings = SnowballDuels.Settings.DEFAULTS;
     private SnowballFight snowball;
     private at.vystorm.winter.storage.SledRuns sledRuns;
@@ -99,6 +100,8 @@ public final class WinterPlugin extends JavaPlugin {
             journal = new TrackedBlocks(chunkData, legacyJournal, session(), message -> getLogger().warning(message));
             if (legacyJournal != null) getLogger().info("Moving " + legacyJournal.size() + " positions of the old journal blocks.jsonl into their chunks as the chunks load; the original file is kept as blocks.jsonl" + LegacyJournal.BACKUP_SUFFIX);
             zones = new at.vystorm.winter.world.SnowZones(getDataFolder().toPath().resolve("spots.yml"), core.data().files());
+            building = new WinterBuilding(this, core, new at.vystorm.winter.world.BuildAreas(System::currentTimeMillis));
+            zones.areas(building.areas());
             configureZones();
             snowfall = new at.vystorm.winter.world.Snowfall(this, new at.vystorm.winter.world.Snowfall.Host() {
                 public boolean winterActive(World world) {
@@ -112,6 +115,12 @@ public final class WinterPlugin extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new org.bukkit.event.Listener() {
                 @org.bukkit.event.EventHandler public void quit(org.bukkit.event.player.PlayerQuitEvent event) {
                     snowfall.forget(event.getPlayer().getUniqueId());
+                    building.left(event.getPlayer());
+                }
+                /** Water a player pours keeps its halo, so no ice forms in it for a while (1.28.0). */
+                @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.MONITOR, ignoreCancelled = true)
+                public void bucket(org.bukkit.event.player.PlayerBucketEmptyEvent event) {
+                    if (!failed) building.bucket(event.getPlayer(), event.getBlockClicked().getRelative(event.getBlockFace()));
                 }
             }, this);
             terrain = new WinterTerrain(this, journal, chunkData, core.area());
@@ -128,25 +137,29 @@ public final class WinterPlugin extends JavaPlugin {
             lamps.handleBlockEvents(core.priority().stages());
             adminMenu = new WinterAdminMenu(this, core);
             calendar = new CalendarMenu(this, core);
+            playerMenu = new WinterPlayerMenu(this, core);
             try {
-                WinterPanels.register(this, core, calendar, adminMenu);
+                WinterPanels.register(this, core, calendar, adminMenu, playerMenu);
             } catch (RuntimeException unavailable) {
                 getLogger().info("Core panels unavailable; using chest menus: " + unavailable);
             }
             calendar.register();
+            playerMenu.register();
             snowball = new SnowballFight(this, new SnowballScores(getDataFolder().toPath().resolve("snowball.json"), core.data().files()), core);
             snowball.registerPlayerMenu();
             at.vystorm.winter.world.WinterListeners blockAndWorldListeners = new WinterListeners(this, terrain);
             getServer().getPluginManager().registerEvents(blockAndWorldListeners, this);
             blockAndWorldListeners.handleBlockEvents(core.priority().stages());
             blockAndWorldListeners.handleTerrainEvents(core.priority().stages());
+            Throwable noEditEvents = editAware(CoreApi.has("blocks-edited-event"), () -> at.vystorm.winter.world.EditAware.register(this, core, terrain));
+            if (noEditEvents != null) getLogger().warning("Bulk edits of other plugins are not followed: " + noEditEvents);
             getServer().getPluginManager().registerEvents(snowball, this);
             snowball.handleDamageEvents(core.priority().stages());
             getServer().getPluginManager().registerEvents(calendar, this);
             sledRuns = new at.vystorm.winter.storage.SledRuns(getDataFolder().toPath().resolve("sledruns.json"), core.data().files());
             getServer().getPluginManager().registerEvents(new at.vystorm.winter.world.Sledding(this, new at.vystorm.winter.world.Sledding.Host() {
                 public at.vystorm.winter.world.Sledding.Options sleddingOptions() {
-                    return sleddingOptions();
+                    return WinterPlugin.this.sleddingOptions();
                 }
                 public at.vystorm.winter.storage.SledRuns sledRuns() {
                     return sledRuns;
@@ -178,7 +191,7 @@ public final class WinterPlugin extends JavaPlugin {
             if (!failed) terrain.cycle();
         });
         tasks.timer(5, 10, () -> coldLoop.tick());
-        tasks.timer(3, 20, this::trackBuilders);
+        tasks.timer(3, 20, this::tickBuilding);
         tasks.timer(1, 20, () -> {
             if (!failed) {
                 refresh();
@@ -300,28 +313,39 @@ public final class WinterPlugin extends JavaPlugin {
         return zones;
     }
     void configureZones() {
-        if (zones != null) zones.configure(on(WinterSwitches.Feature.SPOTS) && getConfig().getBoolean("season-spots.only-inside", true), getConfig().getBoolean("build-mode.enabled", true) ? getConfig().getInt("build-mode.radius", 24) : 0);
-    }
-    private void trackBuilders() {
-        if (zones == null) return;
-        List<Object[]> list = new java.util.ArrayList<>();
-        for (java.util.UUID id : List.copyOf(zones.buildModePlayers())) {
-            Player player = Bukkit.getPlayer(id);
-            if (player == null) {
-                zones.forget(id);
-                continue;
+        if (zones != null) zones.configure(on(WinterSwitches.Feature.SPOTS) && getConfig().getBoolean("season-spots.only-inside", true));
+        if (building != null) {
+            var areas = building.areas();
+            areas.configure(at.vystorm.winter.world.BuildAreas.Settings.read(getConfig(), switches().on(WinterSwitches.Feature.BUILD_HALO)));
+            if (!building.enabled()) {
+                areas.clear();
+                if (terrain != null) terrain.sweep().clear();
             }
-            list.add(new Object[]{player.getWorld().getUID(), player.getLocation().getX(), player.getLocation().getZ()});
-            if (terrain != null) terrain.prioritize(player.getWorld().getUID(), player.getLocation().getX(), player.getLocation().getZ(), getConfig().getInt("build-mode.radius", 24) + 16);
-            if (seconds % 10 == 0) lang.send(player, "build-active");
         }
-        zones.updateBuilders(list);
     }
+    private WinterBuilding building;
+    /** Snow-free building (1.28.0); null before the start. */
+    WinterBuilding building() {
+        return building;
+    }
+    /** The snow-free building circles the terrain pass asks; null before the start. */
+    public at.vystorm.winter.world.BuildAreas buildAreas() {
+        return building == null ? null : building.areas();
+    }
+    /** A player placed or broke a block (Core stages, not cancelled): the snow-free building rules without a click. */
+    public void builtNear(Player player, org.bukkit.block.Block block, boolean placed) {
+        if (building == null || failed) return;
+        if (placed) building.placed(player, block);
+        else building.broke(player, block);
+    }
+    private void tickBuilding() {
+        if (building != null && !failed) building.tick();
+    }
+    /** {@code /winter build}: the player's snow-free area on or off (the same switch as in the Winter menu). */
     void commandBuild(Player player) {
-        if (off(player, getConfig().getBoolean("build-mode.enabled", true))) return;
-        boolean on = zones.toggleBuild(player.getUniqueId());
-        lang.send(player, on ? "build-on" : "build-off", "radius", getConfig().getInt("build-mode.radius", 24));
-        trackBuilders();
+        if (off(player, building != null && building.enabled())) return;
+        WinterBuilding.Answer answer = building.toggle(player);
+        lang.send(player, answer.key(), answer.placeholders());
     }
     public at.vystorm.winter.world.Snowfall snowfall() {
         return snowfall;
@@ -437,6 +461,14 @@ public final class WinterPlugin extends JavaPlugin {
     }
     CalendarMenu calendarMenu() {
         return calendar;
+    }
+    SnowballFight snowballFight() {
+        return snowball;
+    }
+    /** {@code /winter} without arguments: players get the Winter menu (1.28.0), the console the status lines. */
+    void commandRoot(CommandSender sender) {
+        if (sender instanceof Player player && playerMenu != null) guarded(player, () -> playerMenu.open(player));
+        else commandStatus(sender);
     }
     public boolean faulted() {
         return failed;
@@ -575,7 +607,7 @@ public final class WinterPlugin extends JavaPlugin {
         // Each node is gated on its OWN switch only: Core does not run a hidden node at all, so duel, surrender and sled
         // stay listed when only snowball fights or sledding are off, and then answer which switch they need.
         return Vystorm.vystorm_core.commands.CommandSpec.command("winter")
-                .executes(ctx -> p.commandStatus(ctx.sender()))
+                .executes(ctx -> p.commandRoot(ctx.sender()))
                 .sub("status", s -> s.executes(ctx -> p.commandStatus(ctx.sender())))
                 .sub("missions", s -> hide(p, s, sw -> sw.on("community-missions.enabled")).permission("winter.missions").playerOnly().executes(ctx -> p.guarded(ctx.sender(), () -> p.missions.show(ctx.player()))))
                 .sub("warmth", s -> hide(p, s, sw -> sw.on("cold.enabled")).playerOnly().executes(ctx -> p.commandWarmth(ctx.player())))
@@ -677,6 +709,20 @@ public final class WinterPlugin extends JavaPlugin {
             return refused;
         }
     }
+    /**
+     * Follows bulk edits (Vystorm Core 0.69.0, capability {@code blocks-edited-event}): the class that names Core's event
+     * is only loaded inside this check, so an older Core changes nothing. Returns the refusal, null when it worked or
+     * there was nothing to do.
+     */
+    public static Throwable editAware(boolean coreHasEditEvent, Runnable register) {
+        if (!coreHasEditEvent) return null;
+        try {
+            register.run();
+            return null;
+        } catch (RuntimeException | LinkageError refused) {
+            return refused;
+        }
+    }
     void commandAdmin(Player player) {
         if (off(player, on(WinterSwitches.Feature.ADMIN_MENU))) return;
         guarded(player, () -> adminMenu.open(player));
@@ -707,6 +753,8 @@ public final class WinterPlugin extends JavaPlugin {
         guarded(sender, () -> {
             lang.send(sender, "status", "date", date(), "phase", season.phase(), "strength", Math.round(season.intensity() * 100), "holiday", holiday, "blocks", journal.size(), "mode", failed ? "FAULTED" : state.data().thaw ? "THAW" : state.data().manualDate == null ? "CALENDAR" : "MANUAL");
             if (zones != null && zones.limiting()) lang.send(sender, "status-spots", "count", zones.spots().size());
+            if (building != null && building.enabled()) lang.send(sender, "status-build", "areas", building.areas().counted(),
+                    "max", building.areas().settings().maxAreas(), "halos", building.areas().halos(), "cleared", building.cleared());
             if (terrain != null && terrain.limitHit() > 0) lang.send(sender, "status-tracking-limit", "limit", terrain.limitHit());
             if (journal.legacyPending() > 0) lang.send(sender, "status-old-journal", "count", journal.legacyPending());
             if (snowfall != null) {
@@ -719,6 +767,7 @@ public final class WinterPlugin extends JavaPlugin {
                 if (on(WinterSwitches.Feature.WIND_BLOWN)) lang.send(sender, "status-wind-blown-on", "from", plainNumber(wind.from()), "angle", plainNumber(wind.angle()),
                         "rays", terrain.raysTraced(), "reads", terrain.shelterReads());
                 else lang.send(sender, "status-wind-blown-off");
+                lang.send(sender, "status-snow-cover", "mode", settings.terrain().cover() == at.vystorm.winter.world.SnowCover.Mode.SMOOTH ? "smooth" : "classic");
             }
             if (!failed && !state.data().thaw && season.phase().equals("OFF")) {
                 LocalDate today = date(), next = settings.calendar().nextStart(today);

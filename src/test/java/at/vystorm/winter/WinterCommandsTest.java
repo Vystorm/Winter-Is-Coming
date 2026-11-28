@@ -89,9 +89,10 @@ class WinterCommandsTest {
         CommandRegistration r = registration(plugin);
         Player p = player(Locale.US, ALL);
         r.execute(p, "winter", new String[0]);
+        verify(plugin).commandRoot(p);
         r.execute(p, "winter", new String[]{"status"});
         r.execute(p, "winter", new String[]{"STATUS"});
-        verify(plugin, times(3)).commandStatus(p);
+        verify(plugin, times(2)).commandStatus(p);
         r.execute(p, "winter", new String[]{"preview", "2026-12-25"});
         verify(plugin).commandPreview(p, "2026-12-25");
         r.execute(p, "winter", new String[]{"setdate", "2026-12-24"});

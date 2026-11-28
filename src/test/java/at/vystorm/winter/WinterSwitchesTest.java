@@ -93,11 +93,12 @@ class WinterSwitchesTest {
 
     // ---- shipped file, old files, descriptions -------------------------------------------------------------------
 
-    @Test void givenShippedConfig_whenRead_thenEverySwitchIsABooleanAndOnByDefault() {
+    @Test void givenShippedConfig_whenRead_thenEverySwitchIsABooleanAtItsDefault() {
         YamlConfiguration config = defaults();
         for (String path : WinterSwitches.allPaths()) assertTrue(config.isBoolean(path), path);
         WinterSwitches read = WinterSwitches.read(config);
-        for (Feature feature : Feature.values()) assertTrue(read.on(feature), feature.path());
+        for (Feature feature : Feature.values()) assertEquals(feature.byDefault(), read.on(feature), feature.path());
+        assertFalse(read.on(Feature.BUILD_HALO), "the halo around fresh blocks is opt-in");
         assertFalse(read.on("seasons.enabled"));
         assertFalse(read.on("snowfall.enabled"));
         assertTrue(read.on("cold.enabled"));
@@ -107,7 +108,7 @@ class WinterSwitchesTest {
         YamlConfiguration old = oldConfig();
         for (Feature feature : Feature.values()) assertFalse(old.contains(feature.path()), feature.path());
         WinterSwitches read = WinterSwitches.read(old);
-        for (Feature feature : Feature.values()) assertTrue(read.on(feature), feature.path());
+        for (Feature feature : Feature.values()) assertEquals(feature.byDefault(), read.on(feature), feature.path());
         assertEquals(WinterSettings.driftStrength(defaults()), WinterSettings.driftStrength(old));
         assertEquals(WinterSettings.transitionBlocks(defaults()), WinterSettings.transitionBlocks(old));
         for (String key : List.of("holidays.advent", "holidays.christmas", "holidays.new-year", "holidays.fireworks"))
@@ -124,7 +125,7 @@ class WinterSwitchesTest {
         int added = WinterSwitches.addMissing(file, defaults());
         assertEquals(Feature.values().length, added);
         YamlConfiguration merged = YamlConfiguration.loadConfiguration(file);
-        for (Feature feature : Feature.values()) assertTrue(merged.getBoolean(feature.path(), false), feature.path());
+        for (Feature feature : Feature.values()) assertEquals(feature.byDefault(), merged.getBoolean(feature.path(), !feature.byDefault()), feature.path());
         assertEquals(0.25, merged.getDouble("cold.warm-food"));
         String text = Files.readString(file.toPath());
         assertTrue(text.contains("Master switch of the plugin's snow and ice"), "comment of snow.enabled");
@@ -145,6 +146,78 @@ class WinterSwitchesTest {
         YamlConfiguration merged = YamlConfiguration.loadConfiguration(file);
         assertFalse(merged.getBoolean("snow.drifts.enabled"));
         assertTrue(merged.getBoolean("tutorial.enabled"));
+    }
+
+    // ---- 1.28.0 test build: the halo was on by default there -----------------------------------------------------
+
+    /** The halo block exactly as the unreleased 1.28.0 test build wrote it: its comment and enabled: true. */
+    private static YamlConfiguration candidateDefaults() {
+        YamlConfiguration config = defaults();
+        config.set("build-mode.halo.enabled", true);
+        config.setComments("build-mode.halo.enabled", List.of(
+                "Without any click: a block a player places, or a block he breaks near the surface, keeps a small circle around it",
+                "free of the plugin's snow and ice for a while, so new roofs, paths, walls and water are not snowed over or frozen."));
+        return config;
+    }
+
+    private static YamlConfiguration release127() {
+        YamlConfiguration old = defaults();
+        for (String key : List.of("max-radius", "after-minutes", "max-areas", "cooldown-seconds", "clear-per-tick", "halo", "under-blocks"))
+            old.set("build-mode." + key, null);
+        return old;
+    }
+
+    private long backups() throws Exception {
+        try (var files = Files.list(folder)) {
+            return files.filter(p -> p.getFileName().toString().startsWith("config.yml.bak-")).count();
+        }
+    }
+
+    @Test void givenA127ConfigMergedByTheTestBuild_whenTheNewVersionStarts_thenTheHaloIsSwitchedOffOnce() throws Exception {
+        File file = folder.resolve("config.yml").toFile();
+        release127().save(file);
+        assertTrue(WinterSwitches.addMissing(file, candidateDefaults()) > 0, "the test build adds its keys");
+        assertTrue(YamlConfiguration.loadConfiguration(file).getBoolean("build-mode.halo.enabled"), "the test build wrote true");
+        long before = backups();
+
+        var merge = WinterSwitches.merge(file, defaults());
+        assertEquals(new WinterSwitches.Merge(0, true), merge);
+        YamlConfiguration now = YamlConfiguration.loadConfiguration(file);
+        assertFalse(now.getBoolean("build-mode.halo.enabled", true));
+        assertFalse(WinterSwitches.read(now).on(Feature.BUILD_HALO));
+        assertTrue(now.getBoolean("build-mode.under-blocks.enabled"), "the other building rule stays on");
+        assertTrue(Files.readString(file.toPath()).contains("Off by default"), "the new comment");
+        assertTrue(backups() >= Math.max(1, before), "a backup first (same-second backups share a name)");
+
+        assertEquals(new WinterSwitches.Merge(0, false), WinterSwitches.merge(file, defaults()), "never twice");
+    }
+
+    @Test void givenAFreshTestBuildFile_whenTheNewVersionStarts_thenTheHaloIsSwitchedOff() throws Exception {
+        File file = folder.resolve("config.yml").toFile();
+        candidateDefaults().save(file);
+        assertEquals(1, WinterSwitches.addMissing(file, defaults()));
+        assertFalse(YamlConfiguration.loadConfiguration(file).getBoolean("build-mode.halo.enabled", true));
+    }
+
+    @Test void givenTheHaloBlockEditedOrSwitchedOnAgain_whenTheNewVersionStarts_thenTheOwnersChoiceStays() throws Exception {
+        File file = folder.resolve("config.yml").toFile();
+        YamlConfiguration radius = candidateDefaults();
+        radius.set("build-mode.halo.radius", 8);
+        radius.save(file);
+        assertEquals(0, WinterSwitches.addMissing(file, defaults()), "another radius is a choice");
+        assertTrue(YamlConfiguration.loadConfiguration(file).getBoolean("build-mode.halo.enabled"));
+
+        YamlConfiguration comment = candidateDefaults();
+        comment.setComments("build-mode.halo.enabled", List.of("on, we like it"));
+        comment.save(file);
+        assertEquals(0, WinterSwitches.addMissing(file, defaults()), "an own comment is a choice");
+        assertTrue(YamlConfiguration.loadConfiguration(file).getBoolean("build-mode.halo.enabled"));
+
+        YamlConfiguration onAgain = defaults();
+        onAgain.set("build-mode.halo.enabled", true);   // switched on with the new default comment
+        onAgain.save(file);
+        assertEquals(0, WinterSwitches.addMissing(file, defaults()));
+        assertTrue(YamlConfiguration.loadConfiguration(file).getBoolean("build-mode.halo.enabled"));
     }
 
     @Test void givenEverySwitch_whenDescribed_thenAllSevenLanguagesHaveTheLine() {

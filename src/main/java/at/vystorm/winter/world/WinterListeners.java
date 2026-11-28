@@ -71,9 +71,14 @@ public final class WinterListeners implements Listener {
         // Remove unsupported artificial snow before the support disappears; never create free drops.
         Block above=e.getBlock().getRelative(org.bukkit.block.BlockFace.UP);
         if(!e.isCancelled()&&above.getType()==Material.SNOW&&terrain.owned(above))terrain.clear(above);
+        // Snow-free halo around the broken block (1.28.0); the plugin's own snow (shovelling) is its own rule.
+        if(!e.isCancelled())plugin.builtNear(e.getPlayer(),e.getBlock(),false);
     }
-    /** Stage OBSERVE, registered in {@link #handleBlockEvents}: releases the spot; sheltered snow whose wind the new block may block is checked again soon (1.25.0). */
-    public void place(BlockPlaceEvent e){terrain.release(e.getBlock());terrain.placed(e.getBlock());}
+    /**
+     * Stage OBSERVE, registered in {@link #handleBlockEvents}: releases the spot; sheltered snow whose wind the new block
+     * may block is checked again soon (1.25.0); the plugin's snow under the block stays and a snow-free halo starts (1.28.0).
+     */
+    public void place(BlockPlaceEvent e){terrain.release(e.getBlock());terrain.placed(e.getBlock());plugin.builtNear(e.getPlayer(),e.getBlock(),true);}
     /** Stage PROTECT, registered in {@link #handleTerrainEvents}. */
     public void flow(BlockFromToEvent e){if(terrain.owned(e.getToBlock()))e.setCancelled(true);}
     /** Stage PROTECT, registered in {@link #handleTerrainEvents}. */

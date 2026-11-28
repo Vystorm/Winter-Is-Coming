@@ -351,8 +351,8 @@ panel-mode-faulted: 'Ошибка хранилища'
 panel-mode-thaw: 'Принудительное таяние'
 panel-mode-calendar: 'Реальный календарь'
 panel-mode-manual: 'Дата вручную'
-build-on: '<aqua>🧱 Режим строительства включён: снега плагина нет в радиусе {radius} блоков. /winter build выключает.'
-build-off: '<gray>Режим строительства выключен: снег возвращается.'
+build-on: "<aqua>🧱 Стройка без снега включена: снег плагина в радиусе {radius} блоков от этого места убирается сейчас и не вернётся, пока режим включён. /winter build или меню «Зима» выключает его."
+build-off: "<gray>Стройка без снега выключена: это место останется без снега ещё {minutes} мин., потом снег медленно вернётся."
 build-active: '<dark_aqua>🧱 Режим строительства включён (/winter build)'
 build-disabled: '<yellow>Режим строительства выключен в config.yml.'
 spot-added: '<green>Сезонная зона {name} добавлена: снег идёт в радиусе {radius} блоков отсюда.'
@@ -370,6 +370,7 @@ status-snowfall-on: '<gray>Снегопад: включён ({amount} снежи
 status-snowfall-off: '<gray>Снегопад: выключен'
 status-wind-blown-on: '<gray>Снег, принесённый ветром: включён (ветер с {from}°, {angle}° от вертикали; {rays} лучей прослежено, {reads} блоков прочитано)'
 status-wind-blown-off: '<gray>Снег, принесённый ветром: выключен'
+status-snow-cover: '<gray>Снежный покров: {mode} (smooth: глубина по биому, пандусы и скруглённые ступени; classic = вид до версии 1.26.0)'
 admin-snowfall: '<yellow>Снегопад</yellow>'
 admin-snowfall-label: 'Количество снега (0 = выключен)'
 admin-snowfall-text: 'Снежинок в секунду вокруг каждого игрока при любой погоде. 0 выключает эффект. Это не то же самое, что скорость снега: она лишь определяет, как быстро снег нарастает на земле.'
@@ -409,7 +410,9 @@ features:
   seasons: "Времена года круглый год: растения меняются весной, летом и осенью."
   storms: "Метели и бураны с предупреждением."
   sledding: "Лодки быстрее едут по снегу."
-  build-mode: "Режим стройки: нет снега плагина вокруг строителя."
+  build-mode: "Стройка без снега: игроки убирают снег плагина вокруг себя (/winter build или меню «Зима»)."
+  build-mode-halo: "Круг без снега вокруг блоков, которые игроки ставят или ломают у поверхности."
+  build-mode-under-blocks: "Блок, поставленный на снег плагина, сохраняет этот снег под собой и после оттепели и никогда не висит в воздухе."
   snowfall: "Падающие снежинки вокруг игроков."
   snow-cover-leaves: "Снег на листве деревьев."
   snow-cover-small-plants: "Снег укрывает мелкие растения; они возвращаются в оттепель."
@@ -461,6 +464,8 @@ switch-names:
   storms: "Метели"
   sledding: "Катание на санях"
   build-mode: "Режим стройки"
+  build-mode-halo: "Круг без снега"
+  build-mode-under-blocks: "Снег под блоками"
   snowfall: "Падающий снег"
   snow-cover-leaves: "Снег на листве"
   snow-cover-small-plants: "Снег на мелких растениях"
@@ -503,3 +508,35 @@ rankings:
   snowball-wins:
     label: "Победы в дуэлях в снежки"
     description: "Выигранные дуэли в снежки в этом зимнем сезоне"
+player-panel-title: "Зима"
+player-panel-subtitle: "Твоя зима: тепло, снегопад, миссии и дуэли снежками"
+player-panel-date: "Дата"
+player-panel-status: "{phase} · {value}%"
+player-panel-status-lore: "Дата: {date}"
+player-panel-snowfall: "Снегопад"
+player-panel-snowfall-text: "Снежинки вокруг тебя (только для тебя)"
+player-panel-snowfall-on: "Снегопад: вкл."
+player-panel-snowfall-off: "Снегопад: выкл."
+player-panel-missions: "Миссии"
+player-panel-claim: "Забрать ({pending})"
+player-panel-claim-text: "Забрать подарки и награды за миссии"
+player-panel-duel: "Дуэль снежками"
+player-panel-duel-text: "Вызвать игрока на дуэль снежками"
+player-panel-duel-name: "Имя игрока"
+player-panel-duel-not-here: "Сейчас не участвует в игре в снежки"
+build-limit: "<yellow>Все {max} зон без снега на сервере заняты. Попробуй позже."
+build-cooldown: "<yellow>Подожди {seconds} с, прежде чем снова переносить свою зону без снега."
+build-protected: "<yellow>Здесь тебе нельзя строить, поэтому снег остаётся."
+build-started: "🧱 Убираем снег в радиусе {radius} блоков…"
+build-cleared: "🧱 Без снега: очищено блоков {blocks} за {seconds} с"
+build-ended: "❄ Твоя зона без снега закончилась: снег медленно возвращается."
+player-panel-build: "Без снега"
+player-panel-build-on-text: "Вкл.: нет снега плагина в радиусе {radius} блоков от места, где ты включил режим"
+player-panel-build-after-text: "Выкл.: ещё {minutes} мин. без снега, потом снег вернётся"
+player-panel-build-off-text: "Убирает снег в радиусе {radius} блоков вокруг тебя, чтобы можно было строить"
+player-panel-build-on: "Стройка без снега: вкл., радиус {radius}"
+player-panel-build-off: "Стройка без снега: выкл."
+status-build: "<gray>Стройка без снега: зон {areas} (предел {max}), кругов у свежих блоков {halos}, очищено позиций {cleared}"
+admin-build: "Стройка"
+admin-build-text: "Стройка без снега: занято зон {areas} из {max}, кругов у свежих блоков {halos}."
+admin-build-permanent: "Чтобы место осталось без снега навсегда: сезонный спот (/winter spot) или регион с флагом winter = false (Vystorm Protect или регионы Core)."
